@@ -1,0 +1,45 @@
+<form id="{{ form.__class__.__name__ }}" name="{{ form.__class__.__name__ }}" action="" method="post"
+	class="needs-validation row justify-content-md-center" novalidate>
+	
+	<div class="row {{ form.formclass }} justify-content-md-center">
+	
+	{% for field in form %}
+	
+	<div class="{{ field.divclass }} mt-3">
+	
+			{% if field.widget.input_type != "hidden" and field.widget.input_type != "submit" %}
+			<small>{{ field.label(class_="form-label") }}</small>
+			{% endif %}
+			{% if field.widget.input_type == "password" %}
+			  <div class="input-group mt-2">
+					{{ field }}
+              <span class="input-group-text toggle-password">
+						<i class="bi bi-eye-slash"></i> 
+				</span>
+               <div class="invalid-feedback" id="{{ field.name }}_feedback">
+               {% if field.errors %}
+	               {% for error in field.errors %}
+	                 <div class="row"><small>{{ error }}</small></div>
+	               {% endfor %}
+	           {% else %}
+	           		<div class="row"><small>{{ field.label.text }} is required!</small></div>
+	           {% endif %}
+            </div>
+               </div>
+            {% else %}
+			
+			{{ field }}
+               <div class="invalid-feedback" id="{{ field.name }}_feedback">
+               {% if field.errors %}
+	               {% for error in field.errors %}
+	                 <div class="row"><small>{{ error }}</small></div>
+	               {% endfor %}
+	           {% else %}
+	           		<div class="row"><small>{{ field.label.text }} is required!</small></div>
+	           {% endif %}
+               </div>
+               
+           {% endif %}
+     </div>
+
+	{% endfor %}

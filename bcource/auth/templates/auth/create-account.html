@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+    {% include 'nav-nomenu.html' %}
+{% endblock %}
+
+{% block content %}
+
+		<div class="col-md-12">
+			<h3 class="text-center">{{ form.form_description }}</h3>
+		</div>
+
+{% include 'form.html' %}
+
+
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
+
+<script>
+  const input = document.querySelector("#phone");
+  const iti = window.intlTelInput(input, {
+    loadUtils: () => import("https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/utils.js"),
+    initialCountry: "NL",
+    nationalMode: true,
+  });
+  
+  form.onsubmit = () => {
+	  input.setCustomValidity("");
+	  alert("here")
+	  if (iti.isValidNumber()){
+		  input.value = iti.getNumber()
+	  }	  
+  };
+  
+</script>
+
+
+{% endblock %}
