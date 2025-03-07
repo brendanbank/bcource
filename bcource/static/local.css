@@ -1,0 +1,43 @@
+.floating-alerts {
+  position: absolute;
+  width: 75%;
+  top: 95px;
+  z-index: 9999;
+}
+
+.alert-fixed {
+    position:fixed; 
+    top: 0px; 
+    left: 0px; 
+    width: 100%;
+    z-index:9999; 
+    border-radius:0px
+}
+/* Custom CSS for line with text through */
+.div-line {
+  position: relative;
+  text-align: center;
+}
+.hr-line {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
+  width: 100%;
+  margin: 0;
+  z-index: -1000;
+}
+.text-line {
+  margin: 0;
+  background-color: white;
+  z-index: 1000;
+  display: inline-block;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.f-small {
+	font-size: 10px;
+}
