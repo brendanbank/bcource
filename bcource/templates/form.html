@@ -1,0 +1,54 @@
+<form id="form" name="form" action="" method="post"
+	class="needs-validation row justify-content-md-center" novalidate>
+	
+	<div class="row {{ form.formclass }} ">
+	
+	{% for field in form %}
+	
+    {% if field.name in form.hrfields %}
+            <div class="col-md-12 position-relative text-center div-line mt-1">
+                   <hr class="hr-line ">
+                   <span class="text-line fw-bold fs-6"><small>{{ form.hrfields[field.name] }}</small></span>
+            </div>
+    {% endif %}
+
+	<div class="{{ field.divclass }}">
+	
+			{% if field.widget.input_type != "hidden" and field.widget.input_type != "submit" %}
+			<small>{{ field.label(class_="form-label mb-0 mx-2") }}</small>
+			{% endif %}
+			{% if field.widget.input_type == "password" %}
+			  <div class="input-group">
+					{{ field }}
+              <span class="input-group-text toggle-password">
+						<i class="bi bi-eye-slash"></i> 
+				</span>
+               <div class="invalid-feedback" id="{{ field.name }}_feedback">
+               {% if field.errors %}
+	               {% for error in field.errors %}
+	                 <div class="row"><small>{{ error }}</small></div>
+	               {% endfor %}
+	           {% else %}
+	           		<div class="row"><small>{{ field.label.text }} is required!</small></div>
+	           {% endif %}
+            </div>
+               </div>
+            {% else %}
+			
+			{{ field }}
+               <div class="invalid-feedback" id="{{ field.name }}_feedback">
+               {% if field.errors %}
+	               {% for error in field.errors %}
+	                 <div class="row"><small>{{ error }}</small></div>
+	               {% endfor %}
+	           {% else %}
+	           		<div class="row"><small>{{ field.label.text }} is required!</small></div>
+	           {% endif %}
+               </div>
+               
+           {% endif %}
+     </div>
+     
+     
+
+	{% endfor %}

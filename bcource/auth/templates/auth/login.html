@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+
+{% block nav %}
+    {% include 'nav-nomenu.html' %}
+{% endblock %}
+
+{% block content %}
+
+
+<div class="row justify-content-md-center">
+	<div class="card border-secondary mb-3" style="max-width: 25rem;">
+	  <div class="card-body">
+	
+		<div class="col-md-12">
+			<h3 class="text-center">{{ form.form_description }}</h3>
+		</div>
+	
+		{% include 'form.html' %}
+		
+	  </div>
+	    <div class="card-footer bg-transparent border-secondary">
+	    <div class="row justify-content-md-center mt-2">
+	    	    <a href="{{ url_for('auth_bp.new') }}" class="col-md-5 btn btn-outline-secondary btn-sm" 
+	    	    role="button" aria-pressed="true">{{ _('Create new account') }}</a>
+	    </div>
+	    </div>
+	</div>
+</div>
+
+{% endblock %}
