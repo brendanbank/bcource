@@ -1,7 +1,11 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, flash
+from flask_security import current_user
 from flask import current_app as app
-
 from .forms  import LoginForm, CreateAccountForm
+from ..models import User, UserStatus
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from .. import db
 
 # Blueprint Configuration
 auth_bp = Blueprint(
@@ -11,16 +15,23 @@ auth_bp = Blueprint(
     static_folder='static'
 )
 
-@auth_bp.route('/login', methods=['GET', 'POST'])
-def home():
+# @auth_bp.route('/login', methods=['GET', 'POST'])
+# def home():
+#
+#     form = LoginForm()
+#     return render_template("auth/login.html", form=form)
 
-    form = LoginForm()
-    return render_template("auth/login.html", form=form)
-
-@auth_bp.route('/create-account', methods=['GET', 'POST'])
-def new():
+@auth_bp.route('/account-details', methods=['GET', 'POST'])
+def update():
     
-    form = CreateAccountForm()
+    form = CreateAccountForm(obj=current_user)        
+        
+    if form.validate_on_submit():
+        
+        user = current_user
+        form.populate_obj(user)   
+                 
+        # db.session.add(user)
+        db.session.commit()
     
-    print (request.form )
     return render_template("auth/create-account.html", form=form)

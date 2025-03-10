@@ -50,7 +50,7 @@
 	Array.from(alertsAll).forEach((alertItem) => {
 		var timeOut = alertItem._element.getAttribute('timeout');
 		if (!timeOut) {
-			timeOut = 2000; // default timeout
+			timeOut = 4000; // default timeout
 		}
 		const timeOuts = timeOut;
 
