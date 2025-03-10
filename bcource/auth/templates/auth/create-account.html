@@ -16,21 +16,27 @@
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
 
 <script>
-  const input = document.querySelector("#phone");
+  const input = document.querySelector("#phone_number");
   const iti = window.intlTelInput(input, {
     loadUtils: () => import("https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/utils.js"),
     initialCountry: "NL",
     nationalMode: true,
   });
   
-  form.onsubmit = () => {
+  const accountform = document.querySelector("#{{form.__class__.__name__}}")
+  accountform.onsubmit = () => {
 	  input.setCustomValidity("");
-	  alert("here")
 	  if (iti.isValidNumber()){
 		  input.value = iti.getNumber()
 	  }	  
   };
   
+</script>
+
+<script>
+
+//{% include 'postcode.js' %}
+
 </script>
 
 

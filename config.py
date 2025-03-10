@@ -30,15 +30,37 @@ class Config:
     STATIC_FOLDER = "static"
     TEMPLATES_FOLDER = "templates"
     COMPRESSOR_DEBUG = environ.get("COMPRESSOR_DEBUG")
-    EXPLAIN_TEMPLATE_LOADING = environ.get("EXPLAIN_TEMPLATE_LOADING")
+    EXPLAIN_TEMPLATE_LOADING = False
     DEBUG = environ.get("DEBUG")
     
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI")
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 
     LANGUAGES = ['en', 'nl']
     
+    
+    FLASK_ADMIN_SWATCH = 'cerulean'
+
+    #Flask Security
+    SECURITY_USERNAME_ENABLE = False
+
+    SECURITY_PASSWORD_SALT = environ.get("SECURITY_PASSWORD_SALT", '146585145368132386173505678016728509634')
+    # SECURITY_EMAIL_VALIDATOR_ARGS = {"check_deliverability": False}
+    SECURITY_REGISTERABLE = True
+    SECURITY_USE_REGISTER_V2 = True
+    SECURITY_SEND_REGISTER_EMAIL = True
+    SECURITY_CHANGEABLE = True
+    SECURITY_URL_PREFIX = "/auth"
+    SECURITY_CONFIRMABLE = True
+    SECURITY_TRACKABLE = True
+
+    MAIL_SERVER = "smtp.bgwlan.nl"
+    MAIL_PORT = 25
+    MAIL_USE_TLS = False
+    MAIL_DEFAULT_SENDER = "brendan.bank@bgwlan.nl"
+
 settings = Config
 
 

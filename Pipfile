@@ -7,8 +7,16 @@ name = "pypi"
 python-dotenv = "*"
 flask-sqlalchemy = "*"
 pymysql = "*"
-flask-wtf = "*"
 flask-babel = "*"
+flask-wtf = "*"
+wtforms = "==3.1.2"
+flask-security = "*"
+setuptools = "*"
+webauthn = "*"
+argon2-cffi = "*"
+email-validator = "*"
+flask-mailman = "*"
+flask-migrate = "*"
 
 [dev-packages]
 

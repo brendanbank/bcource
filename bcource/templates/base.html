@@ -25,11 +25,13 @@
 	
   </head>
   <body>
-  
-    {% block nav %}{% endblock %}
+
+    {% include 'nav-nomenu.html' %}
     
     <div class="container my-5">
     	
+    {% include 'alerts.html' %}
+
     {% block content %}{% endblock %}
 
 	</div>
