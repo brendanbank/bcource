@@ -1,6 +1,7 @@
 from os import environ, path
 import sys
 import logging
+import secrets
 
 
 log = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ class Config:
     #Flask Security
     SECURITY_USERNAME_ENABLE = False
 
-    SECURITY_PASSWORD_SALT = environ.get("SECURITY_PASSWORD_SALT", '146585145368132386173505678016728509634')
+    SECURITY_PASSWORD_SALT = environ.get("SECURITY_PASSWORD_SALT", secrets.SystemRandom().getrandbits(128))
     # SECURITY_EMAIL_VALIDATOR_ARGS = {"check_deliverability": False}
     SECURITY_REGISTERABLE = True
     SECURITY_USE_REGISTER_V2 = True
@@ -64,8 +65,8 @@ class Config:
     
     SECURITY_AUTHORIZE_REQUEST = {'admin.index': "admin"}
     
-    ADMIN_USER   = "brendan.bank@gmail.com"
-    ADMIN_PASSWORD = "thomas22"
+    ADMIN_USER   = environ.get("ADMIN_USER")
+    ADMIN_PASSWORD = environ.get("ADMIN_PASSWORD")
 
 settings = Config
 
