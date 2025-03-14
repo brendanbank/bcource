@@ -2,7 +2,7 @@
 
 from  messagebird import Client
 
-API_Key = 'VQYF6IzzCVqzI0xrow19YqdTL'
+API_Key = ''
 
 client = Client(API_Key)
 message = client.message_create(

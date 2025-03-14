@@ -2,11 +2,11 @@ from flask import Blueprint, render_template, request, flash
 from flask_babel import _
 from flask_security import current_user
 from flask import current_app as app
-from .forms  import LoginForm, AccountDetailsForm
-from ..models import User, UserStatus
+from bcource.auth.forms  import LoginForm, AccountDetailsForm
+from bcource.admin import User, UserStatus
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from .. import db
+from bcource import db
 
 # Blueprint Configuration
 auth_bp = Blueprint(

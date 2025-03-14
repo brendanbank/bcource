@@ -1,7 +1,7 @@
 from sqlalchemy import  String, Text
 from sqlalchemy.orm import Mapped, mapped_column
-from .. import db, admin_views
-from ..admin.admin import AuthModelView
+from .. import db, table_admin
+from bcource.admin.admin_views import AuthModelView
 
 class Content(db.Model):
     tag: Mapped[str] = mapped_column(String(256), primary_key=True)
@@ -47,4 +47,4 @@ class ContentModelView(AuthModelView):
     #     'text': CKTextAreaField
     # }
 
-admin_views.add_view(ContentModelView(Content, db.session)) #@UndefinedVariable
+table_admin.add_view(ContentModelView(Content, db.session)) #@UndefinedVariable
