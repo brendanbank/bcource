@@ -63,6 +63,9 @@ class Config:
     MAIL_DEFAULT_SENDER = "brendan.bank@bgwlan.nl"
     
     SECURITY_AUTHORIZE_REQUEST = {'admin.index': "admin"}
+    
+    ADMIN_USER   = "brendan.bank@gmail.com"
+    ADMIN_PASSWORD = "thomas22"
 
 settings = Config
 

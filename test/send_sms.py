@@ -2,7 +2,7 @@
 
 from  messagebird import Client
 
-API_Key = '***REMOVED***'
+API_Key = ''
 
 client = Client(API_Key)
 message = client.message_create(
