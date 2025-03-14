@@ -55,11 +55,14 @@ class Config:
     SECURITY_URL_PREFIX = "/auth"
     SECURITY_CONFIRMABLE = True
     SECURITY_TRACKABLE = True
+    SECURITY_PASSWORD_COMPLEXITY_CHECKER = True
 
     MAIL_SERVER = "smtp.bgwlan.nl"
     MAIL_PORT = 25
     MAIL_USE_TLS = False
     MAIL_DEFAULT_SENDER = "brendan.bank@bgwlan.nl"
+    
+    SECURITY_AUTHORIZE_REQUEST = {'admin.index': "admin"}
 
 settings = Config
 
