@@ -1,7 +1,6 @@
-from flask import Blueprint, render_template, jsonify, request, abort
-from .. import csrf
-from ..models import Postalcodes, UserStatus
-from .. import db
+from flask import Blueprint, render_template, jsonify, request
+from bcource.api.models import Postalcodes
+from bcource import db
 import re
 
 # Blueprint Configuration

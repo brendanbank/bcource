@@ -1,6 +1,5 @@
-from .. import db
-from .. import admin_views
-from ..models import User, Role, Permission
+from bcource import table_admin, db
+from bcource.admin.models import User, Role, Permission, UserStatus
 from flask_admin.contrib.sqla import ModelView
 from flask_security import current_user, hash_password
 from wtforms.fields import PasswordField
@@ -14,7 +13,7 @@ class MainIndexLink(MenuLink):
         return url_for("home_bp.home")
 
 
-admin_views.add_link(MainIndexLink(name="Main Page"))
+table_admin.add_link(MainIndexLink(name="Main Page"))
 
 def accessible_as_admin(role="admin"):
     return (
@@ -66,7 +65,7 @@ class AuthModelView(ModelView):
 
 # Customized User model for SQL-Admin
 class UserAdmin(AuthModelView):
-
+    permission = "admin-user-edit"
     # Don't display the password on the list of Users
     column_exclude_list = list = ('password',)
 
@@ -94,12 +93,20 @@ class UserAdmin(AuthModelView):
 
 class RoleAdmin(AuthModelView):
     form_columns = ["name", "permissions_items", "description"]
+    permission = "admin-role-edit"
+
 
 class PerminssonAdmin(AuthModelView):
     form_columns = ["name", "description"]
+    permission = "admin-permission-edit"
 
 
+class UserStatusAdmin(AuthModelView):
+    form_columns = ["name"]
+    permission = "admin-userstatus-edit"
+    
 
-admin_views.add_view(UserAdmin(User, db.session))
-admin_views.add_view(RoleAdmin(Role, db.session))
-admin_views.add_view(PerminssonAdmin(Permission, db.session))
+table_admin.add_view(UserAdmin(User, db.session))
+table_admin.add_view(RoleAdmin(Role, db.session))
+table_admin.add_view(PerminssonAdmin(Permission, db.session))
+table_admin.add_view(UserStatusAdmin(UserStatus, db.session)) #@UndefinedVariable

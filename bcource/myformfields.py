@@ -1,5 +1,5 @@
 from flask_security import current_user
-from .models import User
+from .admin.models import User
 from flask_babel import _
 from flask import flash
 
