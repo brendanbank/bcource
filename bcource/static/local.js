@@ -45,17 +45,24 @@
 
 	// check if there are any floating-alert to close with a timeout
 	const alertList = document.querySelectorAll('.floating-alert-close');
-	const alertsAll = [...alertList].map(element => new bootstrap.Alert(element))
+	const b = jQuery('.floating-alert-close')
 
+		const alertsAll = [...alertList].map(element => new bootstrap.Alert(element))
+	i = 1
 	Array.from(alertsAll).forEach((alertItem) => {
 		var timeOut = alertItem._element.getAttribute('timeout');
 		if (!timeOut) {
 			timeOut = 4000; // default timeout
 		}
-		const timeOuts = timeOut;
+		
+		
+		const timeOuts = timeOut * i;
+		i= i + 1;
 
 		window.setTimeout(function() {
-			alertItem.close();
+			//alertItem.close();
+			const id = alertItem._element.getAttribute("id")
+			$('#' + id).slideUp()
 		}, timeOuts);
 	});
 

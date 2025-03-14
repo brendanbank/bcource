@@ -31,7 +31,7 @@ class LoginForm(FlaskForm):
             divclass="col-md-12 mt-3 mb-3")
     
     
-class CreateAccountForm(FlaskForm):
+class AccountDetailsForm(FlaskForm):
     form_description = _l("Update account details")
     formclass =  "col-md-8"
     hrfields = { 
