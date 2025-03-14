@@ -63,6 +63,9 @@ class Config:
     MAIL_DEFAULT_SENDER = "admin@example.com"
     
     SECURITY_AUTHORIZE_REQUEST = {'admin.index': "admin"}
+    
+    ADMIN_USER   = "admin@example.com"
+    ADMIN_PASSWORD = "thomas22"
 
 settings = Config
 
