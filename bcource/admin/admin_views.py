@@ -1,21 +1,33 @@
 from bcource import table_admin, db
-from bcource.admin.models import User, Role, Permission, UserStatus
+from bcource.admin.models import User, Role, Permission, ClientStatus
 from flask_admin.contrib.sqla import ModelView
 from flask_security import current_user, hash_password
 from wtforms.fields import PasswordField
 from flask import current_app, url_for, abort, redirect, request
 from flask_security import SmsSenderBaseClass
-
 from flask_admin.menu import MenuLink
+import uuid
+
+
 
 class MainIndexLink(MenuLink):
     def get_url(self):
         return url_for("home_bp.home")
 
-
 table_admin.add_link(MainIndexLink(name="Main Page"))
 
-def accessible_as_admin(role="admin"):
+
+
+
+
+
+def accessible_as_admin(role="admin_views"):
+    role = Role().query.filter(Role.name==role).first()
+    if not role:
+        role = Role(name=role)
+        db.session.add(role)
+        db.session.commit()
+        
     return (
         current_user.is_active
         and current_user.is_authenticated
@@ -23,6 +35,12 @@ def accessible_as_admin(role="admin"):
     )
     
 def accessible_by_permission(permission="db-admin"):
+    permissionObj = Permission().query.filter(Permission.name==permission).first()
+    if not permissionObj:
+        permissionObj = Permission(name=permission)
+        db.session.add(permissionObj)
+        db.session.commit()
+
     return (
         current_user.is_active
         and current_user.is_authenticated
@@ -31,24 +49,41 @@ def accessible_by_permission(permission="db-admin"):
 
 
 def authorize_user():
-    
-    for endpoint, role in current_app.config['SECURITY_AUTHORIZE_REQUEST'].items():
-        url = url_for(endpoint)
-        if url == request.path:
-            if not accessible_as_admin(role):
-                abort(403)
+    if current_app.config.get('SECURITY_AUTHORIZE_REQUEST'):
+        for endpoint, role in current_app.config.get('SECURITY_AUTHORIZE_REQUEST').items():
+            url = url_for(endpoint)
+            if url == request.path:
+                if not accessible_as_admin(role):
+                    abort(403)
+ 
+
+from wtforms import TelField
+from wtforms.widgets import TelInput
+
+class PhoneWidget(TelInput):
+    def __call__(self, field, **kwargs):
+        if kwargs.get('class'):
+            kwargs['class'] = 'phone_number ' + kwargs['class'] 
+        else:
+            kwargs.setdefault('class', 'phone_number')
+        return super(PhoneWidget, self).__call__(field, **kwargs)
+
+class PhoneField(TelField):
+    widget = PhoneWidget()
 
 # Create customized model view class
 class AuthModelView(ModelView):
+    
+    edit_template = 'admin-edit.html'
+    form_overrides = { 'phone_number': PhoneField }
     def is_accessible(self):
         if hasattr(self, 'permission'):
             permission = self.permission
         else:
             permission = 'db-admin'
-            
+        
         return accessible_as_admin() and accessible_by_permission(permission)
-        # return accessible_as_admin() 
-        # accessible_by_permission(permission)
+    
     
     def _handle_view(self, name, **kwargs):
         """
@@ -63,6 +98,18 @@ class AuthModelView(ModelView):
                 # login
                 return redirect(url_for("security.login", next=request.url))
 
+    def render(self, template, **kwargs):
+        """
+        using extra js in render method allow use
+        url_for that itself requires an app context
+        """
+        self.extra_js = [ 'https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js',
+                        '/static/local.js']
+
+        return super(AuthModelView, self).render(template, **kwargs)
+
+
+
 # Customized User model for SQL-Admin
 class UserAdmin(AuthModelView):
     permission = "admin-user-edit"
@@ -75,7 +122,11 @@ class UserAdmin(AuthModelView):
     column_list = ["email", "first_name", "last_name", "phone_number", "active", "roles"]
     
     column_auto_select_related = True
-    
+
+    form_overrides = {
+        'phone_number': PhoneField
+    }
+
     def scaffold_form(self):
 
         form_class = super(UserAdmin, self).scaffold_form()
@@ -90,6 +141,9 @@ class UserAdmin(AuthModelView):
             # ... then encrypt the new password prior to storing it in the database. If the password field is blank,
             # the existing password in the database will be retained.
             model.password = hash_password(model.password2)
+            
+        if is_created:
+            model.fs_uniquifier = uuid.uuid4().hex
 
 class RoleAdmin(AuthModelView):
     form_columns = ["name", "permissions_items", "description"]
@@ -101,12 +155,12 @@ class PerminssonAdmin(AuthModelView):
     permission = "admin-permission-edit"
 
 
-class UserStatusAdmin(AuthModelView):
-    form_columns = ["name"]
+class ClientStatusAdmin(AuthModelView):
+    form_columns = ["status"]
     permission = "admin-userstatus-edit"
-    
 
-table_admin.add_view(UserAdmin(User, db.session))
-table_admin.add_view(RoleAdmin(Role, db.session))
-table_admin.add_view(PerminssonAdmin(Permission, db.session))
-table_admin.add_view(UserStatusAdmin(UserStatus, db.session)) #@UndefinedVariable
+
+table_admin.add_view(UserAdmin(User, db.session, category='User'))
+table_admin.add_view(RoleAdmin(Role, db.session, category='User'))
+table_admin.add_view(PerminssonAdmin(Permission, db.session, category='User'))
+table_admin.add_view(ClientStatusAdmin(ClientStatus, db.session, category='User')) #@UndefinedVariable
