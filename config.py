@@ -47,7 +47,8 @@ class Config:
     #Flask Security
     SECURITY_USERNAME_ENABLE = False
 
-    SECURITY_PASSWORD_SALT = environ.get("SECURITY_PASSWORD_SALT", secrets.SystemRandom().getrandbits(128))
+    SECURITY_PASSWORD_SALT = environ.get("SECURITY_PASSWORD_SALT", str(secrets.SystemRandom().getrandbits(128)))
+
     # SECURITY_EMAIL_VALIDATOR_ARGS = {"check_deliverability": False}
     SECURITY_REGISTERABLE = True
     SECURITY_USE_REGISTER_V2 = True
@@ -63,7 +64,7 @@ class Config:
     MAIL_USE_TLS = False
     MAIL_DEFAULT_SENDER = "brendan.bank@bgwlan.nl"
     
-    SECURITY_AUTHORIZE_REQUEST = {'admin.index': "admin"}
+    SECURITY_AUTHORIZE_REQUEST = {'admin.index': "admin_views"}
     
     ADMIN_USER   = environ.get("ADMIN_USER")
     ADMIN_PASSWORD = environ.get("ADMIN_PASSWORD")

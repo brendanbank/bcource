@@ -3,7 +3,6 @@ from flask_babel import _
 from flask_security import current_user
 from flask import current_app as app
 from bcource.auth.forms  import LoginForm, AccountDetailsForm
-from bcource.admin import User, UserStatus
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from bcource import db

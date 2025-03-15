@@ -65,5 +65,22 @@
 			$('#' + id).slideUp()
 		}, timeOuts);
 	});
+	
+	const input = document.querySelector(".phone_number");
+	if (input) {
+	  const iti = window.intlTelInput(input, {
+	    loadUtils: () => import("https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/utils.js"),
+	    initialCountry: "NL",
+	    nationalMode: true,
+	  });
+	  
+	  input.form.onsubmit = () => {
+		  input.setCustomValidity("");
+		  if (iti.isValidNumber()){
+			  input.value = iti.getNumber()
+		  }	  
+	  };
+	};
+
 
 })()

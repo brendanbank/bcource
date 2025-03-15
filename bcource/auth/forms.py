@@ -62,7 +62,7 @@ class AccountDetailsForm(FlaskForm):
     phone_number = MyTelField(_l('Mobile Phone Number'),
                            [validators.DataRequired()],
                            divclass = "col-md-4 mt-1",
-                           render_kw={"class": "position-relative form-control", "autocomplete": "tel"})
+                           render_kw={"class": "phone_number position-relative form-control", "autocomplete": "tel"})
            
     birthday = MyDateField(_l('Birth day'),
                            [validators.DataRequired()],

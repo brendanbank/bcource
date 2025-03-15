@@ -1,0 +1,16 @@
+{% extends 'admin/model/edit.html' %}
+
+{% block head_css %}
+
+  {{ super() }}
+<!--   added by cms.html template -->
+  		<link rel="stylesheet" href="{{ url_for('static', filename='ckeditor.css') }}">
+		<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.3.0/ckeditor5.css" crossorigin>
+		<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5-premium-features/44.3.0/ckeditor5-premium-features.css" crossorigin>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/css/intlTelInput.css">
+{% endblock %}
+
+{% block body %}
+    <h1>Altered Edit View</h1>
+    {{ super() }}
+{% endblock %}

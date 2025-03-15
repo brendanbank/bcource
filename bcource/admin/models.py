@@ -8,8 +8,8 @@ from flask_admin.contrib.sqla import ModelView
 from flask_security.models import sqla as sqla
 from flask_security import naive_utcnow
 
-from .. import table_admin
-from .. import db
+
+from bcource import db
 
 class User(db.Model, sqla.FsUserMixin):
     
@@ -27,11 +27,12 @@ class User(db.Model, sqla.FsUserMixin):
     country: Mapped[str] = mapped_column(String(256), nullable=True)
     birthday: Mapped[datetime.datetime] = mapped_column(Date(), nullable=True)
     
-    status_id: Mapped[int] = mapped_column(ForeignKey("user_status.id"), nullable=True)
-    status: Mapped["UserStatus"] = relationship(back_populates="users")
+    status_id: Mapped[int] = mapped_column(ForeignKey("client_status.id"), nullable=True)
+    status: Mapped["ClientStatus"] = relationship(back_populates="users", cascade="all,delete")
+
 
     def __str__(self):
-        return self.email
+        return f'{self.first_name} {self.last_name} <{self.email}>'
 
     @declared_attr
     def webauthn(cls):
@@ -42,8 +43,8 @@ class User(db.Model, sqla.FsUserMixin):
 permission_role = Table(
     "permission_role",
     db.Model.metadata,
-    Column("role_id", ForeignKey("role.id"), primary_key=True),
-    Column("permission_id", ForeignKey("permission.id"), primary_key=True),
+    Column("role_id", ForeignKey("role.id", ondelete="CASCADE"), primary_key=True),
+    Column("permission_id", ForeignKey("permission.id", ondelete="CASCADE"), primary_key=True),
 )
 
 class Permission(db.Model):
@@ -75,12 +76,14 @@ class Permission(db.Model):
             db.session.add(p)
         return(p)
 
+
 class Role(db.Model, sqla.FsRoleMixin):
     __tablename__ = 'role'
     
     permissions_items: Mapped[List[Permission]] = relationship(
-        secondary=permission_role, back_populates="roles", cascade="all, delete",
+        secondary=permission_role, back_populates="roles",
     )
+    
     def __str__(self):
         return  self.description if self.description else self.name
     
@@ -106,11 +109,9 @@ class WebAuthn(db.Model,sqla.FsWebAuthnMixin):
             ForeignKey("user.id", ondelete="CASCADE")
         )
     
-class UserStatus(db.Model):
-    __tablename__ = "user_status"
+class ClientStatus(db.Model):
+    __tablename__ = "client_status"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    userstatus: Mapped[str] = mapped_column(String(256), unique=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(256), nullable=False)
+    status: Mapped[str] = mapped_column(String(256), nullable=False)
     users: Mapped[Set["User"]] = relationship(back_populates="status")
-

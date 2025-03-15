@@ -26,3 +26,14 @@
 .f-small {
 	font-size: 10px;
 }
+
+.dropdown-divider {
+	background-color: black;
+	}
+.dropdown-menu {
+	background-color: #FFFFFF;
+	border: 1px solid black;
+}
+.dropdown-item {
+		color: #000000;
+}
