@@ -1,4 +1,5 @@
-from bcource import table_admin, db
+from bcource import db
+from bcource import table_admin
 from bcource.admin.models import User, Role, Permission, ClientStatus
 from flask_admin.contrib.sqla import ModelView
 from flask_security import current_user, hash_password
@@ -9,17 +10,11 @@ from flask_admin.menu import MenuLink
 import uuid
 
 
-
 class MainIndexLink(MenuLink):
     def get_url(self):
         return url_for("home_bp.home")
 
 table_admin.add_link(MainIndexLink(name="Main Page"))
-
-
-
-
-
 
 def accessible_as_admin(role="admin_views"):
     role = Role().query.filter(Role.name==role).first()
@@ -74,8 +69,11 @@ class PhoneField(TelField):
 # Create customized model view class
 class AuthModelView(ModelView):
     
-    edit_template = 'admin-edit.html'
+    
+    edit_template = 'admin/admin-edit.html'
     form_overrides = { 'phone_number': PhoneField }
+    form_excluded_columns = ['update_datetime']
+    
     def is_accessible(self):
         if hasattr(self, 'permission'):
             permission = self.permission
@@ -114,9 +112,11 @@ class AuthModelView(ModelView):
 class UserAdmin(AuthModelView):
     permission = "admin-user-edit"
     # Don't display the password on the list of Users
-    column_exclude_list = list = ('password',)
 
-    form_excluded_columns = ('password',)
+    def __init__(self, *args, **kwargs):
+        
+        self.column_exclude_list = list ('password')
+        return super(UserAdmin, self).__init__(*args, **kwargs)
 
     form_columns = ["email", "first_name", "last_name", "phone_number", "active", "roles"]
     column_list = ["email", "first_name", "last_name", "phone_number", "active", "roles"]
