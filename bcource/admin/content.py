@@ -34,7 +34,7 @@ class CKTextAreaField(TextAreaField):
 class ContentModelView(AuthModelView):
     column_display_pk = True
     form_columns = ('tag', 'text', 'lang')
-    edit_template = 'cms.html'
+    edit_template = 'admin/cms.html'
     column_list = ['tag', 'lang']
     permission = "cms-admin"
 

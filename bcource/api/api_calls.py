@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, jsonify, request
 from bcource.api.models import Postalcodes
 from bcource import db
+from flask_security import auth_required
 import re
 
 # Blueprint Configuration
@@ -33,7 +34,7 @@ def validate_adress(query):
     return query
 
 @api_bp.route('/address', methods=['POST'])
-# @csrf.exempt
+@auth_required()
 def adress():
     
     r = {}
