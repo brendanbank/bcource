@@ -18,6 +18,7 @@ email-validator = "*"
 flask-mailman = "*"
 flask-migrate = "*"
 messagebird = "*"
+wtforms-sqlalchemy = "*"
 
 [dev-packages]
 

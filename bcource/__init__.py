@@ -19,15 +19,14 @@ class Base(DeclarativeBase):
         return {field.name:getattr(self, field.name) for field in self.__table__.c}
 
 #connect_args={"options": "-c timezone=utc"}
-db = SQLAlchemy(model_class=Base)
 
+
+
+db = SQLAlchemy(model_class=Base)
 
 MyFsModels.set_db_info(base_model=Base)
 
-
 table_admin = Admin(name=__name__, template_mode='bootstrap4', base_template='admin/mybase.html')
-
-
 security = Security() 
 mail = Mail()
 migrate = Migrate()
@@ -69,7 +68,7 @@ def create_app():
         import bcource.home as home
         import bcource.admin 
         import bcource.training as training
-        from bcource.auth import auth
+        import bcource.user as user
         from bcource.api import api_calls
         from bcource.students import students
         from bcource.admin import admin_views
@@ -80,7 +79,7 @@ def create_app():
         # Register Blueprints
         
         app.register_blueprint(home.home_bp)
-        app.register_blueprint(auth.auth_bp)
+        app.register_blueprint(user.user_bp)
         app.register_blueprint(api_calls.api_bp)
         app.register_blueprint(students.students_bp)        
         app.register_blueprint(training.training_bp)   
@@ -127,6 +126,7 @@ def init_data(app):
             user = security.datastore.create_user(email=app.config['ADMIN_USER'],
                                                   password=hash_password(app.config['ADMIN_PASSWORD']))
             
+            user.confirmed_at = security.datetime_factory()
             trainer = Trainer()
             trainer.user = user
             trainer.practices.append(practice)

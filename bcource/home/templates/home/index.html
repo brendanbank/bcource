@@ -8,7 +8,7 @@
 {% block content %}
     <div class="container">
         <h1>Home</h1>
-    <div>{{ get_tag('home') |safe 	 }}
+    <div>{{ get_tag('home').text |safe 	 }}
     </div>
     </div>
 {% endblock %}

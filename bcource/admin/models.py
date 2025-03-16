@@ -27,9 +27,9 @@ class User(db.Model, sqla.FsUserMixin):
     country: Mapped[str] = mapped_column(String(256), nullable=True)
     birthday: Mapped[datetime.datetime] = mapped_column(Date(), nullable=True)
     
-    status_id: Mapped[int] = mapped_column(ForeignKey("client_status.id"), nullable=True)
-    status: Mapped["ClientStatus"] = relationship(back_populates="users", cascade="all,delete")
-
+    @property
+    def fullname(self):
+        return f'{self.first_name} {self.last_name}'
 
     def __str__(self):
         return f'{self.first_name} {self.last_name} <{self.email}>'
@@ -109,9 +109,3 @@ class WebAuthn(db.Model,sqla.FsWebAuthnMixin):
             ForeignKey("user.id", ondelete="CASCADE")
         )
     
-class ClientStatus(db.Model):
-    __tablename__ = "client_status"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    status: Mapped[str] = mapped_column(String(256), nullable=False)
-    users: Mapped[Set["User"]] = relationship(back_populates="status")

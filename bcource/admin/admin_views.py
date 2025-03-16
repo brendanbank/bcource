@@ -1,6 +1,6 @@
 from bcource import db
 from bcource import table_admin
-from bcource.admin.models import User, Role, Permission, ClientStatus
+from bcource.admin.models import User, Role, Permission
 from flask_admin.contrib.sqla import ModelView
 from flask_security import current_user, hash_password
 from wtforms.fields import PasswordField
@@ -8,6 +8,7 @@ from flask import current_app, url_for, abort, redirect, request
 from flask_security import SmsSenderBaseClass
 from flask_admin.menu import MenuLink
 import uuid
+from flask_security import naive_utcnow
 
 
 class MainIndexLink(MenuLink):
@@ -71,9 +72,24 @@ class AuthModelView(ModelView):
     
     
     edit_template = 'admin/admin-edit.html'
-    form_overrides = { 'phone_number': PhoneField }
-    form_excluded_columns = ['update_datetime']
+    create_template = 'admin/admin-edit.html'
     
+    form_overrides = { 'phone_number': PhoneField }
+
+    def __init__(self, *args, **kwargs):   
+        
+        if not self.column_exclude_list:
+            self.column_exclude_list = list()
+            
+        if not self.form_excluded_columns:
+            self.form_excluded_columns = list()
+        
+        for f_name in ['password', 'update_datetime']:
+            self.column_exclude_list.append(f_name)
+            self.form_excluded_columns.append(f_name)
+                    
+        super(AuthModelView, self).__init__(*args, **kwargs) 
+
     def is_accessible(self):
         if hasattr(self, 'permission'):
             permission = self.permission
@@ -113,10 +129,6 @@ class UserAdmin(AuthModelView):
     permission = "admin-user-edit"
     # Don't display the password on the list of Users
 
-    def __init__(self, *args, **kwargs):
-        
-        self.column_exclude_list = list ('password')
-        return super(UserAdmin, self).__init__(*args, **kwargs)
 
     form_columns = ["email", "first_name", "last_name", "phone_number", "active", "roles"]
     column_list = ["email", "first_name", "last_name", "phone_number", "active", "roles"]
@@ -144,6 +156,7 @@ class UserAdmin(AuthModelView):
             
         if is_created:
             model.fs_uniquifier = uuid.uuid4().hex
+            model.confirmed_at = naive_utcnow()
 
 class RoleAdmin(AuthModelView):
     form_columns = ["name", "permissions_items", "description"]
@@ -155,12 +168,6 @@ class PerminssonAdmin(AuthModelView):
     permission = "admin-permission-edit"
 
 
-class ClientStatusAdmin(AuthModelView):
-    form_columns = ["status"]
-    permission = "admin-userstatus-edit"
-
-
 table_admin.add_view(UserAdmin(User, db.session, category='User'))
 table_admin.add_view(RoleAdmin(Role, db.session, category='User'))
 table_admin.add_view(PerminssonAdmin(Permission, db.session, category='User'))
-table_admin.add_view(ClientStatusAdmin(ClientStatus, db.session, category='User')) #@UndefinedVariable

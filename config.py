@@ -41,6 +41,10 @@ class Config:
     # SQLALCHEMY_ENGINE_OPTIONS = {"options": "-c timezone=utc"}
 
     LANGUAGES = ['en', 'nl']
+    LANGUAGE_DEFAULT = 'en'
+    
+    BABEL_DEFAULT_LOCALE = LANGUAGE_DEFAULT
+    
     
     # FLASK_ADMIN_SWATCH = 'cerulean'
 

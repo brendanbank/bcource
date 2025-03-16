@@ -1,60 +1,47 @@
-
-from flask import Blueprint
-from bcource.admin.admin_views import AuthModelView
-from bcource import db, table_admin
-from .models import Location, Practice, Trainer, Training, TrainingType, TrainingEvent, ClientType, Client
-from sqlalchemy.orm import configure_mappers
-
+from flask import render_template, current_app, g
+from flask_babel import _
+from flask import Blueprint, abort
+from flask_security import permissions_required
+from bcource import db
+from flask_security import roles_required, current_user
+from bcource.helpers import has_role
+from bcource.training.helper import make_table_header
+from bcource.training.models import Training, Practice
+from bcource.training.training_forms import TrainingForm
 # Blueprint Configuration
 training_bp = Blueprint(
     'training_bp', __name__,
     url_prefix="/training",
     template_folder='templates',
     static_folder='static',
-    static_url_path='/training/static'
+    static_url_path='/training'
 )
 
-class TrainerAdmin(AuthModelView):
-    permission = "admin-trainer-edit"
-    form_columns = ["user", "bio"]
-    column_list = ["user"]
+def has_trainingr_role():
+    has_role(["trainer"])
+
+        
     
-class PracticeAdmin(AuthModelView):
-    permission = "admin-practice-edit"
+training_bp.before_request(has_trainingr_role)
+
+@training_bp.route('/edit/<int:id>',methods=['GET', 'POST'])
+def edit(id):
     
-class LocationAdmin(AuthModelView):
-    permission = "admin-location-edit"
-
-    form_columns = ["name",  "practice","phone_number", "street","address_line2",
-                    "house_number","house_number_extention", "postal_code",
-                    "city","state","country","latitude","longitude","directions"]
-    column_list = ["name", "practice", "street", "house_number", "city"]
+    training=Training().query.filter(Training.id==id).first()
     
-class TrainingAdmin(AuthModelView):
-    permission = "admin-training-edit"
-    form_columns = ["name", "traningtype", "practice", "trainers", "trainingevents"]
-    column_list = ["name", "traningtype", "practice", "trainers", "trainingevents"]
+    if not training:
+        abort(403)    
+    
+    form = TrainingForm(obj=training)
+    
+    form.trainers.query=training.practice.trainers
+    
+    return render_template("training/training.html", form=form)
 
-class TrainingTypeAdmin(AuthModelView):
-    permission = "admin-trainingtype-edit"
-    form_columns = ["name"]
-    column_list = ["name"]
+@training_bp.route('/')
+def index():
+    
+    trainings = Training().query.all()
 
-class ClientTypeAdmin(AuthModelView):
-    permission = "admin-cientType-edit"
-
-class ClientAdmin(AuthModelView):
-    permission = "admin-cient-edit"
-
-class TrainingEventAdmin(AuthModelView):
-    permission = "admin-trainingevent-edit"
-
-table_admin.add_view(LocationAdmin(Location, db.session, category='Training'))
-table_admin.add_view(PracticeAdmin(Practice, db.session, category='Training'))
-table_admin.add_view(TrainerAdmin(Trainer, db.session, category='Training'))
-table_admin.add_view(TrainingAdmin(Training, db.session, category='Training'))
-table_admin.add_view(TrainingTypeAdmin(TrainingType, db.session, category='Training'))
-table_admin.add_view(TrainingEventAdmin(TrainingEvent, db.session, category='Training'))
-table_admin.add_view(ClientTypeAdmin(ClientType, db.session, category='Training'))
-table_admin.add_view(ClientAdmin(Client, db.session, category='Training'))
-
+    training_headers = make_table_header([_('Name'), _('Practice'), _('Training Type'), _('Trainers'), _('Date/Location')])
+    return render_template("training/trainings.html", headers=training_headers, trainings=trainings)
