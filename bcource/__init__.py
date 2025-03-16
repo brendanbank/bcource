@@ -3,7 +3,6 @@ from flask import Flask, request, url_for
 from flask_babel import Babel
 import config
 from flask_wtf.csrf import CSRFProtect
-from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_admin import Admin
@@ -19,15 +18,14 @@ class Base(DeclarativeBase):
     def to_dict(self):
         return {field.name:getattr(self, field.name) for field in self.__table__.c}
 
+#connect_args={"options": "-c timezone=utc"}
 db = SQLAlchemy(model_class=Base)
 
 
 MyFsModels.set_db_info(base_model=Base)
 
-cors = CORS()
 
-
-table_admin = Admin(name=__name__, template_mode='bootstrap3')
+table_admin = Admin(name=__name__, template_mode='bootstrap4', base_template='admin/mybase.html')
 
 
 security = Security() 
@@ -51,7 +49,6 @@ def create_app():
 
     babel.init_app(app)
     csrf.init_app(app)
-    cors.init_app(app, resources={r'/*': {'origins': ["http://localhost:8000", "https://example.com"]}})
 
     table_admin.init_app(app)
     mail.init_app(app)
