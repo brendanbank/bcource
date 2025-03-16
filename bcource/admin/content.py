@@ -15,7 +15,11 @@ class Content(db.Model):
             content=cls(tag=tag,text="")
             db.session.add(content)
             db.session.commit()
-        return(content.text)
+        return(content)
+    
+    def update(self):
+        db.session.commit()
+    
     
 from wtforms import TextAreaField
 from wtforms.widgets import TextArea

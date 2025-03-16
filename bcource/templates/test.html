@@ -1,0 +1,337 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Training - Location - bcource</title>
+
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+
+
+<link
+	href="/admin/static/bootstrap/bootstrap4/swatch/default/bootstrap.min.css?v=4.2.1"
+	rel="stylesheet">
+
+<link
+	href="/admin/static/bootstrap/bootstrap4/css/bootstrap.min.css?v=4.2.1"
+	rel="stylesheet">
+
+<link href="/admin/static/admin/css/bootstrap4/admin.css?v=1.1.1"
+	rel="stylesheet">
+<link
+	href="/admin/static/bootstrap/bootstrap4/css/font-awesome.min.css?v=4.7.0"
+	rel="stylesheet">
+
+<style>
+.hide {
+	display: none;
+}
+</style>
+
+
+
+
+
+<link href="/admin/static/vendor/select2/select2.css?v=4.2.1"
+	rel="stylesheet">
+<link href="/admin/static/vendor/select2/select2-bootstrap4.css?v=1.4.6"
+	rel="stylesheet">
+<link
+	href="/admin/static/vendor/bootstrap-daterangepicker/daterangepicker-bs4.css?v=1.3.22"
+	rel="stylesheet">
+
+</head>
+<body>
+
+	<div class="container">
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-2"
+			role="navigation">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<button class="navbar-toggler" type="button" data-toggle="collapse"
+				data-target="#admin-navbar-collapse"
+				aria-controls="admin-navbar-collapse" aria-expanded="false"
+				aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<!-- navbar content -->
+			<div class="collapse navbar-collapse" id="admin-navbar-collapse">
+
+				<a class="navbar-brand" href="/">Bcource</a>
+
+
+				<ul class="nav navbar-nav mr-auto">
+
+
+
+					<li><a class="nav-link" href="/admin/"> Home</a></li>
+					<li class="dropdown"><a class="dropdown-toggle nav-link"
+						data-toggle="dropdown" href="javascript:void(0)"> User<i
+							class="glyphicon glyphicon-chevron-down small"></i></a>
+						<ul class="dropdown-menu">
+
+							<li><a class="dropdown-item" href="/admin/user/"> User</a></li>
+
+							<li><a class="dropdown-item" href="/admin/role/"> Role</a></li>
+
+							<li><a class="dropdown-item" href="/admin/permission/">
+									Permission</a></li>
+						</ul></li>
+
+					<li><a class="nav-link" href="/admin/content/"> Content</a></li>
+
+					<li class="active dropdown"><a
+						class="dropdown-toggle nav-link" data-toggle="dropdown"
+						href="javascript:void(0)"> Training<i
+							class="glyphicon glyphicon-chevron-down small"></i></a>
+						<ul class="dropdown-menu">
+
+							<li><a class="dropdown-item active" href="/admin/location/">
+									Location</a></li>
+
+							<li><a class="dropdown-item" href="/admin/practice/">
+									Practice</a></li>
+
+							<li><a class="dropdown-item" href="/admin/trainer/">
+									Trainer</a></li>
+
+							<li><a class="dropdown-item" href="/admin/training/">
+									Training</a></li>
+
+							<li><a class="dropdown-item" href="/admin/trainingtype/">
+									Training Type</a></li>
+
+							<li><a class="dropdown-item" href="/admin/trainingevent/">
+									Training Event</a></li>
+
+							<li><a class="dropdown-item" href="/admin/clienttype/">
+									Client Type</a></li>
+
+							<li><a class="dropdown-item" href="/admin/client/">
+									Client</a></li>
+						</ul></li>
+
+
+				</ul>
+
+
+
+				<ul class="nav navbar-nav navbar-right">
+
+
+
+
+
+					<li><a class="nav-link" href="/"> Main Page</a></li>
+
+
+
+				</ul>
+
+
+
+			</div>
+		</nav>
+
+		<ul class="nav nav-tabs">
+			<li class="nav-item"><a href="javascript:void(0)"
+				class="nav-link active">List (1)</a></li>
+
+
+			<li class="nav-item"><a
+				href="/admin/location/new/?url=/admin/location/"
+				title="Create New Record" class="nav-link">Create</a></li>
+
+			<li class="nav-item dropdown"><a
+				class="nav-link dropdown-toggle" data-toggle="dropdown"
+				href="javascript:void(0)" role="button" aria-haspopup="true"
+				aria-expanded="false">With selected<b class="caret"></b></a>
+				<div class="dropdown-menu">
+
+					<a class="dropdown-item" href="javascript:void(0)"
+						onclick="return modelActions.execute('delete');">Delete</a>
+
+				</div></li>
+
+		</ul>
+
+		<div class="table-responsive">
+			<table
+				class="table table-striped table-bordered table-hover model-list">
+				<thead>
+					<tr>
+
+
+						<th class="list-checkbox-column"><input type="checkbox"
+							name="rowtoggle" class="action-rowtoggle"
+							title="Select all records" /></th>
+
+
+
+						<th class="">&nbsp;</th>
+
+
+
+
+						<th class="column-header col-name"><a
+							href="/admin/location/?sort=0" title="Sort by Name">Name</a></th>
+
+
+						<th class="column-header col-practice">Practice</th>
+
+
+						<th class="column-header col-street"><a
+							href="/admin/location/?sort=2" title="Sort by Street">Street</a>
+
+
+
+						</th>
+
+
+						<th class="column-header col-house_number"><a
+							href="/admin/location/?sort=3" title="Sort by House Number">House
+								Number</a></th>
+
+
+						<th class="column-header col-city"><a
+							href="/admin/location/?sort=4" title="Sort by City">City</a></th>
+
+
+					</tr>
+				</thead>
+
+				<tr>
+
+
+					<td><input type="checkbox" name="rowid"
+						class="action-checkbox" value="1" title="Select record" /></td>
+
+
+
+					<td class="list-buttons-column"><a class="icon"
+						href="/admin/location/edit/?id=1&amp;url=/admin/location/"
+						title="Edit Record"> <span
+							class="fa fa-pencil glyphicon glyphicon-pencil"></span>
+					</a>
+
+
+
+
+						<form class="icon" method="POST" action="/admin/location/delete/">
+							<input id="id" name="id" required type="hidden" value="1">
+							<input id="url" name="url" type="hidden" value="/admin/location/">
+
+							<input type="hidden" name="csrf_token"
+								value="ImI5MjU2MmY2NGUxMjAyMjE4MjEzN2FiNjY3ODJlOGU4MDYyOTZiNDYi.Z9aeVg.ACPO6GR5S4nYczRX-bTsf4_4xcM" />
+
+							<button
+								onclick="return faHelpers.safeConfirm('Are you sure you want to delete this record?');"
+								title="Delete record">
+								<span class="fa fa-trash glyphicon glyphicon-trash"></span>
+							</button>
+						</form></td>
+
+
+					<td class="col-name">Grote Trainingruimte</td>
+
+					<td class="col-practice">default</td>
+
+					<td class="col-street">Frans Halsstraat7</td>
+
+					<td class="col-house_number">7</td>
+
+					<td class="col-city">Amsterdam</td>
+
+
+				</tr>
+
+			</table>
+		</div>
+
+
+
+
+
+
+
+
+
+
+		<form id="action_form" action="/admin/location/action/" method="POST"
+			style="display: none">
+
+			<input type="hidden" name="csrf_token"
+				value="ImI5MjU2MmY2NGUxMjAyMjE4MjEzN2FiNjY3ODJlOGU4MDYyOTZiNDYi.Z9aeVg.ACPO6GR5S4nYczRX-bTsf4_4xcM" />
+
+			<input id="url" name="url" type="hidden" value="/admin/location/">
+			<input id="action" name="action" type="hidden" value="">
+		</form>
+
+
+
+	</div>
+
+
+
+	<script src="/admin/static/vendor/jquery.min.js?v=3.5.1"
+		type="text/javascript"></script>
+	<script src="/admin/static/bootstrap/bootstrap4/js/popper.min.js"
+		type="text/javascript"></script>
+	<script
+		src="/admin/static/bootstrap/bootstrap4/js/bootstrap.min.js?v=4.2.1"
+		type="text/javascript"></script>
+	<script src="/admin/static/vendor/moment.min.js?v=2.9.0"
+		type="text/javascript"></script>
+	<script src="/admin/static/vendor/bootstrap4/util.js?v=4.3.1"
+		type="text/javascript"></script>
+	<script src="/admin/static/vendor/bootstrap4/dropdown.js?v=4.3.1"
+		type="text/javascript"></script>
+	<script src="/admin/static/vendor/select2/select2.min.js?v=4.2.1"
+		type="text/javascript"></script>
+	<script
+		src="/admin/static/vendor/multi-level-dropdowns-bootstrap/bootstrap4-dropdown-ml-hack.js"
+		type="text/javascript"></script>
+	<script src="/admin/static/admin/js/helpers.js?v=1.0.0"
+		type="text/javascript"></script>
+
+
+	<script
+		src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"
+		type="text/javascript"></script>
+
+	<script src="/static/local.js" type="text/javascript"></script>
+
+
+
+
+
+
+
+
+
+
+
+	<script
+		src="/admin/static/vendor/bootstrap-daterangepicker/daterangepicker.js?v=1.3.22"></script>
+
+	<script src="/admin/static/admin/js/form.js?v=1.0.1"></script>
+
+	<script src="/admin/static/admin/js/bs4_modal.js?v=1.0.0"></script>
+	<script src="/admin/static/admin/js/bs4_filters.js?v=1.0.0"></script>
+
+
+
+
+	<div id="actions-confirmation-data" style="display: none;">{"delete":
+		"Are you sure you want to delete selected records?"}</div>
+	<div id="message-data" style="display: none;">"Please select at
+		least one record."</div>
+	<script src="/admin/static/admin/js/actions.js?v=1.0.0"></script>
+
+
+
+</body>
+</html>
