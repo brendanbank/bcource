@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+
+{% set menu="Training Editor" %}
+
+{% block nav %}
+    {% include 'nav.html' %}
+{% endblock %}
+
+{% block content %}
+
+
+		<div class="col-md-12">
+			<h3 class="text-center">{{ form.form_description }}</h3>
+		</div>
+
+{% include 'form.html' %}
+
+
+
+{% endblock %}

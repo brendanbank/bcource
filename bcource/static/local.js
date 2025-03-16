@@ -82,5 +82,22 @@
 	  };
 	};
 
+	// Hide option from results when selected
+	const selectElement = $('.select2-js');
+	function filterSelectedOptions(option) {
+	    // Return the default text for placeholders
+	    if (!option.id) return option.text;
+
+	    // Get selected values as an array
+	    const selectedValues = selectElement.val() || [];
+
+	    // Hide already selected options
+	    return selectedValues.includes(option.id) ? null : option.text;
+	}
+
+	selectElement.select2({
+	    templateResult: filterSelectedOptions
+	});
+
 
 })()

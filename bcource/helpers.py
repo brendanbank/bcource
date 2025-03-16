@@ -3,6 +3,16 @@ from sqlalchemy import ForeignKey, Table, Column
 from flask_admin.contrib.sqla import ModelView
 from flask_security import current_user
 from flask import url_for, current_app, request, abort, redirect
+from flask_principal import Identity, Permission, RoleNeed, identity_changed
+
+def has_role(roles):
+    roles.append("admin_views")
+    perms = [Permission(RoleNeed(role)) for role in roles]
+    for perm in perms:
+        if perm.can():
+            return None
+    
+    abort(403)
 
 class MyFsModels(FsModels):
     

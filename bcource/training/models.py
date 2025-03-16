@@ -1,7 +1,7 @@
 import datetime
 from typing import List
 
-from sqlalchemy import Integer, String, DateTime, Float, Double,Date, ForeignKey, LargeBinary, Table, Column, Text
+from sqlalchemy import Integer, String, DateTime, Float, Double,Date, ForeignKey, LargeBinary, Table, Column, Text, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr, backref
 from sqlalchemy.sql import func
 from flask_admin.contrib.sqla import ModelView
@@ -47,6 +47,7 @@ class Practice(db.Model):
 class TrainingType(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256), nullable=False)
+    description: Mapped[str] = mapped_column(Text(), nullable=True)
     
     def __str__(self):
         return self.name
@@ -67,8 +68,8 @@ training_trainers_association = Table(
 class TrainingEvent(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    start_time: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
-    end_time: Mapped[datetime.datetime] = mapped_column(DateTime())
+    start_time: Mapped[datetime.datetime] = mapped_column(TIMESTAMP())
+    end_time: Mapped[datetime.datetime] = mapped_column(TIMESTAMP())
     
     training_id: Mapped[int] = mapped_column(ForeignKey("training.id", ondelete="CASCADE"), nullable=True)
     training: Mapped["Training"] = relationship(backref=backref("trainingevents", cascade="all, delete-orphan"))
@@ -77,7 +78,11 @@ class TrainingEvent(db.Model):
     location: Mapped["Location"] = relationship(backref="trainingevents")
 
     def __str__(self):
-        return f'{self.start_time}/{self.location})'
+        return f'{self.start_time}/{self.location}'
+
+    @property
+    def start_date(self):
+        return f'{self.start_time}'
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
@@ -87,7 +92,6 @@ class TrainingEvent(db.Model):
 class Training(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256), nullable=False)
-    description: Mapped[str] = mapped_column(Text(), nullable=True)
     
     traningtype_id: Mapped[int] = mapped_column(ForeignKey("training_type.id", ondelete="CASCADE"), nullable=False)
     traningtype: Mapped["TrainingType"] = relationship(backref="trainings")
@@ -160,7 +164,7 @@ class Trainer(db.Model):
 
     
     def __str__(self):
-        return f'{self.user}'
+        return f'{self.user.fullname}'
     
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
