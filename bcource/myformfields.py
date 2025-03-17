@@ -70,7 +70,13 @@ class MyHiddenField(wtforms.HiddenField):
 
 class MyDateField(MixInField, wtforms.DateField):
     pass
-        
+
+class MyDateTimeField(MixInField, wtforms.DateTimeField):
+    pass
+
+class MyDateTimeLocalField(MixInField, wtforms.DateTimeLocalField):
+    pass 
+
 class MySelectField(MixInField, wtforms.SelectField):
     pass
 
