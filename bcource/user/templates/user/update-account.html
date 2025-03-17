@@ -1,17 +1,13 @@
-{% extends 'base.html' %}
+{% extends 'form.html' %}
 
-{% block nav %}
-    {% include 'nav.html' %}
-{% endblock %}
-
-{% block content %}
-
+{% block formheader %}
 		<div class="col-md-12">
 			<h3 class="text-center">{{ form.form_description }}</h3>
 		</div>
+{% endblock %}
 
-{% include 'form.html' %}
 
+{% block formfooter %}
 
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
 
@@ -20,6 +16,4 @@
 //{% include 'postcode.js' %}
 
 </script>
-
-
 {% endblock %}

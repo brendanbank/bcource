@@ -1,0 +1,175 @@
+<form id="AccountDetailsForm" name="AccountDetailsForm" action=""
+	method="post" class="needs-validation row justify-content-md-center"
+	novalidate>
+	<div class="row col-md-8 ">
+		<div class="col-md-6 mt-1">
+			<small><label class="form-label mb-0 mx-2" for="first_name">Firstname</label></small>
+			<input aria-describedby="first_name_feedback"
+				autocomplete="given-name" class="position-relative form-control"
+				id="first_name" name="first_name" required type="text"
+				value="Brendan">
+			<div class="invalid-feedback" id="first_name_feedback">
+				<div class="row">
+					<small>Firstname is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6 mt-1">
+			<small><label class="form-label mb-0 mx-2" for="last_name">Lastname</label></small>
+			<input aria-describedby="last_name_feedback"
+				autocomplete="family-name" class="position-relative form-control"
+				id="last_name" name="last_name" required type="text" value="Bank">
+			<div class="invalid-feedback" id="last_name_feedback">
+				<div class="row">
+					<small>Lastname is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4 mt-1">
+			<small><label class="form-label mb-0 mx-2" for="phone_number">Mobile
+					Phone Number</label></small> <input aria-describedby="phone_number_feedback"
+				autocomplete="tel"
+				class="phone_number position-relative form-control"
+				id="phone_number" name="phone_number" required type="tel"
+				value="+31651827761">
+			<div class="invalid-feedback" id="phone_number_feedback">
+				<div class="row">
+					<small>Mobile Phone Number is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4 mt-1">
+			<small><label class="form-label mb-0 mx-2" for="birthday">Birth
+					day</label></small> <input aria-describedby="birthday_feedback"
+				class="position-relative form-control" id="birthday" name="birthday"
+				required type="date" value="1969-08-03">
+			<div class="invalid-feedback" id="birthday_feedback">
+				<div class="row">
+					<small>Birth day is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4 mt-1">
+			<small><label class="form-label mb-0 mx-2" for="gender">Gender</label></small>
+			<select aria-describedby="gender_feedback"
+				class="position-relative form-control" id="gender" name="gender"
+				required><option value="">Choose</option>
+				<option value="F">Female</option>
+				<option selected value="M">Male</option>
+				<option value="O">Other</option></select>
+			<div class="invalid-feedback" id="gender_feedback">
+				<div class="row">
+					<small>Gender is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-12 position-relative text-center div-line mt-1">
+			<hr class="hr-line ">
+			<span class="text-line fw-bold fs-6"><small></small></span>
+		</div>
+		<div class="col-md-4 mt-1">
+			<small><label class="form-label mb-0 mx-2" for="postal_code">Postal
+					Code</label></small> <input aria-describedby="postal_code_feedback"
+				autocomplete="postal-code" class="position-relative form-control"
+				id="postal_code" name="postal_code" required type="text"
+				value="2061KB">
+			<div class="invalid-feedback" id="postal_code_feedback">
+				<div class="row">
+					<small>Postal Code is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4 mt-1">
+			<small><label class="form-label mb-0 mx-2" for="house_number">Number</label></small>
+			<input aria-describedby="house_number_feedback"
+				autocomplete="address-level4" class="position-relative form-control"
+				id="house_number" name="house_number" required type="text" value="4">
+			<div class="invalid-feedback" id="house_number_feedback">
+				<div class="row">
+					<small>Number is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4 mt-1">
+			<small><label class="form-label mb-0 mx-2"
+				for="house_number_extention">Ext.</label></small> <input
+				aria-describedby="house_number_extention_feedback"
+				class="position-relative form-control" id="house_number_extention"
+				name="house_number_extention" type="text" value="">
+			<div class="invalid-feedback" id="house_number_extention_feedback">
+				<div class="row">
+					<small>Ext. is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-12 mt-1">
+			<small><label class="form-label mb-0 mx-2" for="street">Street</label></small>
+			<input aria-describedby="street_feedback"
+				autocomplete="address-line1" class="position-relative form-control"
+				id="street" name="street" required type="text" value="Bergweg">
+			<div class="invalid-feedback" id="street_feedback">
+				<div class="row">
+					<small>Street is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-12 mt-1">
+			<small><label class="form-label mb-0 mx-2"
+				for="address_line2">Street line 2</label></small> <input
+				aria-describedby="address_line2_feedback"
+				class="position-relative form-control" id="address_line2"
+				name="address_line2" type="text" value="">
+			<div class="invalid-feedback" id="address_line2_feedback">
+				<div class="row">
+					<small>Street line 2 is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6 mt-1">
+			<small><label class="form-label mb-0 mx-2" for="city">City</label></small>
+			<input aria-describedby="city_feedback" autocomplete="address-line2"
+				class="position-relative form-control" id="city" name="city"
+				required type="text" value="Bloemendaal">
+			<div class="invalid-feedback" id="city_feedback">
+				<div class="row">
+					<small>City is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-2 mt-1">
+			<small><label class="form-label mb-0 mx-2" for="country">Country</label></small>
+			<input aria-describedby="country_feedback" autocomplete="country"
+				class="position-relative form-control" id="country" maxlength="2" minlength="2" name="country" required type="text" value="NL">
+			<div class="invalid-feedback" id="country_feedback">
+				<div class="row">
+					<small>Country is required!</small>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-12 position-relative text-center div-line mt-1">
+			<hr class="hr-line ">
+			<span class="text-line fw-bold fs-6"><small></small></span>
+		</div>
+		<div class="col-md-12">
+
+			<div class="row justify-content-md-center">
+				<div class="col-md-5">
+					<input aria-describedby="submit_feedback" autocomplete="country"
+						class="btn btn btn-primary position-relative form-control mt-1"
+						id="submit" name="submit" type="submit" value="Submit">
+				</div>
+			</div>
+
+		</div>
+		<div class="">
+
+			<input id="csrf_token" name="csrf_token" type="hidden"
+				value="ImI5MjU2MmY2NGUxMjAyMjE4MjEzN2FiNjY3ODJlOGU4MDYyOTZiNDYi.Z9e9VA.yV5X7sSGOaIDWbo-3EixUcAVsdU">
+			<div class="invalid-feedback" id="csrf_token_feedback">
+				<div class="row">
+					<small>CSRF Token is required!</small>
+				</div>
+			</div>
+		</div>
+	</div>
+</form>

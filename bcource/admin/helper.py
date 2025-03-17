@@ -6,12 +6,12 @@ class TagMixIn(object):
         
         if self.tag_field:
             record = self.model.query.filter(id==id).first()
-            self.pkkey= f'{record.__class__.__name__}_{id}'
+            pkkey= f'{record.__class__.__name__}_{id}'
             
-            content = Content.get_tag(self.pkkey)
+            content = Content.get_tag(pkkey)
                         
             form[self.tag_field_name].data = content.text
-            form[self.tag_field_name].label.text += f' (tag = {self.pkkey})'
+            form[self.tag_field_name].label.text += f' (tag = {pkkey})'
         
         return super(TagMixIn, self).on_form_prefill(form, id)
 
@@ -39,13 +39,14 @@ class TagMixIn(object):
     def on_model_change(self, form, model, is_created):
         
         if form[self.tag_field_name].data != None:
-            tag = Content.get_tag(self.pkkey)
+            pkkey= f'{model.__class__.__name__}_{id}'
+            tag = Content.get_tag(pkkey)
             
             tag.text = form[self.tag_field_name].data
             
             update_field = getattr(model, self.tag_field)
             
             if update_field:
-                update_field = self.pkkey
+                update_field = pkkey
                 
         return super(TagMixIn, self).on_model_change(form, model, is_created)
