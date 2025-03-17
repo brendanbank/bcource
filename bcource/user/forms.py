@@ -73,7 +73,7 @@ class AccountDetailsForm(FlaskForm):
                            [validators.DataRequired()],
                            choices=(("", _l("Choose")),("F", _l("Female")), ("M", _l("Male")), ("O",_l("Other"))),
                            divclass = "col-md-4 mt-1",
-                           render_kw={"class": "position-relative form-control"})     
+                           render_kw={"class": "position-relative form-control form-select"})     
                                          
     postal_code = MyStringField(
         _l('Postal Code'),
