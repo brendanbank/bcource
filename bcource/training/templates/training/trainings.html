@@ -12,18 +12,9 @@
 		class="nav-link active">Trainings ({{ trainings|length }})</a></li>
 
 	<li class="nav-item"><a
-		href="#"
+		href="{{url_for('training_bp.edit')}}"
 		title="Create New Record" class="nav-link">Create</a></li>
 
-	<li class="nav-item dropdown"><a class="nav-link dropdown-toggle"
-		data-toggle="dropdown" href="javascript:void(0)" role="button"
-		aria-haspopup="true" aria-expanded="false">With selected</a>
-		<div class="dropdown-menu">
-
-			<a class="dropdown-item" href="javascript:void(0)"
-				onclick="return modelActions.execute('delete');">Delete</a>
-
-		</div></li>
 
 </ul>
 		<div class="table-responsive border-start border-end border-bottom">
@@ -64,25 +55,20 @@
 						<i class="bi bi-pencil-fill"></i></a>
 				</td>
 				<td class="p-1">	
-				<form class="icon" method="POST" action="/admin/location/delete/">
-					<input id="id" name="id" required type="hidden" value="{{training.id}}">
-					<input id="url" name="url" type="hidden" value="/admin/location/">
-					<input type="hidden" name="csrf_token"
-						value="ImI5MjU2MmY2NGUxMjAyMjE4MjEzN2FiNjY3ODJlOGU4MDYyOTZiNDYi.Z9aeVg.ACPO6GR5S4nYczRX-bTsf4_4xcM" />
-            <button type="button" class="btn p-0"><i class="bi bi-trash-fill"></i>
-            </button>
-					
+				<form class="icon" method="POST" action="{{url_for('training_bp.delete', id=training.id)}}">
+				{{ delete_form.csrf_token }}
+	            <button type="submit" class="btn p-0"><i class="bi bi-trash-fill" 
+	            onclick="return safeConfirm('{{_("Are you sure you want to delete this record?")}}');" title="Delete record"></i>
+	            
+	            </button>
 
 				</form>
 
 			</td>
 
 					<td colspan="1" class="">{{ training.name }}</td>
-
 					<td class="">{{ training.practice }}</td>
-
 					<td class="">{{ training.traningtype }}</td>
-
 					<td class="">
 
 					<table class="p-0">
@@ -99,7 +85,7 @@
 					{% for events in training.trainingevents %}
 					<tr class="align-top p-0">
 						<td class="p-0 ps-0 pe-1"><i class="bi bi-clock"></i></td>
-						<td class="p-0">{{events.start_date}}</td>
+						<td class="p-0">{{events.start_time.ctime()}}</td>
 						<td class="p-0 ps-2 pe-1"><i class="bi bi-building"></i></td>
 						<td class="p-0">{{events.location}}</td>
 					</tr>

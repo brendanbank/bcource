@@ -1,9 +1,8 @@
 from bcource.admin.admin_views import AuthModelView
 from bcource import db, table_admin
-from .models import Location, Practice, Trainer, Training, TrainingType, TrainingEvent, ClientType, Client
+from bcource.models import Location, Practice, Trainer, Training, TrainingType, TrainingEvent
 from sqlalchemy.orm import configure_mappers
 from wtforms import TextAreaField
-from bcource.admin.content import Content
 from bcource.admin.helper import TagMixIn
 
 class TrainerAdmin(TagMixIn, AuthModelView):
@@ -49,6 +48,4 @@ table_admin.add_view(TrainerAdmin(Trainer, db.session, category='Training', tag_
 table_admin.add_view(TrainingAdmin(Training, db.session, category='Training'))
 table_admin.add_view(TrainingTypeAdmin(TrainingType, db.session, category='Training', tag_field="description"))
 table_admin.add_view(TrainingEventAdmin(TrainingEvent, db.session, category='Training'))
-table_admin.add_view(ClientTypeAdmin(ClientType, db.session, category='Training'))
-table_admin.add_view(ClientAdmin(Client, db.session, category='Training'))
 
