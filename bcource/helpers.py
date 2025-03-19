@@ -5,6 +5,28 @@ from flask_security import current_user
 from flask import url_for, current_app, request, abort, redirect
 from flask_principal import Identity, Permission, RoleNeed, identity_changed
 
+def get_url (form):
+    if form.is_submitted():
+        url=form.url.data
+    else:
+        url = request.args.get('url')
+        
+
+    if url == None:
+        if request.referrer:
+            url = request.referrer
+        
+    for u in ['user_bp.settings', 'user_bp.update']:
+        if url_for(u) == url:
+            url = url_for('home_bp.home')
+            break
+    if url:
+        form.url.data = url
+    else:
+        form.url.data=url_for('home_bp.home')
+        
+    return(url)
+
 def has_role(roles):
     roles.append("admin_views")
     perms = [Permission(RoleNeed(role)) for role in roles]

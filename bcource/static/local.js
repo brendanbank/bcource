@@ -83,21 +83,41 @@
 	};
 
 	// Hide option from results when selected
-	const selectElement = $('.select2-js');
-	function filterSelectedOptions(option) {
-	    // Return the default text for placeholders
-	    if (!option.id) return option.text;
+	const selectElements = $('.select2-js');
 
-	    // Get selected values as an array
-	    const selectedValues = selectElement.val() || [];
+	selectElements.each(function(i, sElement)
+	{	
+		const selectElement = $("#" + sElement.id)
+		
+		function filterSelectedOptions(option) {
+		    // Return the default text for placeholders
+		    if (!option.id) return option.text;
 
-	    // Hide already selected options
-	    return selectedValues.includes(option.id) ? null : option.text;
-	}
+		    // Get selected values as an array
+		    const selectedValues = selectElement.val() || [];
 
-	selectElement.select2({
-	    templateResult: filterSelectedOptions
-	});
+		    // Hide already selected options
+		    return selectedValues.includes(option.id) ? null : option.text;
+		}
 
+		selectElement.select2({
+	    	templateResult: filterSelectedOptions
+		});
+	})
 
+//	$('.select2-js').each(function( select_item ){
+//		select_item.select2({
+//	    templateResult: filterSelectedOptions
+//		});
+//	})	
+		
 })()
+
+function safeConfirm(msg) {
+	
+    try {
+        return confirm(msg) ? true : false;
+    } catch (e) {
+        return false;
+    }
+}

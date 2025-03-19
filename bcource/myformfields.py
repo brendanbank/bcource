@@ -1,9 +1,8 @@
 from flask_security import current_user
-from .admin.models import User
+from bcource.models import User
 from flask_babel import _
 from flask import flash
 from wtforms_sqlalchemy.fields import  QuerySelectMultipleField, QuerySelectField
-
 import wtforms
 
 def check_divclass (kwargs):
@@ -59,6 +58,9 @@ class MyEmailField(MixInField, wtforms.EmailField):
 class MyStringField(MixInField, wtforms.StringField):
     pass
 
+class MyIntegerField(MixInField, wtforms.IntegerField):
+    pass
+
 class MyPasswordField(MixInField, wtforms.PasswordField):
     pass
 
@@ -66,6 +68,9 @@ class MySubmitField(MixInField, wtforms.SubmitField):
     pass
 
 class MyHiddenField(wtforms.HiddenField):
+    pass
+
+class MyBooleanField(MixInField, wtforms.BooleanField):
     pass
 
 class MyDateField(MixInField, wtforms.DateField):
@@ -85,6 +90,7 @@ class MyTextAreaField(MixInField, wtforms.TextAreaField):
 
 class MyQuerySelectMultipleField(MixInField, QuerySelectMultipleField):
     pass
+
 class MyQuerySelectField(MixInField, QuerySelectField):
     pass
 

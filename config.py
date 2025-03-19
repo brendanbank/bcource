@@ -38,7 +38,8 @@ class Config:
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # SQLALCHEMY_ENGINE_OPTIONS = {"options": "-c timezone=utc"}
+    
+    # SQLALCHEMY_ENGINE_OPTIONS = {"query_cache_size": 0 }
 
     LANGUAGES = ['en', 'nl']
     LANGUAGE_DEFAULT = 'en'

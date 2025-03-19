@@ -1,6 +1,6 @@
 from bcource import db
 from bcource import table_admin
-from bcource.admin.models import User, Role, Permission
+from bcource.models import User, Role, Permission, Content
 from flask_admin.contrib.sqla import ModelView
 from flask_security import current_user, hash_password
 from wtforms.fields import PasswordField
@@ -171,3 +171,37 @@ class PerminssonAdmin(AuthModelView):
 table_admin.add_view(UserAdmin(User, db.session, category='User'))
 table_admin.add_view(RoleAdmin(Role, db.session, category='User'))
 table_admin.add_view(PerminssonAdmin(Permission, db.session, category='User'))
+
+
+from wtforms import TextAreaField
+from wtforms.widgets import TextArea
+
+class CKTextAreaWidget(TextArea):
+    def __call__(self, field, **kwargs):
+        if kwargs.get('class'):
+            kwargs['class'] += ' ckeditor'
+        else:
+            kwargs.setdefault('class', 'ckeditor')
+        return super(CKTextAreaWidget, self).__call__(field, **kwargs)
+
+class CKTextAreaField(TextAreaField):
+    widget = CKTextAreaWidget()
+
+class ContentModelView(AuthModelView):
+    column_display_pk = True
+    form_columns = ('tag', 'text', 'lang')
+    edit_template = 'admin/cms.html'
+    column_list = ['tag', 'lang']
+    permission = "cms-admin"
+
+    extra_js = ['//cdn.ckeditor.com/ckeditor5/44.3.0/ckeditor5.umd.js',
+                '//cdn.ckeditor.com/ckeditor5-premium-features/44.3.0/ckeditor5-premium-features.umd.js',
+                '//cdn.ckbox.io/ckbox/2.6.1/ckbox.js',
+                '/static/ckeditor.js' ]
+    #
+    # form_overrides = {
+    #     'text': CKTextAreaField
+    # }
+
+table_admin.add_view(ContentModelView(Content, db.session)) #@UndefinedVariable
+

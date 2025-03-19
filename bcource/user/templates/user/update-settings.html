@@ -1,6 +1,9 @@
 {% extends 'form.html' %}
 
 {% block formheader %}
+
+
+
 <div class="modal fade" id="settingModel" tabindex="-1" aria-labelledby="settingModelLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -25,16 +28,12 @@
   </div>
 </div>
 </form>
+
+
 {% endblock %}
 
 {% block js %}
-
-<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
-
 <script>
-
-//{% include 'postcode.js' %}
-
 $(window).on('load', function() {
     $('#settingModel').modal('show');
 
@@ -43,7 +42,6 @@ $(window).on('load', function() {
     	window.location.href = document.getElementById('url').value
     })
 });
-
-
 </script>
+
 {% endblock %}

@@ -18,7 +18,11 @@
 {% endblock %}
 
 {% block additions_data %}
-<div class="table-responsive border mt-3 pt-2">
+<div class="col-md-12 position-relative text-center div-line mt-1">
+                   <hr class="hr-line ">
+                   <span class="text-line fw-bold fs-6"><small></small></span>
+            </div>
+<div class="table-responsive border pt-2">
 	<h6>{{ _("Training Events")}}</h6>
 	<table id="EventsTable" class="mt-2 table table-striped table-bordered table-hover">
 	</table>
@@ -60,10 +64,6 @@
   </div>
 </div>
 
-<script type="text/javascript">
-
-var events_global = {{events|safe }}
-
-</script>
+<script type="text/javascript">var events_global = {{events|safe }}</script>
 {% endblock %}
 
