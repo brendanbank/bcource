@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, jsonify, request
-from bcource.api.models import Postalcodes
+from bcource.models import Postalcodes
 from bcource import db
 from flask_security import auth_required
 import re
