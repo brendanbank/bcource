@@ -20,8 +20,6 @@ class Base(DeclarativeBase):
 
 #connect_args={"options": "-c timezone=utc"}
 
-
-
 db = SQLAlchemy(model_class=Base)
 
 MyFsModels.set_db_info(base_model=Base)
@@ -43,6 +41,9 @@ def create_app():
     app = Flask(__name__, instance_relative_config=False)
 
     app.config.from_object('config.Config')
+    from . import models
+    
+    db.app = app
     
     db.init_app(app)
 
@@ -53,15 +54,15 @@ def create_app():
     mail.init_app(app)
     migrate.init_app(app, db)
     
-    from . import models 
-    from .admin import Content, User, Role
+     
+    from bcource.models import Content, User, Role
     
     app.jinja_env.globals.update(get_tag=Content.get_tag)
         
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
 
     security.init_app(app, user_datastore)  
-    
+        
     with app.app_context():
         
         # Import parts of our application
@@ -69,13 +70,13 @@ def create_app():
         import bcource.admin 
         import bcource.training as training
         import bcource.user as user
+        import bcource.students as students
+        
         from bcource.api import api_calls
-        from bcource.students import students
         from bcource.admin import admin_views
         
         import bcource.errors
         
-
         # Register Blueprints
         
         app.register_blueprint(home.home_bp)
@@ -85,7 +86,8 @@ def create_app():
         app.register_blueprint(training.training_bp)   
              
         app.before_request(bcource.admin.authorize_user)
-
+        
+    
         db.create_all()  # Create sql tables for our data models
 
         def get_locale():
@@ -108,7 +110,7 @@ def init_data(app):
         
         user=security.datastore.find_user(email=app.config['ADMIN_USER'])
 
-        from bcource.training.models import Practice, Trainer, Location
+        from bcource.models import Practice, Trainer, Location
         practice = Practice().query.filter(Practice.name=="default").first()
 
         if not practice:

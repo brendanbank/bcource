@@ -48,6 +48,8 @@
     {% if _fs_is_user_authenticated(current_user) -%}
       {# already authenticated user #}
       <li><a class="dropdown-item" href="{{ url_for('user_bp.update') }}">Account Details</a></li>
+      <li><a class="dropdown-item" href="{{ url_for('user_bp.settings') }}">Account Settings</a></li>
+      
 	  <li><hr class="dropdown-divider"></li>
       <li>
         <a class="dropdown-item" href="{{ url_for_security('logout') }}">{{ _fsdomain("Sign out") }}</a>

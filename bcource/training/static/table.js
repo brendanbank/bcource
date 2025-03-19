@@ -37,6 +37,17 @@ function clearModal() {
 	document.querySelector('#modal_event_pk').value = "";
 }
 
+function setModalWithData(trainingseventid){
+	let trainingsevent = events_global[trainingseventid]
+
+	document.querySelector('#event_start_time').value = trainingsevent.start_time;
+	document.querySelector('#event_end_time').value = trainingsevent.end_time;
+	document.querySelector('#event_location').value = trainingsevent.location_id;
+	document.querySelector('#modal_event_id').value = trainingseventid;
+	document.querySelector('#modal_event_pk').value = trainingsevent.id;
+
+}
+
 function setEventId() {
 	let trainingseventid = document.querySelector('#modal_event_id').value
 
@@ -96,15 +107,42 @@ function setActionButtonEvents (){
 		document.querySelector('#modal_event_pk').value = "new";
 
 		eventmodal.show()
+
 		
 	});
+	
+	jQuery('.edit_event_button').on('click', function(event) {
+		let eventmodal = bootstrap.Modal.getOrCreateInstance(eveltmodel_element) // Returns a Bootstrap modal instance
+		event_id = event.currentTarget.getAttribute('data-bs-eventid');
+
+		setModalWithData(event_id)
+		eventmodal.show()
+
+		
+	});
+
+	jQuery('.copy_event_button').on('click', function(event) {
+		let eventmodal = bootstrap.Modal.getOrCreateInstance(eveltmodel_element) // Returns a Bootstrap modal instance
+		event_id = event.currentTarget.getAttribute('data-bs-eventid');
+
+		setModalWithData(event_id)
+		document.querySelector('#modal_event_id').value = "new";
+		document.querySelector('#modal_event_pk').value = "new";
+		
+		eventmodal.show()
+
+		
+	});
+
+	
+
 }
 
 function render_event_table() {
 	var table_data = document.getElementById("EventsTable");
 
 	events_global = sortEvents(events_global);
-
+	
 	let html = ""
 	let table_header = `
 	<thead id="table_header">
@@ -113,6 +151,7 @@ function render_event_table() {
 			<button type="button" class="btn p-0 add_event_button"><i class="bi bi-plus-square-fill"></i></button>
 
 			</th>
+			<th class="list-checkbox-column ps-1 pe-1"></th>
 			<th class="list-checkbox-column ps-1 pe-1"></th>
 			<th class="column-header"><small>Start Time</small></th>
 			<th class="column-header"><small>End Time</small></th>
@@ -128,7 +167,10 @@ function render_event_table() {
 		}
 		let start_time = new Date(event.start_time)
 		let end_time = new Date(event.end_time)
-		
+		const timeoptions = {
+			hour: "2-digit",
+			minute: "2-digit",
+		};
 		html += `
 		<tr>
 		<input type="hidden" id="event_id_${i}" name="event_id_${i}" value="${event.id}" />
@@ -138,15 +180,17 @@ function render_event_table() {
 
 		
 			<td class="">
-			<button type="button" class="btn p-0" data-bs-toggle="modal" data-bs-target="#eventModal" data-bs-eventid="${i}"><i class="bi bi-pencil-fill"></i></button>
+			<button type="button" class="btn p-0 edit_event_button" data-bs-eventid="${i}"><i class="bi bi-pencil-fill"></i></button>
 			</td>
 			<td class="small">
 			<button type="button" class="btn p-0 delete_event_button" data-bs-eventid="${i}"><i class="bi bi-trash-fill"></i></button>
 			</td>
+			<td class="small">
+			<button type="button" class="btn p-0 copy_event_button" data-bs-eventid="${i}"><i class="bi bi-copy"></i></button>
+			</td>
 			
-			
-			<td class="small">${start_time.toDateString()}, ${start_time.getHours()}:${start_time.getMinutes()}</td>
-			<td class="small">${end_time.toDateString()}, ${end_time.getHours()}:${end_time.getMinutes()}</td>
+			<td class="small">${start_time.toDateString()}, ${start_time.toLocaleTimeString(undefined, timeoptions)}</td>
+			<td class="small">${end_time.toDateString()}, ${end_time.toLocaleTimeString(undefined, timeoptions)}</td>
 			<td class="small">${event.location}</td>
 
 		</tr>
@@ -170,14 +214,8 @@ function render_event_table() {
 		if (event.relatedTarget) {
 			trainingseventid = event.relatedTarget.getAttribute("data-bs-eventid")
 
-			let trainingsevent = events_global[trainingseventid]
-
-			document.querySelector('#event_start_time').value = trainingsevent.start_time;
-			document.querySelector('#event_end_time').value = trainingsevent.end_time;
-			document.querySelector('#event_location').value = trainingsevent.location_id;
-			document.querySelector('#modal_event_id').value = trainingseventid;
-			document.querySelector('#modal_event_pk').value = trainingsevent.id;
-
+			setModalWithData(trainingseventid)
+			
 		} else {
 			trainingseventid = 'new'
 		}

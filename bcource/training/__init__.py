@@ -4,7 +4,6 @@ from flask_security import current_user
 import os
 from flask_security import auth_required
 import flask_security.decorators as fsd
-from bcource.training.models import Practice, Location, Trainer, Trainer
 
 import bcource.training.training_admin
 

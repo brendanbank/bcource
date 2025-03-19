@@ -1,39 +1,44 @@
 from flask_wtf import FlaskForm, RecaptchaField
 
 from ..myformfields import (MyStringField, MySubmitField, MyPasswordField, MyHiddenField, 
-                            MyEmailField, MyTelField, MyDateField, MySelectField)
+                            MyEmailField, MyTelField, MyDateField, MySelectField, MyBooleanField, MyTextAreaField)
 
 import wtforms.validators as validators
 from flask_babel import lazy_gettext as _l
+    
 
-class LoginForm(FlaskForm):
-    
-    form_description = _l("Login")
+class UserSettingsForm(FlaskForm):
+    form_description = _l("Update account settings")
     formclass =  "col-md-12"
+    hrfields = { 
+    }
     
-    email = MyStringField(
-        _l('E-mail Address'),
-        [validators.Email(message=_l('Not a valid email address.')),
-         validators.DataRequired()],
-        divclass = "col-md-12 mb-2",
-        render_kw={"class": "position-relative form-control", "autocomplete": "username"},
-    )
+    msg_signal  = MyBooleanField(
+        _l('Enable Signal Messaging App'),
+        divclass = "col-md-12",
+        render_kw={"class": "form-check-input"})
     
-    password = MyPasswordField(
-        _l('Password'),
-        [validators.DataRequired(message=_l("Please enter a password."))],
-        divclass = "col-md-12 mb-2",
-        render_kw={"class": "position-relative form-control", "autocomplete": "current-password"},
-        )
+    msg_last_min_spots  = MyBooleanField(
+        _l('Send me a message when last minute training spots open.'),
+        divclass = "col-md-12",
+        render_kw={"class": "form-check-input"})
+
+    emergency_contact  = MyTextAreaField(
+        _l('My emergency contact:'),
+        divclass = "col-md-12",
+        render_kw={"class": "position-relative form-control"})
+
     
-    submit = MySubmitField(_l('Submit'), render_kw={
-            "class_": "btn btn-outline-secondary position-relative form-control"},
-            divclass="col-md-12 mt-3 mb-3")
+    url  = MyHiddenField('url')
     
-    
+    # submit = MySubmitField(_l('Submit'), 
+    #         render_kw={"class_": "btn btn btn-primary position-relative form-control mt-1", 
+    #                    "autocomplete": "country"},
+    #         divclass="col-md-12")
+
 class AccountDetailsForm(FlaskForm):
     form_description = _l("Update account details")
-    formclass =  "col-md-8"
+    formclass =  "col-md-12"
     hrfields = { 
         "firstname": "",
         "submit": "",
@@ -59,9 +64,9 @@ class AccountDetailsForm(FlaskForm):
     #     divclass = "col-md-6 mt-1",
     #     render_kw={"class": "position-relative form-control", "autocomplete": "off"})
 
-    phone_number = MyTelField(_l('Mobile Phone Number'),
+    phone_number = MyTelField(_l('Mobile Phone'),
                            [validators.DataRequired()],
-                           divclass = "col-md-4 mt-1",
+                           divclass = "col-md-6 pt-1",
                            render_kw={"class": "phone_number position-relative form-control", "autocomplete": "tel"})
            
     birthday = MyDateField(_l('Birth day'),
@@ -118,9 +123,6 @@ class AccountDetailsForm(FlaskForm):
         divclass = "col-md-2 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "country"})
 
-    submit = MySubmitField(_l('Submit'), 
-            render_kw={"class_": "btn btn btn-primary position-relative form-control mt-1", 
-                       "autocomplete": "country"},
-            divclass="col-md-12")
+    url  = MyHiddenField('url')
     
     

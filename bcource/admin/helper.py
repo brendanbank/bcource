@@ -1,5 +1,5 @@
 from wtforms import TextAreaField
-from bcource.admin.content import Content
+from bcource.models import Content
 
 class TagMixIn(object):
     def on_form_prefill(self, form, id):
@@ -36,17 +36,16 @@ class TagMixIn(object):
         setattr(form_class, self.tag_field_name, TextAreaField(self.tag_field))
         return form_class
 
-    def on_model_change(self, form, model, is_created):
+    def after_model_change(self, form, model, is_created):
         
         if form[self.tag_field_name].data != None:
-            pkkey= f'{model.__class__.__name__}_{id}'
+            pkkey= f'{model.__class__.__name__}_{model.id}'
             tag = Content.get_tag(pkkey)
             
-            tag.text = form[self.tag_field_name].data
+            tag.text = form[self.tag_field_name].data            
             
-            update_field = getattr(model, self.tag_field)
+            setattr(model, self.tag_field, pkkey)
             
-            if update_field:
-                update_field = pkkey
+            self.session.commit()
                 
-        return super(TagMixIn, self).on_model_change(form, model, is_created)
+        return super(TagMixIn, self).after_model_change(form, model, is_created)
