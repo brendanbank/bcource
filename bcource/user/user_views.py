@@ -23,7 +23,7 @@ user_bp = Blueprint(
 @auth_required()
 def index():
     
-    validator = UserProfileChecks(current_user)
+    validator = UserProfileChecks()
     validator.validate()
     
     return render_template("user/profile-check.html", validator=validator)

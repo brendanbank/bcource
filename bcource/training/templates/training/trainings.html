@@ -1,19 +1,17 @@
 {% extends 'base.html' %}
 
-{% set menu = "Trainings" %}
+{% set menu = "Training List" %}
 {% block nav %}
     {% include 'nav.html' %}
 {% endblock %}
 
 {% block content %}
-
 <ul class="nav nav-tabs">
-	<li class="nav-item"><a href="javascript:void(0)"
-		class="nav-link active">Trainings ({{ trainings|length }})</a></li>
+	<li class="nav-item active"><span class="nav-link active">Trainings ({{ trainings|length }})</span></li>
 
 	<li class="nav-item"><a
-		href="{{url_for('training_bp.edit')}}"
-		title="Create New Record" class="nav-link">Create</a></li>
+		href="{{url_for('training_bp.edit_training')}}"
+		title="Create New Record" class="nav-link text-primary-emphasis">Create</a></li>
 
 
 </ul>
@@ -51,14 +49,14 @@
 					<td class="">
 					
 					<a class="icon-link link-body-emphasis"
-						href="{{url_for('training_bp.edit', id=training.id)}}">
+						href="{{url_for('training_bp.edit_training', id=training.id)}}">
 						<i class="bi bi-pencil-fill"></i></a>
 				</td>
 				<td class="p-1">	
 				<form class="icon" method="POST" action="{{url_for('training_bp.delete', id=training.id)}}">
 				{{ delete_form.csrf_token }}
 	            <button type="submit" class="btn p-0"><i class="bi bi-trash-fill" 
-	            onclick="return safeConfirm('{{_("Are you sure you want to delete this record?")}}');" title="Delete record"></i>
+	            onclick="return safeConfirm('{{_('Are you sure you want to delete this record?')}}');" title="Delete record"></i>
 	            
 	            </button>
 
@@ -96,4 +94,6 @@
 			{% endfor %}
 			</table>
 		</div>
-{% endblock %}
+		{% endblock %}
+		
+		
