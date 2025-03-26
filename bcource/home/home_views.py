@@ -4,6 +4,7 @@ from flask_security import current_user
 import os
 from flask_security import auth_required
 import flask_security.decorators as fsd
+from bcource.user import UserProfileChecks
 
 # Blueprint Configuration
 home_bp = Blueprint(
@@ -17,7 +18,13 @@ home_bp = Blueprint(
 @home_bp.route('/', methods=['GET'])
 @auth_required()
 def home():
-    return render_template("home/index.html")
+    # return render_template("home/index.html")
+
+    validator = UserProfileChecks()
+    validator.validate()
+    
+    return render_template("user/profile-check.html", validator=validator)
+
 
 @home_bp.route('/ckeditor', methods=['GET'])
 @auth_required()
