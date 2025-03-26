@@ -2,7 +2,7 @@ from flask import render_template, current_app, g, flash, redirect, url_for
 from flask_babel import _
 from flask import Blueprint, abort
 from flask_security import permissions_required
-from bcource import db
+from bcource import db, menu_structure
 from flask_security import roles_required, current_user
 from bcource.helpers import has_role
 from bcource.training.helper import make_table_header
@@ -10,6 +10,7 @@ from bcource.models import Training, Practice, TrainingEvent
 from bcource.training.training_forms import TrainingForm, EventForm, TrainingDeleteForm
 from flask.globals import request
 import json
+
 
 # Blueprint Configuration
 training_bp = Blueprint(
@@ -101,10 +102,11 @@ def delete(id):
     
     return redirect(url_for('training_bp.index'))
 
+
 @training_bp.route('/edit/<int:id>',methods=['GET', 'POST'])
 @training_bp.route('/edit/',methods=['GET', 'POST'])
-def edit(id=None):
-    practice=Practice().query.filter(Practice.name=="default").first()
+def edit_training(id=None):
+    practice=Practice.default_row() #@UndefinedVariable
     
     training = None
     
@@ -145,7 +147,7 @@ def edit(id=None):
         db.session.commit()
         flash(_('Training details are successfully saved!'))
         
-        return(redirect(url_for('training_bp.edit', id=training.id)))
+        return(redirect(url_for('training_bp.edit_training', id=training.id)))
 
     events = []
     if training:
@@ -159,12 +161,12 @@ def edit(id=None):
 
     return render_template("training/training.html", form=form, eventform=eventform, events=json.dumps(events))
 
+
+main_menu = menu_structure.add_menu('Training Administration', role='trainer')
+main_menu.add_menu('Training Editor', 'training_bp.index', role='trainer')
+
 @training_bp.route('/')
 def index():
-    
-    #trainings = Training().query.all()
-    #Artist.query.filter(Artist.albums.any(genre_id=genre.id)).all()
-
 
     delete_form = TrainingDeleteForm()
     
@@ -177,3 +179,4 @@ def index():
         
     training_headers = make_table_header([_('Name'), _('Practice'), _('Training Type'), _('Trainers'), _('Date/Location')])
     return render_template("training/trainings.html", headers=training_headers, trainings=trainings, delete_form=delete_form)
+

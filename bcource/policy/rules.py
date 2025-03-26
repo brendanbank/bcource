@@ -1,8 +1,6 @@
-from collections import OrderedDict
-from flask_babel import _
+
 from markupsafe import escape
 from markupsafe import Markup
-
 
 def clean_key(key):
     key = key.rstrip("_")
@@ -22,18 +20,18 @@ def html_params(**kwargs):
             params.append(f'{str(k)}="{escape(v)}"')  # noqa: B907
     return " ".join(params)
 
-class UnboundValidator:
+class UnboundValidationRule:
     _unbound_validator = True
     creation_counter = 0
 
     def __init__(self, validator_class, *args, **kwargs):
-        UnboundValidator.creation_counter += 1
-        self.creation_counter = UnboundValidator.creation_counter
+        UnboundValidationRule.creation_counter += 1
+        self.creation_counter = UnboundValidationRule.creation_counter
         self.validator_class = validator_class
         self.args = args
         self.kwargs = kwargs
         
-    def bind(self, validator, name, data_obj, *args, **kwargs):
+    def bind(self, validator, name, *args, **kwargs):
         kw = dict(
             self.kwargs,
             _from_base=True,
@@ -41,76 +39,12 @@ class UnboundValidator:
             **kwargs,
         )
         
-        return self.validator_class(name, data_obj, *self.args, **kw)
+        return self.validator_class(name, *self.args, **kw)
 
     def __repr__(self):
         return "<UnboundField({}, {!r}, {!r})>".format(
             self.validator_class.__name__, self.args, self.kwargs
         )
-
-class ValidatorMeta(type):
-    _unbound_validators = None
-    _validation_rules = None
-    
-    def __call__(cls, *args, **kwargs):
-
-        validators = []
-        validators_dict = OrderedDict()
-        
-        if not cls._unbound_validators:
-            for name in dir(cls):
-                if not name.startswith("_"):
-                    unbound_validator = getattr(cls, name)
-                    if hasattr(unbound_validator, "_unbound_validator"):
-                        validators.append((name, unbound_validator))
-
-            validators.sort(key=lambda x: (x[1].creation_counter, x[0]))
-        
-            for name, clsobj in validators:
-                validators_dict[name] = clsobj
-            
-            cls._unbound_validators = validators_dict
-
-        return type.__call__(cls, *args, **kwargs)
-
-
-class ValidatorBase(object, metaclass=ValidatorMeta):
-    
-    def __init__(self, data_obj, *args, **kwargs):
-        self.data_obj = data_obj
-        self._validation_rules = OrderedDict()
-        self.args = args
-        self.kwargs = kwargs
-        self.status = False
-                
-        for name, validator in self._unbound_validators.items():
-            
-            obj = validator.bind(self, name, data_obj)
-            # Set all the fields to attributes so that they obscure the class
-            # attributes with the same names.
-            self._validation_rules[name] = obj
-            setattr(self, name, obj)
-            
-    def pre_validate(self):
-        """ can be sub-classed """
-        return(True)
-            
-    def validate(self):
-        
-        if not self.pre_validate():
-            return (False)
-        self.status = True
-        
-        for validation_rule in self:
-            if not validation_rule.validate():
-                self.status = False
-
-        return (self.status)
-            
-    def __iter__(self):
-        """Iterate form fields in creation order."""
-        return iter(self._validation_rules.values())
-
 class ValidationRule(object):
     _user_validator = True
     _icon_pass = 'text-success bi bi-check-lg'
@@ -123,10 +57,12 @@ class ValidationRule(object):
         self.data_obj = data_obj
         self.kwargs = kwargs
         self.status = False
+        self.data_value = None
         
         self.msg_fail = kwargs.get('msg_fail', None) 
         self.msg_pass = kwargs.get('msg_pass', None)
-        self.bp_url = kwargs.get('bp_url')
+        
+        self.post_validate = kwargs.get('post_validate', None)
         
         self.fail_icon = kwargs.get('fail_icon', self._icon_fail)
         self.pass_icon = kwargs.get('pass_icon', self._icon_pass)
@@ -140,7 +76,7 @@ class ValidationRule(object):
         if "_from_base" in kwargs:
             return super().__new__(cls)
         else:
-            return UnboundValidator(cls, *args, **kwargs)
+            return UnboundValidationRule(cls, *args, **kwargs)
 
     @property
     def icon_fail(self):
@@ -222,38 +158,59 @@ class ValidationRule(object):
         self.variables = list()
         
         _variables = self.kwargs.get("variables")
+        if not _variables:
+            raise ValueError(f'variables is missing from {self.__class__.__name__} for {self.name}')
         
         if type(_variables) == list:
             self.variables = _variables
         elif type(_variables) == str:
             self.variables.append(str)
-        else:
-            self.variables.append(self.name)
             
     def validate(self):
         
         raise NotImplementedError("validate should be implemented by subclass!")
     
-    def _get_value(self, variable, obj):
-        
+    def _get_value(self, obj, variable=None):
         data_value=None
-        
-        if '.' in variable:
+
+        if callable(obj) and obj.__class__.__name__ == "function":
+            obj= obj()
+
+        if variable and '.' in variable:
+
             variable_test = variable.split('.')[0]
             if hasattr(obj, variable_test):
-                data_value = self._get_value(".".join(variable.split('.')[1:]),getattr(obj, variable_test))
-
+                data_value = self._get_value(getattr(obj, variable_test), ".".join(variable.split('.')[1:]))
+                
         else:
-            
-            data_value = getattr(obj, variable, None)                
+            # if array
+            if issubclass(obj.__class__, list):
+                # if we should look for a specific item in the list
+                if hasattr(self,'status_value'):
+                    for item in obj:
+                        if item == self.status_value:
+                            data_value = self.status_value
+                            break
+                # if the array is not empty consider the rule satisfied
+                elif  obj:
+                    data_value = True
+            else:
+                # get the data from the obj
+                data_value = getattr(obj, variable, None)       
         
         return data_value
 
+    def _post_validate(self):
+        
+        if self.post_validate and callable(self.post_validate):
+            self.post_validate(self)
+
+
 class FriendlyNameRule(ValidationRule):
-    def __init__(self, name, data_obj, friendly_name, *args, **kwargs):
+    def __init__(self, name, friendly_name, *args, **kwargs):
         
         self.name = name
-        super().__init__(name, data_obj, *args, **kwargs)
+        super().__init__(name, *args, **kwargs)
         self.friendly_name = friendly_name or self.name
         
         if not self.msg_fail:
@@ -261,28 +218,60 @@ class FriendlyNameRule(ValidationRule):
         if not self.msg_pass:
             self.msg_pass =  self.friendly_name
     
-        print (f'{self!r}')
         
 
     def __repr__(self):
         return f"<{self.__class__.__name__}, friendly_name: '{self.friendly_name}' msg_fail: '{self.msg_fail} msg_pass: '{self.msg_pass} variables: '{self.variables} {self.args}, {self.kwargs}')>"
 
-class SettingRequired(FriendlyNameRule):
+class HasData(FriendlyNameRule):
     
     wheight = 10
 
     def validate(self):
         self.status=True
         if callable(self.data_obj):
-            for variable in self.variables:
-                data_value = self._get_value(variable,self.data_obj)
+            if self.variables:
+                for variable in self.variables:
+                    data_value = self._get_value(self.data_obj, variable)
+                    if data_value == None or data_value == "":
+                        self.status = False
+            else:
+                data_value = self._get_value(self.data_obj)
                 if data_value == None or data_value == "":
                     self.status = False
+
+        else:
+            raise ValueError(f'data_obj: {self.data_obj} not callable!')
                 
         return (self.status)
-
-
-
-class StatusRequired(ValidationRule):
-    wheight = 10
     
+
+class DataIs(FriendlyNameRule):
+    def __init__(self, name, friendly_name, status_value=None, *args, **kwargs):
+        super().__init__(name, friendly_name, *args, **kwargs)
+        self.status_value  = status_value
+        
+    wheight = 10
+        
+    def validate(self):
+        self.status=True
+        if callable(self.data_obj):
+            
+            data_value = self._get_value(self.data_obj, self.variables[0])
+            if data_value == None or data_value == "":
+                self.status=False
+            else:
+                self.data_value = data_value
+                if self.status_value == self.data_value:
+                    self.status=True
+                else:
+                    self.status=False
+        else:
+            self.status=False
+        
+        return (self.status)
+        
+if __name__ == "__main__":
+    pass
+        
+        

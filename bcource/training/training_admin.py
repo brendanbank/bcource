@@ -1,19 +1,31 @@
-from bcource.admin.admin_views import AuthModelView
+from bcource.admin.helper import AuthModelView, CkModelView, CKTextAreaField, TagMixIn
 from bcource import db, table_admin
-from bcource.models import Location, Practice, Trainer, Training, TrainingType, TrainingEvent
+from bcource.models import Location, Practice, Trainer, Training, TrainingType, TrainingEvent,\
+    Content, Policy
 from sqlalchemy.orm import configure_mappers
 from wtforms import TextAreaField
-from bcource.admin.helper import TagMixIn
 
-class TrainerAdmin(TagMixIn, AuthModelView):
+
+
+
+class TrainerAdmin(TagMixIn, CkModelView, AuthModelView):
     permission = "admin-trainer-edit"
-    form_columns = ["user", "bio"]
+    form_columns = ["user"]
     column_list = ["user"]
+    
+
     
 class PracticeAdmin(AuthModelView):
     permission = "admin-practice-edit"
+    
+    form_widget_args = {
+        'trainings':{
+            'disabled':True
+        }
+    }
+
    
-class LocationAdmin(TagMixIn, AuthModelView):
+class LocationAdmin(TagMixIn, CkModelView, AuthModelView):
     permission = "admin-location-edit"
 
     form_columns = ["name",  "practice","phone_number", "street","address_line2",
@@ -25,11 +37,16 @@ class TrainingAdmin(AuthModelView):
     permission = "admin-training-edit"
     form_columns = ["name", "traningtype", "practice", "trainers", "trainingevents"]
     column_list = ["name", "traningtype", "practice", "trainers", "trainingevents"]
+    form_widget_args = {
+        'trainingevents':{
+            'disabled':True
+        }
+    }
 
 
-class TrainingTypeAdmin(TagMixIn, AuthModelView):
+class TrainingTypeAdmin(TagMixIn, CkModelView, AuthModelView):
     permission = "admin-trainingtype-edit"
-    form_columns = ["name"]
+    form_columns = ["name", "policies"]
     column_list = ["name"]
     
 
@@ -42,10 +59,23 @@ class ClientAdmin(AuthModelView):
 class TrainingEventAdmin(AuthModelView):
     permission = "admin-trainingevent-edit"
 
+
+class PolicyAdmin(TagMixIn, CkModelView, AuthModelView):
+    permission = "admin-policy-edit"
+    form_columns = ["name", "trainingtypes"]
+
+    form_widget_args = {
+        'trainingtypes':{
+            'disabled':True
+        }
+    }
+
+
 table_admin.add_view(LocationAdmin(Location, db.session, category='Training', tag_field="directions"))
 table_admin.add_view(PracticeAdmin(Practice, db.session, category='Training'))
 table_admin.add_view(TrainerAdmin(Trainer, db.session, category='Training', tag_field="bio"))
 table_admin.add_view(TrainingAdmin(Training, db.session, category='Training'))
 table_admin.add_view(TrainingTypeAdmin(TrainingType, db.session, category='Training', tag_field="description"))
 table_admin.add_view(TrainingEventAdmin(TrainingEvent, db.session, category='Training'))
+table_admin.add_view(PolicyAdmin(Policy, db.session, category='Training', tag_field="policy"))
 

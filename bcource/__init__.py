@@ -12,13 +12,34 @@ from flask_mailman import Mail
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemySessionUserDatastore, roles_required, current_user, hash_password
 from bcource.helpers import MyFsModels
+from bcource.helpers import config_value as cv
+from flask_moment import Moment
+from bcource.helpers import has_role
+from bcource.menus import Menu
 
 class Base(DeclarativeBase):
     # __abstract__ = True
     def to_dict(self):
         return {field.name:getattr(self, field.name) for field in self.__table__.c}
+    
+    @classmethod
+    def default_row(cls):
+        if not hasattr(cls, 'CONFIG'):
+            raise NotImplemented(f'Default called on {cls.__name__} but CONFIG not defined.')
+        
+        obj = cls().query.filter(cls.name==cv(cls.CONFIG)).first()
+        if not obj:
+            obj = cls(name=cv(cls.CONFIG))
+            db.session.add(obj)
+        db.session.commit()
+        return(obj)
+
 
 #connect_args={"options": "-c timezone=utc"}
+
+menu_structure = Menu('root')
+
+moment = Moment()
 
 db = SQLAlchemy(model_class=Base)
 
@@ -26,6 +47,7 @@ MyFsModels.set_db_info(base_model=Base)
 
 table_admin = Admin(name=__name__, template_mode='bootstrap4', base_template='admin/mybase.html')
 security = Security() 
+
 mail = Mail()
 migrate = Migrate()
 
@@ -53,11 +75,15 @@ def create_app():
     table_admin.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
+    moment.init_app(app)
     
      
     from bcource.models import Content, User, Role
     
     app.jinja_env.globals.update(get_tag=Content.get_tag)
+    app.jinja_env.globals.update(has_role=has_role)
+    app.jinja_env.globals.update(menu_structure=menu_structure)
+    
         
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
 
@@ -91,56 +117,9 @@ def create_app():
         db.create_all()  # Create sql tables for our data models
 
         def get_locale():
-            return request.accept_languages.best_match(app.config['LANGUAGES'])
+            return request.accept_languages.best_match(cv('LANGUAGES'))
         
-        
-        init_data(app)
+        models.db_init_data(app)
         return app
     
-
-def init_data(app):
-
-        role = security.datastore.find_or_create_role('admin_views')
-        security.datastore.add_permissions_to_role(role, {"admin-role-edit", 
-                                                          "admin-permission-edit", 
-                                                          "admin-userstatus-edit", 
-                                                          "admin-user-edit", 
-                                                          "db-admin"})
-
-        
-        user=security.datastore.find_user(email=app.config['ADMIN_USER'])
-
-        from bcource.models import Practice, Trainer, Location
-        practice = Practice().query.filter(Practice.name=="default").first()
-
-        if not practice:
-            practice = Practice(name="default")
-            db.session.add(practice)
-            location = Location(name="Grote Trainingruimte",
-                                street="Frans Halsstraat7",
-                                house_number="7",
-                                city="Amsterdam",
-                                practice=practice)
-            db.session.add(location)
-
-
-        if not user:
-            user = security.datastore.create_user(email=app.config['ADMIN_USER'],
-                                                  password=hash_password(app.config['ADMIN_PASSWORD']))
-            
-            user.confirmed_at = security.datetime_factory()
-            trainer = Trainer()
-            trainer.user = user
-            trainer.practices.append(practice)
-            
-            
-            db.session.add(trainer)
-            
-
-        security.datastore.add_role_to_user(user, role)
-        
-
-        
-        db.session.commit()
-
 

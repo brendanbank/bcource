@@ -4,6 +4,7 @@ from flask_admin.contrib.sqla import ModelView
 from flask_security import current_user
 from flask import url_for, current_app, request, abort, redirect
 from flask_principal import Identity, Permission, RoleNeed, identity_changed
+from collections import OrderedDict
 
 def get_url (form):
     if form.is_submitted():
@@ -28,11 +29,15 @@ def get_url (form):
     return(url)
 
 def has_role(roles):
-    roles.append("admin_views")
-    perms = [Permission(RoleNeed(role)) for role in roles]
+    _roles = roles
+    if type(roles) == str:
+        _roles = [roles]
+        
+    _roles.append(current_app.config['BCOURSE_SUPER_USER_ROLE'])
+    perms = [Permission(RoleNeed(role)) for role in _roles]
     for perm in perms:
         if perm.can():
-            return None
+            return True
     
     abort(403)
 
@@ -72,3 +77,13 @@ class MyFsModels(FsModels):
         )
         
 
+def config_value(key, app=None, default=None, strict=True):
+    app = app or current_app
+    key = f"BCOURSE_{key.upper()}"
+    # protect against spelling mistakes
+    if strict and key not in app.config:
+        raise ValueError(f"Key {key} doesn't exist")
+    return app.config.get(key, default)
+
+
+    

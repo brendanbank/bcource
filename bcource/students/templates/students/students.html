@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+    {% include 'nav.html' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+     <div class="col-2"></div>
+     <div class="col-8 pb-5">
+          <h1>Students</h1>
+     </div>
+     <div class="col-2"></div>
+</div>
+<div class="row">
+     <div class="col-2"></div>
+     <div class="col-8">
+          <table class="table">
+               <thead>
+                    <tr >
+                         <th scope="col">#</th>
+                         <th scope="col">Name</th>
+                         <th scope="col">Email</th>
+                         <th scope="col">Status</th>
+                         <th scope="col">Type</th>
+                         <th scope="col">Phone</th>
+                    </tr>
+               </thead>
+               <tbody>
+                    {%- for student in students %}
+                    <tr>
+                         <th scope="row">
+                              <a class="icon-link link-body-emphasis" href="{{ url_for('students_bp.student',id=student.id ) }}"><i class="bi bi-pencil-fill"></i></a>
+                         </th>
+                         <td>{{ student.user.fullname }}</td>
+                         <td>{{ student.user.email }}</td>
+                         <td>{{ student.studentstatus }}</td>
+                         <td>{{ student.studenttype }}</td>
+                         <td>{{ student.user.phone_number }}</td>
+                    </tr>
+                    {% endfor %}
+               </tbody>
+          </table>
+     </div>
+     <div class="col-md-3"></div>
+</div>
+
+
+{% endblock %}

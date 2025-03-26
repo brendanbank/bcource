@@ -1,3 +1,15 @@
+
+function getFormattedElement(timeZone, name, value, ...dateParams) {
+    return (new Intl.DateTimeFormat('en', {
+        [name]: value,
+        timeZone,
+    }).formatToParts(new Date(...dateParams)).find(el => el.type === name) || {}).value;
+}
+
+function getTzAbbreviation(timeZone) {
+    return getFormattedElement(timeZone, 'timeZoneName', "short")
+}
+
 let event_location = document.querySelector('#event_location')
 let options = event_location.options
 var event_locations_dict = {}
@@ -6,6 +18,9 @@ for (let i = 0; i < options.length; i++) {
 	event_locations_dict[options[i].value] = options[i].text
 }
 
+function getUTCDate(date) {
+    return moment(date).utc().format('YYYY-MM-DDTHH:mm:ss');
+}
 function sortEvents(eventarray) {
 	let events = [];
 	for (let i = 0; i < eventarray.length; i++) {
@@ -40,8 +55,8 @@ function clearModal() {
 function setModalWithData(trainingseventid){
 	let trainingsevent = events_global[trainingseventid]
 
-	document.querySelector('#event_start_time').value = trainingsevent.start_time;
-	document.querySelector('#event_end_time').value = trainingsevent.end_time;
+	document.querySelector('#event_start_time').value = moment.utc(trainingsevent.start_time).local().format('YYYY-MM-DD HH:mm:ss');
+	document.querySelector('#event_end_time').value = moment.utc(trainingsevent.end_time).local().format('YYYY-MM-DD HH:mm:ss')
 	document.querySelector('#event_location').value = trainingsevent.location_id;
 	document.querySelector('#modal_event_id').value = trainingseventid;
 	document.querySelector('#modal_event_pk').value = trainingsevent.id;
@@ -66,9 +81,9 @@ function setEventId() {
 		let trainingsevent = events_global[trainingseventid]
 
 
-		trainingsevent.start_time = document.querySelector('#event_start_time').value
+		trainingsevent.start_time = getUTCDate(document.querySelector('#event_start_time').value)
 		trainingsevent.id = document.querySelector('#modal_event_pk').value
-		trainingsevent.end_time = document.querySelector('#event_end_time').value;
+		trainingsevent.end_time = getUTCDate(document.querySelector('#event_end_time').value);
 		trainingsevent.location_id = document.querySelector('#event_location').value;
 		trainingsevent.location = event_locations_dict[trainingsevent.location_id]
 		console.log(trainingsevent)
@@ -137,6 +152,23 @@ function setActionButtonEvents (){
 	
 
 }
+function getTimezoneShort(timeZone) {
+    return new Intl.DateTimeFormat('en-US', {
+        timeZone: timeZone,
+        timeZoneName: 'short'
+    }).formatToParts(new Date())
+        .find(part => part.type == "timeZoneName")
+        .value;
+}
+
+function formatTz (date){
+	const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+	console.log(tz);
+	const result = moment.utc(date).tz(tz).format("ddd D MMM yyyy hh:mm z");
+	console.log(result);
+	return result;
+	
+}
 
 function render_event_table() {
 	var table_data = document.getElementById("EventsTable");
@@ -165,12 +197,12 @@ function render_event_table() {
 		if (events_global.lenght == 0 || event == null) {
 			continue
 		}
-		let start_time = new Date(event.start_time)
-		let end_time = new Date(event.end_time)
-		const timeoptions = {
-			hour: "2-digit",
-			minute: "2-digit",
-		};
+
+		var tz_short = Intl.DateTimeFormat().resolvedOptions().timeZone
+		var tz = getTzAbbreviation(tz_short)	
+		
+		
+		
 		html += `
 		<tr>
 		<input type="hidden" id="event_id_${i}" name="event_id_${i}" value="${event.id}" />
@@ -189,8 +221,8 @@ function render_event_table() {
 			<button type="button" class="btn p-0 copy_event_button" data-bs-eventid="${i}"><i class="bi bi-copy"></i></button>
 			</td>
 			
-			<td class="small">${start_time.toDateString()}, ${start_time.toLocaleTimeString(undefined, timeoptions)}</td>
-			<td class="small">${end_time.toDateString()}, ${end_time.toLocaleTimeString(undefined, timeoptions)}</td>
+			<td class="small">${formatTz(event.start_time)}</td>
+			<td class="small">${formatTz(event.end_time)}</td>
 			<td class="small">${event.location}</td>
 
 		</tr>

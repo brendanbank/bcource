@@ -14,6 +14,8 @@ from bcource.models import TrainingType
 def training_types():
     return TrainingType().query.order_by(TrainingType.name).all()
 
+# def cancellation_types ():
+#     return TrainingPolicy().query.order_by(TrainingPolicy.name).all()
 
 from wtforms import DateTimeField
 
@@ -44,7 +46,7 @@ class TrainingDeleteForm(FlaskForm):
 
 class TrainingForm(FlaskForm):
     form_description = _l("Training details")
-    formclass =  "col-md-8   "
+    formclass =  "col-md-9"
     last_field = "submit"
     hrfields = { 
         "id": "",
@@ -73,13 +75,13 @@ class TrainingForm(FlaskForm):
 
     traningtype = MyQuerySelectField(_l("Training type"),
                                       [validators.DataRequired()],
-                                      divclass = "col-md-4 mt-1",
-                                      render_kw={"class": "position-relative form-control form-select"}, #select2-js
+                                      divclass = "col-md-6 mt-1",
+                                      render_kw={"class": "position-relative form-control form-select select2-js"}, #select2-js
                                       query_factory=training_types)
     
     trainers = MyQuerySelectMultipleField(_l("Trainers"),
                                           divclass = "col-md-12 mt-1",
-                                          render_kw={"class": "position-relative form-control"}) #select2-js
+                                          render_kw={"class": "position-relative form-control select2-js"}) #select2-js
 
     submit = MySubmitField(_l('Update'), 
             render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1"},

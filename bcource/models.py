@@ -1,15 +1,30 @@
 import datetime
 from typing import List
 
-from sqlalchemy import Integer, String, Double,Date, ForeignKey, Table, Column, Text, TIMESTAMP, Boolean
+from sqlalchemy import Integer, String, Double,Date, ForeignKey, Table, Column, Text, TIMESTAMP, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr, backref
 from sqlalchemy.sql import func
 from flask_admin.contrib.sqla import ModelView
 from flask_security.models import sqla as sqla
 from flask_security import naive_utcnow
-from bcource import db
+from bcource import db, security
+from flask_security import hash_password
+from bcource.helpers import config_value as cv
 
+class Message(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    subject: Mapped[str] = mapped_column(String(256), nullable=False)
+    body: Mapped[str] = mapped_column((Text()), nullable=False)
+    sent_at: Mapped[datetime.datetime] = mapped_column(TIMESTAMP(timezone=True),
+                                                        server_default=func.now())
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    user: Mapped["User"] = relationship(backref="sent_messages")
 
+    created_date: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    
+    
 trainers_association = Table(
     "trainers",
     db.Model.metadata,
@@ -21,11 +36,22 @@ student_association = Table(
     "students",
     db.Model.metadata,
     Column("practice_id", ForeignKey("practice.id", ondelete="CASCADE"), primary_key=True),
-    Column("studen_id", ForeignKey("student.id", ondelete="CASCADE"), primary_key=True),
+    Column("student_id", ForeignKey("student.id", ondelete="CASCADE"), primary_key=True),
+)
+
+policy_association = Table(
+    "training_policies",
+    db.Model.metadata,
+    Column("policy_id", ForeignKey("policy.id", ondelete="CASCADE"), primary_key=True),
+    Column("trainingtype_id", ForeignKey("training_type.id", ondelete="CASCADE"), primary_key=True),
 )
 
 
+
 class Practice(db.Model):
+    
+    CONFIG = 'DEFAULT_PRACTICE'
+    
     id: Mapped[int] = mapped_column(primary_key=True)
     
     name: Mapped[str] = mapped_column(String(256), nullable=False)
@@ -44,18 +70,26 @@ class Practice(db.Model):
     )
     
     students: Mapped[List["Student"]] =  relationship(
-        secondary=student_association, back_populates="practices"
+        secondary=student_association, back_populates="practice"
     )
     
+
+
+        
     def __str__(self):
         return self.name
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
-        onupdate=naive_utcnow,
+        onupdate=func.now(),
     )
+    
+
 
 class TrainingType(db.Model):
+    
+    CONFIG='DEFAULT_TRAINING_TYPE'
+    
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256), nullable=False)
     description: Mapped[str] = mapped_column(Text(), nullable=True)
@@ -65,7 +99,11 @@ class TrainingType(db.Model):
     
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
-        onupdate=naive_utcnow,
+        onupdate=func.now(),
+    )
+    
+    policies: Mapped[List["Policy"]] =  relationship(
+        secondary=policy_association, back_populates="trainingtypes"
     )
 
 
@@ -79,8 +117,8 @@ training_trainers_association = Table(
 class TrainingEvent(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    start_time: Mapped[datetime.datetime] = mapped_column(TIMESTAMP())
-    end_time: Mapped[datetime.datetime] = mapped_column(TIMESTAMP())
+    start_time: Mapped[datetime.datetime] = mapped_column(TIMESTAMP(timezone=True))
+    end_time: Mapped[datetime.datetime] = mapped_column(TIMESTAMP(timezone=True))
     
     training_id: Mapped[int] = mapped_column(ForeignKey("training.id"), nullable=True)
     
@@ -99,14 +137,33 @@ class TrainingEvent(db.Model):
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
-        onupdate=naive_utcnow,
+        onupdate=func.now(),
     )
+    
+class Policy(db.Model):
+    CONFIG='DEFAULT_TRAINING_POLICY'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(256), nullable=False)
+    policy: Mapped[str] = mapped_column(Text(), nullable=True)
+
+    update_datetime: Mapped[datetime.datetime] = mapped_column(
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+    trainingtypes: Mapped[List["TrainingType"]] =  relationship(
+        secondary=policy_association, back_populates="policies"
+    )
+
+    def __str__(self):
+        return self.name
+
 
 class Training(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256), nullable=False)
     
-    traningtype_id: Mapped[int] = mapped_column(ForeignKey("training_type.id", ondelete="CASCADE"), nullable=False)
+    traningtype_id: Mapped[int] = mapped_column(ForeignKey("training_type.id"), nullable=False)
     traningtype: Mapped["TrainingType"] = relationship(backref="trainings")
     
     practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id"))
@@ -120,18 +177,16 @@ class Training(db.Model):
     )
     
     trainingevents: Mapped[List["TrainingEvent"]] = relationship(backref="training", cascade="all, delete")
-    
+
+
     
     def __str__(self):
         return self.name
     
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
-        onupdate=naive_utcnow,
+        onupdate=func.now(),
     )
-
-
-
 
 
 class Trainer(db.Model):
@@ -154,13 +209,14 @@ class Trainer(db.Model):
     
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
-        onupdate=naive_utcnow,
+        onupdate=func.now(),
     )
 
 
 class Location(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256),  nullable=False)
+    directions: Mapped[str] = mapped_column(Text(), default="", nullable=False)
     phone_number: Mapped[str] = mapped_column(String(32), default="", nullable=False)
     street: Mapped[str] = mapped_column(String(256), default="", nullable=False)
     address_line2: Mapped[str] = mapped_column(String(256), default="", nullable=False)
@@ -172,7 +228,6 @@ class Location(db.Model):
     country: Mapped[str] = mapped_column(String(256), default="", nullable=False)
     latitude: Mapped[str] = mapped_column(Double,  nullable=True)
     longitude: Mapped[str] = mapped_column(Double,  nullable=True)
-    directions: Mapped[str] = mapped_column(Text(), default="", nullable=False)
     
     practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id", ondelete="CASCADE"))
     practice: Mapped["Practice"] = relationship(backref="locations")
@@ -182,44 +237,96 @@ class Location(db.Model):
     
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
-        onupdate=naive_utcnow,
+        onupdate=func.now(),
     )
+    
+    @classmethod
+    def default_row(cls):
+        
+        obj = cls().query.filter(cls.name==cv('LOCATION_NAME')).first()
+        
+        if not obj:
+            obj = cls(name=cv('LOCATION_NAME'),
+                            street=cv('LOCATION_STREET'),
+                            house_number=cv('LOCATION_HN'),
+                            city=cv('LOCATION_CITY'),
+                            postal_code=cv('LOCATION_CITY'),
+                            practice=Practice.default_row())
 
+            db.session.add(obj)
+        db.session.commit()
+        return(obj)
 
-class StudentType(db.Model):
+class StudentStatus(db.Model):
+    CONFIG = 'DEFAULT_STUDENT_STATUS'
+
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256), nullable=False)
-    description: Mapped[str] = mapped_column(String(256), nullable=False)
+    description: Mapped[str] = mapped_column(String(256), nullable=True)
     
     def __str__(self):
         return self.name
     
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
-        onupdate=naive_utcnow,
+        onupdate=func.now(),
+    )
+
+    @classmethod
+    def default(cls):
+        return cls().query.filter(
+                    cls.name==cv(cls.CONFIG)
+                    ).first()
+
+class StudentType(db.Model):
+    CONFIG = 'DEFAULT_STUDENT_TYPE'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(256), nullable=False)
+    description: Mapped[str] = mapped_column(String(256), nullable=True)
+    
+    def __str__(self):
+        return self.name
+    
+    update_datetime: Mapped[datetime.datetime] = mapped_column(
+        server_default=func.now(),
+        onupdate=func.now(),
     )
 
 
 class Student(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    studenttype_id: Mapped[int] = mapped_column(ForeignKey(StudentType.id, ondelete="CASCADE"), nullable=False)
+    studenttype_id: Mapped[int] = mapped_column(ForeignKey(StudentType.id), nullable=False)
     studenttype: Mapped["StudentType"] = relationship(backref="students")
+
+    studentstatus_id: Mapped[int] = mapped_column(ForeignKey(StudentStatus.id), nullable=False)
+    studentstatus: Mapped["StudentStatus"] = relationship(backref="students")
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
     user: Mapped["User"] = relationship(backref=backref("student", uselist=False), single_parent=True)
+
     
-    practices: Mapped[List["Practice"]] =  relationship(  #@UndefinedVariable
+
+    practice: Mapped[List["Practice"]] =  relationship(uselist=False, 
         secondary=student_association, back_populates="students"
     )
-    
+
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
-        onupdate=naive_utcnow,
+        onupdate=func.now(),
     )
-
-
-
+    
+    @property
+    def fullname (self):
+        return self.user.fullname
+    
+    @fullname.setter
+    def fullname (self,string):
+        pass
+    
+    def __str__(self):
+        return self.user.fullname
 
 class User(db.Model, sqla.FsUserMixin):
     
@@ -257,6 +364,7 @@ permission_role = Table(
     Column("permission_id", ForeignKey("permission.id", ondelete="CASCADE"), primary_key=True),
 )
 
+
 class Permission(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(80), unique=True)
@@ -265,7 +373,7 @@ class Permission(db.Model):
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
-        onupdate=naive_utcnow,
+        onupdate=func.now(),
     )
 
     roles: Mapped[List["Role"]] = relationship(
@@ -289,13 +397,14 @@ class Permission(db.Model):
 
 class Role(db.Model, sqla.FsRoleMixin):
     __tablename__ = 'role'
+    CONFIG = 'DEFAULT_STUDENT_ROLE'
     
     permissions_items: Mapped[List[Permission]] = relationship(
         secondary=permission_role, back_populates="roles",
     )
     
     def __str__(self):
-        return  self.description if self.description else self.name
+        return  self.description or self.name
     
     @property
     def permissions(self):
@@ -337,6 +446,7 @@ class Content(db.Model):
         db.session.commit()
 
 
+    
 
 class Postalcodes(db.Model):
     postcode: Mapped[str] = mapped_column(String(32), primary_key=True)
@@ -368,6 +478,46 @@ class UserSettings(db.Model):
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
-        onupdate=naive_utcnow,
+        onupdate=func.now(),
     )
 
+
+                
+def role_student_default():
+    return Practice().query.filter(Practice.name==cv('BCOURSE_DEFAULT_STUDENT_ROLE')).first()
+
+
+
+class SystemInitValidations():
+    pass
+def db_init_data (app):
+
+
+    role = security.datastore.find_or_create_role(cv('SUPER_USER_ROLE'))
+    security.datastore.add_permissions_to_role(role, {cv('SUPER_USER_ROLE')})
+    user=security.datastore.find_user(email=cv('ADMIN_USER'))
+
+    practice = Practice.default_row()
+    Location.default_row()
+    TrainingType.default_row()
+    
+    
+        
+
+    if not user:
+        user = security.datastore.create_user(email=cv('ADMIN_USER'),
+                                              password=hash_password(cv('ADMIN_PASSWORD')))
+        
+        user.confirmed_at = security.datetime_factory()
+        trainer = Trainer()
+        trainer.user = user
+        trainer.practices.append(practice)
+        db.session.add(trainer)
+        
+    security.datastore.add_role_to_user(user, role)
+    StudentType.default_row()
+    StudentStatus.default_row()
+    Policy.default_row() 
+
+    
+    db.session.commit()

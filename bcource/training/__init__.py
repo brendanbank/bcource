@@ -5,6 +5,6 @@ import os
 from flask_security import auth_required
 import flask_security.decorators as fsd
 
-import bcource.training.training_admin
 
+import bcource.training.training_admin
 from bcource.training.training_views import training_bp
