@@ -19,6 +19,7 @@ flask-mailman = "*"
 flask-migrate = "*"
 messagebird = "*"
 wtforms-sqlalchemy = "*"
+flask-moment = "*"
 
 [dev-packages]
 

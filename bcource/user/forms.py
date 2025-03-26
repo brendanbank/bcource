@@ -16,11 +16,13 @@ class UserSettingsForm(FlaskForm):
     msg_signal  = MyBooleanField(
         _l('Enable Signal Messaging App'),
         divclass = "col-md-12",
+        default=True,
         render_kw={"class": "form-check-input"})
     
     msg_last_min_spots  = MyBooleanField(
         _l('Send me a message when last minute training spots open.'),
         divclass = "col-md-12",
+        default=True,
         render_kw={"class": "form-check-input"})
 
     emergency_contact  = MyTextAreaField(
