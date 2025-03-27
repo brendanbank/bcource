@@ -8,15 +8,10 @@
 			aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
-
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-
-
-			
 			<ul class="navbar-nav bg-dark me-auto mb-2 mb-lg-0" data-bs-theme="dark">
                 {% for menu in menu_structure %}
-                {% if has_role(menu.role) -%}
+                {% if current_user.has_role(menu.role) -%}
 				<li class="nav-item dropdown">
 				
 				<a class="nav-link dropdown-toggle {% if menu.active(request.endpoint) %} active{% endif %}" href="#" id="navbarDropdown"
@@ -33,7 +28,7 @@
                {% endif %}
                {% endfor %}
                
-               {% if has_role('trainer') -%}
+               {% if current_user.has_role('db-admin') -%}
 				<li class="nav-item dropdown">
 				
 				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
@@ -54,7 +49,30 @@
 				<li class="nav-item dropdown"></li>
 			</ul>
 			{% endif -%}
+               
+               {%- if _fs_is_user_authenticated(current_user) %}
+                         <span class="position-relative me-2">
+
+<svg width="22" height="22" viewBox="0 0 70 50" xmlns="http://www.w3.org/2000/svg" 
+     fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Envelope Body -->
+  <rect x="0" y="0" width="70" height="40" fill="none"/>
+  
+  <!-- Envelope Flap -->
+  <polyline points="0,0 35,25 70,0" fill="none"/>
+  
+</svg>
+<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 7pt;">
+                             9
+                             <span class="visually-hidden">unread messages</span>
+                           </span>
+                         </span>
+                         
+               {% endif -%}
+
 			<ul class="navbar-nav">
+
+
 				<li class="nav-item dropdown"><a
 					class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
 					role="button" data-bs-toggle="dropdown" aria-expanded="false">

@@ -14,7 +14,7 @@ from flask_security import Security, SQLAlchemySessionUserDatastore, roles_requi
 from bcource.helpers import MyFsModels
 from bcource.helpers import config_value as cv
 from flask_moment import Moment
-from bcource.helpers import has_role
+from bcource.helpers import admin_has_role
 from bcource.menus import Menu
 
 class Base(DeclarativeBase):
@@ -81,7 +81,7 @@ def create_app():
     from bcource.models import Content, User, Role
     
     app.jinja_env.globals.update(get_tag=Content.get_tag)
-    app.jinja_env.globals.update(has_role=has_role)
+    # app.jinja_env.globals.update(has_role=has_role)
     app.jinja_env.globals.update(menu_structure=menu_structure)
     
         
