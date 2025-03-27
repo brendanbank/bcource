@@ -11,11 +11,10 @@ import flask_security.mail_util
 from flask_mailman import Mail
 from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemySessionUserDatastore, roles_required, current_user, hash_password
-from bcource.helpers import MyFsModels
-from bcource.helpers import config_value as cv
 from flask_moment import Moment
-from bcource.helpers import admin_has_role
 from bcource.menus import Menu
+from bcource.helpers import MyFsModels, admin_has_role
+from bcource.helpers import config_value as cv
 
 class Base(DeclarativeBase):
     # __abstract__ = True
@@ -84,7 +83,6 @@ def create_app():
     # app.jinja_env.globals.update(has_role=has_role)
     app.jinja_env.globals.update(menu_structure=menu_structure)
     
-        
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
 
     security.init_app(app, user_datastore)  

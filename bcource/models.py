@@ -515,9 +515,6 @@ def db_init_data (app):
     practice = Practice.default_row()
     Location.default_row()
     TrainingType.default_row()
-    
-    
-        
 
     if not user:
         user = security.datastore.create_user(email=cv('ADMIN_USER'),
