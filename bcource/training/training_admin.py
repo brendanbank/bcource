@@ -18,11 +18,9 @@ class TrainerAdmin(TagMixIn, CkModelView, AuthModelView):
 class PracticeAdmin(AuthModelView):
     permission = "admin-practice-edit"
     
-    form_widget_args = {
-        'trainings':{
-            'disabled':True
-        }
-    }
+    form_columns = ["name","phone_number","street","address_line2","house_number","house_number_extention",
+                    "postal_code","city","state","country","trainers", "locations"]
+    column_list = ["name","city", "trainers"]
 
    
 class LocationAdmin(TagMixIn, CkModelView, AuthModelView):

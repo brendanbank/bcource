@@ -8,8 +8,9 @@ from flask_admin.contrib.sqla import ModelView
 from flask_security.models import sqla as sqla
 from flask_security import naive_utcnow
 from bcource import db, security
-from flask_security import hash_password
+from flask_security import hash_password, RoleMixin
 from bcource.helpers import config_value as cv
+from flask import current_app
 
 class Message(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -356,6 +357,20 @@ class User(db.Model, sqla.FsUserMixin):
         return relationship(
             "WebAuthn", back_populates="user", cascade="all, delete"
         )
+
+    def has_role(self, role: str | RoleMixin) -> bool:
+        """Returns `True` if the user identifies with the specified role.
+
+        :param role: A role name or `Role` instance"""
+        
+        if current_app.config['BCOURSE_SUPER_USER_ROLE'] in self.roles:
+            return True
+        
+        if isinstance(role, str):
+            return role in (role.name for role in self.roles)
+        else:
+            return role in self.roles
+
         
 permission_role = Table(
     "permission_role",
@@ -490,8 +505,8 @@ def role_student_default():
 
 class SystemInitValidations():
     pass
-def db_init_data (app):
 
+def db_init_data (app):
 
     role = security.datastore.find_or_create_role(cv('SUPER_USER_ROLE'))
     security.datastore.add_permissions_to_role(role, {cv('SUPER_USER_ROLE')})

@@ -6,7 +6,11 @@ from flask import url_for, current_app, request, abort, redirect
 from flask_principal import Identity, Permission, RoleNeed, identity_changed
 from collections import OrderedDict
 
-def get_url (form):
+def get_url (form, default=None):
+    
+    if not default:
+        default = 'home_bp.home'
+        
     if form.is_submitted():
         url=form.url.data
     else:
@@ -19,16 +23,16 @@ def get_url (form):
         
     for u in ['user_bp.settings', 'user_bp.update']:
         if url_for(u) == url:
-            url = url_for('home_bp.home')
+            url = url_for(default)
             break
     if url:
         form.url.data = url
     else:
-        form.url.data=url_for('home_bp.home')
+        form.url.data=url_for(default)
         
     return(url)
 
-def has_role(roles):
+def admin_has_role(roles):
     _roles = roles
     if type(roles) == str:
         _roles = [roles]

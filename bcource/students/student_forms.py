@@ -3,11 +3,13 @@ from flask_babel import _
 from flask_babel import lazy_gettext as _l
 import wtforms.validators as validators
 import bcource.models as models
+from wtforms_sqlalchemy.fields import  QuerySelectMultipleField, QuerySelectField, QueryCheckboxField, QueryRadioField
 
 from bcource.myformfields import (MyStringField, MySubmitField, MyPasswordField, MyHiddenField, 
                             MyEmailField, MyTelField, MyDateField, MySelectField, MyTextAreaField,
                             MyQuerySelectMultipleField, MyQuerySelectField, MyDateTimeField, MyDateTimeLocalField,
                             MyIntegerField, MyBooleanField)
+
 
 
 
