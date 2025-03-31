@@ -51,23 +51,35 @@
 			{% endif -%}
                
                {%- if _fs_is_user_authenticated(current_user) %}
-                         <span class="position-relative me-2">
+               
+               
+<div id="practiceheader" class="pe-2">
+<span>{{_("Practice")}}:</span>
+<select id="practice_selector" class="practice_selector bg-dark form-control-sm w-70" name="practice_selector"
+          onMouseleave="this.blur();"
+>
+{%- for practice in current_user.practices() %}
+<option value="{{practice.id}}" {% if session['practice'] == practice.id %} selected{% endif %}>{{practice.name}}</option>
+{%- endfor%}
+</select>
+</div>
 
-<svg width="22" height="22" viewBox="0 0 70 50" xmlns="http://www.w3.org/2000/svg" 
-     fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Envelope Body -->
-  <rect x="0" y="0" width="70" height="40" fill="none"/>
-  
-  <!-- Envelope Flap -->
-  <polyline points="0,0 35,25 70,0" fill="none"/>
-  
-</svg>
-<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 7pt;">
-                             9
-                             <span class="visually-hidden">unread messages</span>
-                           </span>
-                         </span>
-                         
+<a href="#" class="position-relative me-2">
+     <svg id="mailicon" class="ms-1" width="22" height="22" viewBox="0 0 70 50" xmlns="http://www.w3.org/2000/svg" 
+          fill="none" stroke="#9b9d9e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+
+       <!-- Envelope Body -->
+       <rect x="0" y="0" width="70" height="40" fill="none"/>
+       
+       <!-- Envelope Flap -->
+       <polyline points="0,0 35,25 70,0" fill="none"/>
+       
+     </svg>
+     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 7pt;">
+                                  9
+         <span class="visually-hidden">unread messages</span>
+     </span>
+</a>
                {% endif -%}
 
 			<ul class="navbar-nav">

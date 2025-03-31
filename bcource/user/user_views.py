@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, request, redirect
+from flask import Blueprint, render_template, request, flash, request, redirect, session
 from flask_babel import _
 from flask_security import current_user
 from bcource.models import UserSettings
@@ -7,8 +7,9 @@ from flask_security import auth_required
 from bcource.user.forms  import AccountDetailsForm, UserSettingsForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from bcource.helpers import get_url
-from bcource.user.user_status import UserProfileChecks
+from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
 from bcource import db
+from setuptools._vendor.jaraco.functools import except_
 
 # Blueprint Configuration
 user_bp = Blueprint(
@@ -18,10 +19,25 @@ user_bp = Blueprint(
     static_folder='static'
 )
 
+@user_bp.route('/practice', methods=['GET'])
+@auth_required()
+def set_practice():
+    print (session.get('practice_id'))
+    url = request.args.get('url')
+    practice_id = request.args.get('practice')
+    try:
+        session['practice'] = int(practice_id)
+    except:
+        pass
+    return redirect(url)
+
 
 @user_bp.route('/', methods=['GET', 'POST'])
 @auth_required()
 def index():
+    
+    #check if system tables are OK for user
+    UserProfileSystemChecks()
     
     validator = UserProfileChecks()
     validator.validate()
