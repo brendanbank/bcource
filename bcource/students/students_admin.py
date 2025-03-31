@@ -13,9 +13,13 @@ table_admin.add_view(StudentAdmin(Student, db.session, category='Student'))
 
 class StudentTypeAdmin(AuthModelView):
     permission = "admin-studenttype-edit"
+    column_list = ["name", "practice", "description"]
+
 
 class StudentStatusAdmin(AuthModelView):
     permission = "admin-studenttype-edit"
+    column_list = ["name", "practice", "description"]
+
 
 table_admin.add_view(StudentTypeAdmin(StudentType, db.session, category='Student'))
 table_admin.add_view(StudentTypeAdmin(StudentStatus, db.session, category='Student'))

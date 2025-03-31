@@ -9,6 +9,7 @@ from bcource.training.helper import make_table_header
 from bcource.models import Training, Practice, TrainingEvent
 from bcource.training.training_forms import TrainingForm, EventForm, TrainingDeleteForm
 from flask.globals import request
+from sqlalchemy import and_
 import json
 
 
@@ -106,14 +107,15 @@ def delete(id):
 @training_bp.route('/edit/<int:id>',methods=['GET', 'POST'])
 @training_bp.route('/edit/',methods=['GET', 'POST'])
 def edit_training(id=None):
+    
     practice=Practice.default_row() #@UndefinedVariable
     
     training = None
     
     if id != None:
-        training=Training().query.filter(Training.id==id).first()
+        training=Training().query.join(Practice).filter(and_(Training.id==id, Practice.shortname==Practice.default_row().shortname)).first()
         if not training:
-            abort(404)
+            return(redirect(url_for('training_bp.index')))
             
     
     form = TrainingForm(obj=training)
@@ -170,8 +172,16 @@ def index():
 
     delete_form = TrainingDeleteForm()
     
-    trainings = Training().query.filter(~Training.trainingevents.any()).all()
-    trainings_with_dates = Training().query.join(Training.trainingevents).order_by(TrainingEvent.start_time).all()
+    trainings = Training().query.join(Practice).filter(
+        and_(
+            Practice.shortname==Practice.default_row().shortname, 
+            ~Training.trainingevents.any())
+        ).all()
+        
+    trainings_with_dates = Training().query.join(Training.trainingevents).join(Practice).filter(
+        and_(
+            Practice.shortname==Practice.default_row().shortname)
+        ).order_by(TrainingEvent.start_time).all()
     
     for trainings_with_date in trainings_with_dates:
         trainings.append(trainings_with_date)
