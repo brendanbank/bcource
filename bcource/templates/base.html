@@ -37,6 +37,28 @@
 {% block js %}
 {% endblock %}
 	<script src="/static/local.js"></script>
+    <script>
+    const practiceSelector = jQuery('#practice_selector')
+    practiceSelector.on('change', function() {
+    	id = practiceSelector.val()
+    	practiceSelector.blur()
+		const currentUrl = window.location.href
+    	const data = {
+    		url: window.location.href,
+    		practice: id
+    	}
+    	q = encodeQueryData (data)
+    	window.location.href = "{{url_for('user_bp.set_practice')}}?" + q;
+    });
+    
+    practiceSelector.on('close', function() {
+    	console.log("test");
+    	practiceSelector.blur();
+    });
+    
+
+
+    </script>
   </body>
 </html>
 

@@ -1,26 +1,28 @@
 /* Custom CSS for line with text through */
 .div-line {
-  position: relative;
-  text-align: center;
+	position: relative;
+	text-align: center;
 }
+
 .hr-line {
-  position: absolute;
-  top: 50%;
-  left: 0%;
-  -webkit-transform: translateY(-50%);
-  transform: translateY(-50%);
-  width: 100%;
-  margin: 0;
-  z-index: -1000;
+	position: absolute;
+	top: 50%;
+	left: 0%;
+	-webkit-transform: translateY(-50%);
+	transform: translateY(-50%);
+	width: 100%;
+	margin: 0;
+	z-index: -1000;
 }
+
 .text-line {
-  margin: 0;
-  background-color: white;
-  z-index: 1000;
-  display: inline-block;
-  margin: 0 auto;
-  padding-left: 20px;
-  padding-right: 20px;
+	margin: 0;
+	background-color: white;
+	z-index: 1000;
+	display: inline-block;
+	margin: 0 auto;
+	padding-left: 20px;
+	padding-right: 20px;
 }
 
 .f-small {
@@ -29,11 +31,46 @@
 
 .dropdown-divider {
 	background-color: black;
-	}
+}
+
 .dropdown-menu {
 	background-color: #FFFFFF;
 	border: 1px solid black;
 }
+
 .dropdown-item {
-		color: #000000;
+	color: #000000;
+}
+
+svg#mailicon:hover {
+	stroke: rgba(255, 255, 255, 0.75);
+	transition: stroke .15s ease-in-out, background-color .15s ease-in-out,
+		border-color .15s ease-in-out;
+}
+
+svg#mailicon {
+	stroke: #9b9d9e;
+	transition: color .15s ease-in-out, background-color .15s ease-in-out,
+		border-color .15s ease-in-out;
+}
+
+div#practiceheader {
+	color: #9b9d9e;
+	transition: color .15s ease-in-out, background-color .15s ease-in-out,
+		border-color .15s ease-in-out;
+	font-size: 12pt;
+	pointer-events:all;
+}
+
+div#practiceheader:hover * {
+	color: rgba(255, 255, 255, 0.75);
+	transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+	border-color: rgba(255, 255, 255, 0.75);
+}
+
+select#practice_selector {
+	color: #9b9d9e;
+}
+
+select#practice_selector:hover {
 }

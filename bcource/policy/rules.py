@@ -233,8 +233,10 @@ class HasData(FriendlyNameRule):
             if self.variables:
                 for variable in self.variables:
                     data_value = self._get_value(self.data_obj, variable)
-                    if data_value == None or data_value == "":
+                    print (data_value)
+                    if data_value == None or data_value == "" or data_value == []:
                         self.status = False
+                        print ("data_value", False)
             else:
                 data_value = self._get_value(self.data_obj)
                 if data_value == None or data_value == "":

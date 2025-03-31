@@ -1,16 +1,14 @@
 import datetime
 from typing import List
 
-from sqlalchemy import Integer, String, Double,Date, ForeignKey, Table, Column, Text, TIMESTAMP, Boolean, DateTime
+from sqlalchemy import Integer, String, Double,Date, ForeignKey, Table, Column, Text, TIMESTAMP, Boolean, DateTime, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr, backref
 from sqlalchemy.sql import func
-from flask_admin.contrib.sqla import ModelView
 from flask_security.models import sqla as sqla
-from flask_security import naive_utcnow
 from bcource import db, security
 from flask_security import hash_password, RoleMixin
 from bcource.helpers import config_value as cv
-from flask import current_app
+from flask import current_app, session
 
 class Message(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -25,20 +23,6 @@ class Message(db.Model):
         DateTime(timezone=True), server_default=func.now()
     )
     
-    
-trainers_association = Table(
-    "trainers",
-    db.Model.metadata,
-    Column("practice_id", ForeignKey("practice.id", ondelete="CASCADE"), primary_key=True),
-    Column("trainer_id", ForeignKey("trainer.id", ondelete="CASCADE"), primary_key=True),
-)
-
-student_association = Table(
-    "students",
-    db.Model.metadata,
-    Column("practice_id", ForeignKey("practice.id", ondelete="CASCADE"), primary_key=True),
-    Column("student_id", ForeignKey("student.id", ondelete="CASCADE"), primary_key=True),
-)
 
 policy_association = Table(
     "training_policies",
@@ -47,8 +31,6 @@ policy_association = Table(
     Column("trainingtype_id", ForeignKey("training_type.id", ondelete="CASCADE"), primary_key=True),
 )
 
-
-
 class Practice(db.Model):
     
     CONFIG = 'DEFAULT_PRACTICE'
@@ -56,6 +38,7 @@ class Practice(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     
     name: Mapped[str] = mapped_column(String(256), nullable=False)
+    shortname: Mapped[str] = mapped_column(String(256), nullable=False)
     phone_number: Mapped[str] = mapped_column(String(32), nullable=True)
     street: Mapped[str] = mapped_column(String(256), nullable=True)
     address_line2: Mapped[str] = mapped_column(String(256), nullable=True)
@@ -65,18 +48,7 @@ class Practice(db.Model):
     city: Mapped[str] = mapped_column(String(256), nullable=True)
     state: Mapped[str] = mapped_column(String(256), nullable=True)
     country: Mapped[str] = mapped_column(String(256), nullable=True)
-
-    trainers: Mapped[List["Trainer"]] =  relationship(
-        secondary=trainers_association, back_populates="practices"
-    )
     
-    students: Mapped[List["Student"]] =  relationship(
-        secondary=student_association, back_populates="practice"
-    )
-    
-
-
-        
     def __str__(self):
         return self.name
 
@@ -84,16 +56,52 @@ class Practice(db.Model):
         server_default=func.now(),
         onupdate=func.now(),
     )
-    
 
+    @classmethod
+    def default_row(cls, practice=None):
 
-class TrainingType(db.Model):
+        obj = None
+        
+        if (practice == None and session and session.get('practice')):
+            try:
+                practice_id = int(session.get('practice'))
+                obj = cls().query.get(practice_id)
+            except:
+                None
+                    
+        if obj == None:
+            if practice == None:
+                practice = cv('DEFAULT_PRACTICE_SHORTNAME')
+                
+            obj = cls().query.filter(cls.shortname==practice).first()
+        
+        if not obj:
+            obj = cls(name=cv('DEFAULT_PRACTICE'),
+                      shortname=cv('DEFAULT_PRACTICE_SHORTNAME'))
+            db.session.add(obj)
+        db.session.commit()
+        return(obj)
+
+class GetAll(object):
+    @classmethod
+    def get_all(cls, practice=None):
+        if not practice:
+            practice = Practice.default_row().shortname
+            
+        return cls().query.join(Practice).filter(
+                                    Practice.shortname==practice
+                                    ).order_by(cls.name).all()
+
+class TrainingType(db.Model, GetAll):
     
     CONFIG='DEFAULT_TRAINING_TYPE'
     
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256), nullable=False)
     description: Mapped[str] = mapped_column(Text(), nullable=True)
+
+    practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id"))
+    practice: Mapped["Practice"] = relationship(backref="trainingtypes")
     
     def __str__(self):
         return self.name
@@ -106,7 +114,19 @@ class TrainingType(db.Model):
     policies: Mapped[List["Policy"]] =  relationship(
         secondary=policy_association, back_populates="trainingtypes"
     )
+    
+    @classmethod
+    def default_row(cls):
+        
+        obj = cls().query.filter(cls.name==cv('DEFAULT_TRAINING_TYPE')).first()
+        
+        if not obj:
+            obj = cls(name=cv('DEFAULT_TRAINING_TYPE'),
+                            practice=Practice.default_row())
 
+            db.session.add(obj)
+        db.session.commit()
+        return(obj)
 
 training_trainers_association = Table(
     "training_trainers",
@@ -122,7 +142,6 @@ class TrainingEvent(db.Model):
     end_time: Mapped[datetime.datetime] = mapped_column(TIMESTAMP(timezone=True))
     
     training_id: Mapped[int] = mapped_column(ForeignKey("training.id"), nullable=True)
-    
 
     location_id: Mapped[int] = mapped_column(ForeignKey("location.id"))
     location: Mapped["Location"] = relationship(backref="locations")
@@ -131,10 +150,6 @@ class TrainingEvent(db.Model):
     
     def __str__(self):
         return f'{self.start_time}/{self.location}'
-
-    # @property
-    # def start_date(self):
-    #     return f'{self.start_time}'
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
@@ -152,13 +167,29 @@ class Policy(db.Model):
         server_default=func.now(),
         onupdate=func.now(),
     )
+    
+    practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id"))
+    practice: Mapped["Practice"] = relationship(backref="policies")
+
     trainingtypes: Mapped[List["TrainingType"]] =  relationship(
         secondary=policy_association, back_populates="policies"
     )
 
     def __str__(self):
-        return self.name
+        return f'{self.practice} / {self.name}'
+    
+    @classmethod
+    def default_row(cls):
+        
+        obj = cls().query.filter(cls.name==cv('DEFAULT_TRAINING_POLICY')).first()
+        
+        if not obj:
+            obj = cls(name=cv('DEFAULT_TRAINING_POLICY'),
+                            practice=Practice.default_row())
 
+            db.session.add(obj)
+        db.session.commit()
+        return(obj)
 
 class Training(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -179,8 +210,6 @@ class Training(db.Model):
     
     trainingevents: Mapped[List["TrainingEvent"]] = relationship(backref="training", cascade="all, delete")
 
-
-    
     def __str__(self):
         return self.name
     
@@ -191,19 +220,24 @@ class Training(db.Model):
 
 
 class Trainer(db.Model):
+    
+    __table_args__ = (
+        UniqueConstraint("user_id", "practice_id", name="practice_user_unique"),
+    )
+
     id: Mapped[int] = mapped_column(primary_key=True)
     bio: Mapped[str] = mapped_column(Text(), nullable=True)
+    
+    
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
-    user: Mapped["User"] = relationship(uselist=False,backref="trainer")
+    user: Mapped["User"] = relationship(backref="trainers")
 
-    practices: Mapped[List["Practice"]] =  relationship(
-        secondary=trainers_association, back_populates="trainers"
-    )
+    practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id", ondelete="CASCADE"))
+    practice: Mapped["Practice"] = relationship(backref="trainers")
     
     trainings: Mapped[List["Training"]] =  relationship(
         secondary=training_trainers_association, back_populates="trainers"
     )
-
     
     def __str__(self):
         return f'{self.user.fullname}'
@@ -258,12 +292,17 @@ class Location(db.Model):
         db.session.commit()
         return(obj)
 
-class StudentStatus(db.Model):
+
+class StudentStatus(db.Model, GetAll):
     CONFIG = 'DEFAULT_STUDENT_STATUS'
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256), nullable=False)
     description: Mapped[str] = mapped_column(String(256), nullable=True)
+    
+    practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id"))
+    practice: Mapped["Practice"] = relationship(backref="studentstatuses")
+
     
     def __str__(self):
         return self.name
@@ -273,13 +312,21 @@ class StudentStatus(db.Model):
         onupdate=func.now(),
     )
 
+                                    
     @classmethod
-    def default(cls):
-        return cls().query.filter(
-                    cls.name==cv(cls.CONFIG)
-                    ).first()
+    def default_row(cls):
+        
+        obj = cls().query.filter(cls.name==cv('DEFAULT_STUDENT_STATUS')).first()
+        
+        if not obj:
+            obj = cls(name=cv('DEFAULT_STUDENT_STATUS'),
+                            practice=Practice.default_row())
 
-class StudentType(db.Model):
+            db.session.add(obj)
+        db.session.commit()
+        return(obj)
+
+class StudentType(db.Model, GetAll):
     CONFIG = 'DEFAULT_STUDENT_TYPE'
     
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -289,14 +336,42 @@ class StudentType(db.Model):
     def __str__(self):
         return self.name
     
+    practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id"))
+    practice: Mapped["Practice"] = relationship(backref="studenttypes")
+
+    
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
     )
+    
 
+    @classmethod
+    def default_row(cls):
+        
+        obj = cls().query.filter(cls.name==cv('DEFAULT_STUDENT_TYPE')).first()
+        
+        if not obj:
+            obj = cls(name=cv('DEFAULT_STUDENT_TYPE'),
+                            practice=Practice.default_row())
+
+            db.session.add(obj)
+        db.session.commit()
+        return(obj)
 
 class Student(db.Model):
+    
+    __table_args__ = (
+        UniqueConstraint("user_id", "practice_id", name="practice_user_unique"),
+    )
+
     id: Mapped[int] = mapped_column(primary_key=True)
+    
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    user: Mapped["User"] = relationship(backref=backref("students"))
+    
+    practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id"))
+    practice: Mapped["Practice"] = relationship(backref="students")
 
     studenttype_id: Mapped[int] = mapped_column(ForeignKey(StudentType.id), nullable=False)
     studenttype: Mapped["StudentType"] = relationship(backref="students")
@@ -304,14 +379,6 @@ class Student(db.Model):
     studentstatus_id: Mapped[int] = mapped_column(ForeignKey(StudentStatus.id), nullable=False)
     studentstatus: Mapped["StudentStatus"] = relationship(backref="students")
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
-    user: Mapped["User"] = relationship(backref=backref("student", uselist=False), single_parent=True)
-
-    
-
-    practice: Mapped[List["Practice"]] =  relationship(uselist=False, 
-        secondary=student_association, back_populates="students"
-    )
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
@@ -370,7 +437,11 @@ class User(db.Model, sqla.FsUserMixin):
             return role in (role.name for role in self.roles)
         else:
             return role in self.roles
-
+        
+    def practices (self):
+        return (Practice().query.all())
+        
+        
         
 permission_role = Table(
     "permission_role",
@@ -378,7 +449,6 @@ permission_role = Table(
     Column("role_id", ForeignKey("role.id", ondelete="CASCADE"), primary_key=True),
     Column("permission_id", ForeignKey("permission.id", ondelete="CASCADE"), primary_key=True),
 )
-
 
 class Permission(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -523,7 +593,7 @@ def db_init_data (app):
         user.confirmed_at = security.datetime_factory()
         trainer = Trainer()
         trainer.user = user
-        trainer.practices.append(practice)
+        trainer.practice = practice
         db.session.add(trainer)
         
     security.datastore.add_role_to_user(user, role)

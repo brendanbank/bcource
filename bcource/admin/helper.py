@@ -48,6 +48,7 @@ class AuthModelView(ModelView):
     
     edit_template = 'admin/admin-edit.html'
     create_template = 'admin/admin-edit.html'
+    list_template = 'admin/admin-list.html'
     
     
 

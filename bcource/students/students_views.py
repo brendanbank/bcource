@@ -3,10 +3,10 @@ from flask_babel import _
 from flask import current_app as app
 from bcource.helpers import admin_has_role
 from bcource import menu_structure, db
-from bcource.models import Student, StudentStatus, StudentType, User
+from bcource.models import Student, StudentStatus, StudentType, User, Practice
 from bcource.students.student_forms import StudentForm
 from bcource.helpers import get_url
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 # Blueprint Configuration
 students_bp = Blueprint(
@@ -26,8 +26,11 @@ main_menu.add_menu('Student Administration', 'students_bp.index', role='trainer'
 
 def make_filters():
     filters = []
-    filters.append(('studentstatus', 'Student Status', StudentStatus().query.order_by(StudentStatus.name).all()))
-    filters.append(('studenttype', 'Student Type', StudentType().query.order_by(StudentType.name).all()))
+    filters.append(('studentstatus', 'Student Status', 
+                    StudentStatus.get_all()))
+    
+    filters.append(('studenttype', 'Student Type', 
+                    StudentType.get_all()))
     return(filters)
 
 def process_filters():
@@ -48,9 +51,18 @@ def students_query():
         return Student().query.all()
     
     if not selected_filters.get('studentstatus') and not selected_filters.get('studenttype'):
-        return Student().query.all()
+        
+        q = Student().query.join(Practice).join(User).filter(
+                        Practice.shortname==Practice.default_row().shortname
+                        ).order_by(User.first_name, 
+                                   User.last_name)
+        return q.all()
+                                   
 
-    q =  Student().query.join(Student.user).filter(or_( 
+                        
+                        
+    q =  Student().query.join(User).join(Practice).filter(and_(
+                Practice.shortname==Practice.default_row().shortname), or_( 
         Student.studentstatus_id.in_(selected_filters.get('studentstatus')), 
         Student.studenttype_id.in_(selected_filters.get('studenttype')))).order_by(
             User.first_name, 
@@ -95,6 +107,8 @@ def student(id):
     
     if not student:
         abort(404)
+        
+    print (Practice.default_row())
     
     form = StudentForm(obj=student)
     

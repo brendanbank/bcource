@@ -12,7 +12,7 @@ from flask_babel import lazy_gettext as _l
 from bcource.models import TrainingType
 
 def training_types():
-    return TrainingType().query.order_by(TrainingType.name).all()
+    return TrainingType.get_all()
 
 # def cancellation_types ():
 #     return TrainingPolicy().query.order_by(TrainingPolicy.name).all()

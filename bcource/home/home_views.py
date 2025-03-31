@@ -4,7 +4,7 @@ from flask_security import current_user
 import os
 from flask_security import auth_required
 import flask_security.decorators as fsd
-from bcource.user import UserProfileChecks
+from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
 
 # Blueprint Configuration
 home_bp = Blueprint(
@@ -20,8 +20,13 @@ home_bp = Blueprint(
 def home():
     # return render_template("home/index.html")
 
+    #check if system tables are OK for user
+    UserProfileSystemChecks().validate()
+    
     validator = UserProfileChecks()
     validator.validate()
+    
+    return render_template("user/profile-check.html", validator=validator)
     
     return render_template("user/profile-check.html", validator=validator)
 
