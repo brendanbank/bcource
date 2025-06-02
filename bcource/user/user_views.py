@@ -1,10 +1,10 @@
-from flask import Blueprint, render_template, request, flash, request, redirect, session
+from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for
 from flask_babel import _
 from flask_security import current_user
-from bcource.models import UserSettings
+from bcource.models import UserSettings, Message,User
 from flask import current_app as app
 from flask_security import auth_required
-from bcource.user.forms  import AccountDetailsForm, UserSettingsForm
+from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages
 from werkzeug.security import generate_password_hash, check_password_hash
 from bcource.helpers import get_url
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
@@ -60,6 +60,25 @@ def update():
     
     return render_template("user/update-account.html", form=form)
 
+@user_bp.route('/message', methods=['GET', 'POST'])
+@auth_required()
+def message():
+    form = UserMessages()
+    
+    if form.validate_on_submit() and User == type(form.envelop_to.data):
+        envelop_from = current_user
+        message = Message()
+        form.populate_obj(message)
+        message.envelop_from = envelop_from
+        db.session.add(message)
+        db.session.commit()
+        flash(_("Message successfully sent."))
+        
+        return redirect(url_for('user_bp.message'))
+    
+    return render_template("user/message.html", form=form)
+    
+    
 @user_bp.route('/account-settings', methods=['GET', 'POST'])
 @auth_required()
 def settings():
