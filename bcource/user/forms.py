@@ -1,11 +1,41 @@
 from flask_wtf import FlaskForm, RecaptchaField
 
 from ..myformfields import (MyStringField, MySubmitField, MyPasswordField, MyHiddenField, 
-                            MyEmailField, MyTelField, MyDateField, MySelectField, MyBooleanField, MyTextAreaField)
+                            MyEmailField, MyTelField, MyDateField, MySelectField, MyBooleanField, MyTextAreaField,
+                            MyQuerySelectField)
 
 import wtforms.validators as validators
 from flask_babel import lazy_gettext as _l
+import bcource.models as models
     
+class UserMessages(FlaskForm):
+    form_description = _l("Send Message")
+    formclass =  "col-md-6"
+    hrfields = { 'envelop_to': '', "submit": ''
+    }
+    
+    envelop_to = MyQuerySelectField(_l("To"), [validators.DataRequired()],
+                                       query_factory=lambda: models.User().query.order_by(models.User.first_name, models.User.last_name).all(),
+                                      divclass="col-md-12 mt-1",
+                                      render_kw={"class": "position-relative form-control form-select select2-js"}, #select2-js
+                                      )
+    
+    subject = MyStringField(
+        _l('Subject'), [validators.DataRequired()],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control"})
+
+    body = MyTextAreaField(
+        _l('Message'), [validators.DataRequired()],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control"})
+
+    
+    submit = MySubmitField(_l('Send'), 
+        render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1"},
+        divclass="col-md-12")
+
+
 
 class UserSettingsForm(FlaskForm):
     form_description = _l("Update account settings")
