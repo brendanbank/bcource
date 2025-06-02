@@ -9,20 +9,7 @@ from bcource import db, security
 from flask_security import hash_password, RoleMixin
 from bcource.helpers import config_value as cv
 from flask import current_app, session
-
-class Message(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    subject: Mapped[str] = mapped_column(String(256), nullable=False)
-    body: Mapped[str] = mapped_column((Text()), nullable=False)
-    sent_at: Mapped[datetime.datetime] = mapped_column(TIMESTAMP(timezone=True),
-                                                        server_default=func.now())
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
-    user: Mapped["User"] = relationship(backref="sent_messages")
-
-    created_date: Mapped[datetime.datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    
+from bcource.message_models import Message    
 
 policy_association = Table(
     "training_policies",
@@ -417,7 +404,7 @@ class User(db.Model, sqla.FsUserMixin):
         return f'{self.first_name} {self.last_name}'
 
     def __str__(self):
-        return f'{self.first_name} {self.last_name} <{self.email}>'
+        return f'{self.first_name} {self.last_name}'
 
     @declared_attr
     def webauthn(cls):
@@ -441,8 +428,13 @@ class User(db.Model, sqla.FsUserMixin):
     def practices (self):
         return (Practice().query.all())
         
-        
-        
+user_message = Table(
+    "user_message",
+    db.Model.metadata,
+    Column("user_id", ForeignKey("user.id", ondelete="CASCADE"), primary_key=True),
+    Column("message_id", ForeignKey("message.id", ondelete="CASCADE"), primary_key=True),
+)
+
 permission_role = Table(
     "permission_role",
     db.Model.metadata,
