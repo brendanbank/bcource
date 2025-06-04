@@ -5,6 +5,14 @@ from flask_security import current_user
 from flask import url_for, current_app, request, abort, redirect
 from flask_principal import Identity, Permission, RoleNeed, identity_changed
 from collections import OrderedDict
+import pytz
+
+
+def db_datetime(db_datetime_notz):
+    return db_datetime_notz.replace(tzinfo=pytz.timezone('UTC'))
+
+def db_datetime_str(db_datetime_notz):
+    return db_datetime(db_datetime_notz).astimezone().strftime("%a, %b %d %Y, %H:%M %p %Z")
 
 def get_url (form, default=None):
     

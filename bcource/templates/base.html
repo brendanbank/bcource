@@ -11,6 +11,7 @@
 	    crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/css/intlTelInput.css">
+    {% block css_content %}{% endblock %}
     
     <link rel="stylesheet" href="/static/local.css">
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -34,9 +35,11 @@
 	  crossorigin="anonymous"></script>
 	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+     <script src="/static/local.js"></script>
+
 {% block js %}
 {% endblock %}
-	<script src="/static/local.js"></script>
+
     <script>
     const practiceSelector = jQuery('#practice_selector')
     practiceSelector.on('change', function() {
