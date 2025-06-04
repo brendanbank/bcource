@@ -7,6 +7,7 @@ from bcource.models import Student, StudentStatus, StudentType, User, Practice
 from bcource.students.student_forms import StudentForm
 from bcource.helpers import get_url
 from sqlalchemy import or_, and_
+import bcource.messages as bmsg 
 
 # Blueprint Configuration
 students_bp = Blueprint(
@@ -88,13 +89,16 @@ def search():
 
     query_term = request.args.get('q')
     r = []
+    
     if query_term:
-        r = Student().query.join(Student.user).filter(or_( 
+        r = Student().query.join(Student.user).join(Practice).filter(and_(
+                Practice.shortname==Practice.default_row().shortname), or_( 
             User.first_name.ilike(f'%{query_term}%'), 
             User.last_name.ilike(f'%{query_term}%'),
             User.email.ilike(f'%{query_term}%'))).order_by(User.first_name, User.last_name).all()
     else:
-        r = Student().query.join(Student.user).order_by(User.first_name, User.last_name).all()
+        r = Student().query.join(Student.user).join(Practice).filter(
+            Practice.shortname==Practice.default_row().shortname).order_by(User.first_name, User.last_name).all()
         
     for student in r:
         results["results"].append({"id": student.id,  "text":  student.fullname})
@@ -107,9 +111,7 @@ def student(id):
     
     if not student:
         abort(404)
-        
-    print (Practice.default_row())
-    
+            
     form = StudentForm(obj=student)
     
     
@@ -121,7 +123,11 @@ def student(id):
     if  form.validate_on_submit():
         form.populate_obj(student)
         db.session.commit()
-        flash(_('Student %s has been updated' % student.fullname   ))
+        flash(_('Student %s has been updated' % student.fullname))
+        
+        if student.studentstatus.name == "active":
+            bmsg.StudentStatusActive(envelop_to=[student.user], status=student.studentstatus).send()
+        
         return redirect(url)
     
     return render_template("students/student.html", form=form)

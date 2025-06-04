@@ -11,6 +11,7 @@ from bcource.training.training_forms import TrainingForm, EventForm, TrainingDel
 from flask.globals import request
 from sqlalchemy import and_
 import json
+from flask_babel import lazy_gettext as _l
 
 
 # Blueprint Configuration
@@ -124,10 +125,6 @@ def edit_training(id=None):
         form.form_description = _("Create Training details")
     else:
         form.form_description = _("Edit Training details")
-        
-            
-    if form.is_submitted():
-        print (request.form)
     
     eventform = EventForm()
     eventform.event_location.query=practice.locations
@@ -164,8 +161,9 @@ def edit_training(id=None):
     return render_template("training/training.html", form=form, eventform=eventform, events=json.dumps(events))
 
 
-main_menu = menu_structure.add_menu('Training Administration', role='trainer')
-main_menu.add_menu('Training Editor', 'training_bp.index', role='trainer')
+training_admin = menu_structure.add_menu(_l('Training Administration'), role='trainer')
+training_admin.add_menu(_l('Training Editor'), 'training_bp.index', role='trainer')
+
 
 @training_bp.route('/')
 def index():
@@ -187,6 +185,6 @@ def index():
         trainings.append(trainings_with_date)
         
         
-    training_headers = make_table_header([_('Name'), _('Practice'), _('Training Type'), _('Trainers'), _('Date/Location')])
+    training_headers = make_table_header([_('Name'), _('Training Type'), _('Trainers'), _('Date/Location')])
     return render_template("training/trainings.html", headers=training_headers, trainings=trainings, delete_form=delete_form)
 

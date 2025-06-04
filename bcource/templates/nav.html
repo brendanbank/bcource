@@ -10,8 +10,11 @@
 		</button>
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
 			<ul class="navbar-nav bg-dark me-auto mb-2 mb-lg-0" data-bs-theme="dark">
+               <li class="nav-item"><a class="nav-link" aria-current="page"
+                         href="{{url_for('home_bp.home')}}">Home</a></li>
+               
                 {% for menu in menu_structure %}
-                {% if current_user.has_role(menu.role) -%}
+                {% if current_user.has_role(menu.role) or menu.role == None -%}
 				<li class="nav-item dropdown">
 				
 				<a class="nav-link dropdown-toggle {% if menu.active(request.endpoint) %} active{% endif %}" href="#" id="navbarDropdown"
@@ -40,15 +43,13 @@
 							href="{{url_for('admin.index')}}">Database Admin</a></li>
 					</ul>
 				</li>
-				<li class="nav-item"><a class="nav-link" aria-current="page"
-					href="#">Home</a></li>
-			</ul>
                
 			{% else %}
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 				<li class="nav-item dropdown"></li>
 			</ul>
 			{% endif -%}
+               </ul>
                
                {%- if _fs_is_user_authenticated(current_user) %}
                
@@ -64,8 +65,8 @@
 </select>
 </div>
 
-<a href="#" class="position-relative me-2">
-     <svg id="mailicon" class="ms-1" width="22" height="22" viewBox="0 0 70 50" xmlns="http://www.w3.org/2000/svg" 
+<a href="{{ url_for('user_bp.messages') }}" class="position-relative me-2">
+     <svg id="mailicon" class="ms-1" width="30" height="30" viewBox="-10 -10 90 70" xmlns="http://www.w3.org/2000/svg" 
           fill="none" stroke="#9b9d9e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
 
        <!-- Envelope Body -->
@@ -75,10 +76,12 @@
        <polyline points="0,0 35,25 70,0" fill="none"/>
        
      </svg>
+     {% if current_user.unread_messages %}
      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 7pt;">
-                                  9
+                                   {{current_user.unread_messages}}
          <span class="visually-hidden">unread messages</span>
      </span>
+         {% endif %}
 </a>
                {% endif -%}
 
