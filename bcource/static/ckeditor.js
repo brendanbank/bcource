@@ -325,4 +325,4 @@ const LICENSE_KEY =
 	}
 };
 
-ClassicEditor.create(document.querySelector('.ckeditor'), editorConfig);
+editor = ClassicEditor.create(document.querySelector('.ckeditor'), editorConfig);

@@ -1,0 +1,1 @@
+from bcource.scheduler.scheduler_views import scheduler_bp

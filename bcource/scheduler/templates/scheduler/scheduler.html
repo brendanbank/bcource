@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+
+{% block nav %}
+    {% include 'nav.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>{{ _('Training Scheduler') }}</h1>
+    </div>
+
+<div class="container">
+<div class="row">
+<div class="col-md-2">
+
+<!-- menu --> 
+<div class="row">
+  <small class="col-md-12"><strong>{{_('Training Search')}}</strong></small>
+  
+     <div class="">
+     <select  class="col-12" id="training_search" class="training_search"></select>
+     </div>
+  </div>
+<div class="row pt-3">
+          <form id="filters" method="get">
+               <button class="col-10 btn btn-outline-dark btn-sm mb-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+                    type="submit"
+                    value="submit"
+                    id="filter">
+                    {{_("Filter")}}</button>
+
+               {% for name, text, items_list in filters %}
+               <div class="ps-0 pt-2">
+                    <small><strong>{{text}}</strong></small>
+               </div>
+               {% for item in items_list %}
+               <div class="form-check ">
+                    <input
+                         class="form-check-input"
+                         type="checkbox"
+                         {% if
+                         item.id
+                         in
+                         filters_checked[name] %} checked{% endif %}
+                    value="{{item.id}}"
+                         name="{{name}}"
+                         id="{{name}}_{{item.id}}"
+                    > <label
+                         class="form-check-label col-10"
+                         for="{{name}}_{{item.id}}"
+                    ><small>{{_(item.name)}} </small></label>
+               </div>
+               {% endfor -%} {% endfor -%}
+               <div class="pt-3">
+                    <button
+                         name="submit"
+                         id="submit"
+                         class="col-10 btn btn-outline-dark btn-sm mt-0"
+                         style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+                         type="submit"
+                         value="clear"
+                    >{{_("Clear filers")}}</button>
+                    </div>
+          </form>
+
+</div>
+
+</div>
+<style>
+.evendiv div{background-color: rgb(244, 244, 244);
+
+}
+.odddiv div{background-color: rgb(255, 255, 255);
+
+}
+
+.row.highlight:hover > * {
+    background-color: rgb(230, 230, 230);
+}
+</style>
+
+<div class="col-md-10">
+     <div>
+          <div class="row border-bottom border-start border-top border-end pb-1" >
+               <div class="col-md-1 fw-semibold">#</div>
+               <div class="col-md-2 fw-semibold">{{_('Name')}}</div>
+               <div class="col-md-1 fw-semibold">{{_('Type')}}</div>
+               <div class="col-md-3 fw-semibold">{{_('Date')}}</div>
+               <div class="col-md-5 fw-semibold">{{_('Location')}}</div>
+          </div>
+     </div>
+          {% for training in training -%}
+      <div class=" {{ loop.cycle('evendiv', 'odddiv')}}">
+              <div class="row highlight border-bottom border-start border-bottom border-end">
+               <div class="col-1 pt-1 pb-1">
+                    <a
+                         class="icon-link link-body-emphasis"
+                         href="#"
+                    > <i class="bi bi-person-fill-add" data-toggle="tooltip" data-placement="top" title="{{_('Add yourself to this training.')}}"></i>
+
+                    </a>
+               </div>
+               <div class="col-md-2 pt-1 pb-1 small">{{ training.name }}</div>
+               <div class="col-md-1 pt-1 pb-1 small">{{ training.traningtype.name }}</div>
+               <div class="col-md-3 pt-1 pb-1 small">{{ db_datetime_str(training.trainingevents[0].start_time) }}</div>
+               <div class="col-md-5 pt-1 pb-1 small">{{ training.trainingevents[0].location }}</div>
+          </div>
+      </div>
+          {% endfor %}
+          
+
+
+
+
+</div>
+
+
+</div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+<script type="text/javascript">
+     $('#training_search').select2({
+          placeholder : 'start typing',
+          containerCssClass : "myFont",
+          ajax : {
+               url : '/scheduler/search',
+               dataType : 'json'
+          // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+          }
+     });
+
+     $('#training_search').on('change', function() {
+          var id = $("#training_search option:selected").val();
+
+          const href = "/scheduler/edit/" + id;
+          window.location.href = href
+     })
+</script>
+
+{% endblock %}
