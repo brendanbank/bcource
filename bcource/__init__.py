@@ -13,7 +13,7 @@ from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemySessionUserDatastore, roles_required, current_user, hash_password
 from flask_moment import Moment
 from bcource.menus import Menu
-from bcource.helpers import MyFsModels, admin_has_role
+from bcource.helpers import MyFsModels, admin_has_role, db_datetime, db_datetime_str
 from bcource.helpers import config_value as cv
 
 class Base(DeclarativeBase):
@@ -80,8 +80,14 @@ def create_app():
     from bcource.models import Content, User, Role
     
     app.jinja_env.globals.update(get_tag=Content.get_tag)
+    
+    
+    
     # app.jinja_env.globals.update(has_role=has_role)
     app.jinja_env.globals.update(menu_structure=menu_structure)
+    app.jinja_env.globals.update(db_datetime=db_datetime)
+    app.jinja_env.globals.update(db_datetime_str=db_datetime_str)
+    
     
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
 
@@ -95,6 +101,7 @@ def create_app():
         import bcource.training as training
         import bcource.user as user
         import bcource.students as students
+        import bcource.scheduler as scheduler
         
         from bcource.api import api_calls
         from bcource.admin import admin_views
@@ -108,10 +115,13 @@ def create_app():
         app.register_blueprint(api_calls.api_bp)
         app.register_blueprint(students.students_bp)        
         app.register_blueprint(training.training_bp)   
+        app.register_blueprint(scheduler.scheduler_bp)   
              
         app.before_request(bcource.admin.authorize_user)
         
-    
+        main_menu = menu_structure.add_menu('Privacy')
+        main_menu.add_menu('Privacy Policy', 'home_bp.privacy')
+
         db.create_all()  # Create sql tables for our data models
 
         def get_locale():

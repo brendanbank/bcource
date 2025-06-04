@@ -1,7 +1,8 @@
 import datetime
 from typing import List
+from sqlalchemy.dialects.mysql import LONGTEXT
 
-from sqlalchemy import Integer, String, Double,Date, ForeignKey, Table, Column, Text, TIMESTAMP, Boolean, DateTime, UniqueConstraint
+from sqlalchemy import Integer, String, Double,Date, ForeignKey, Table, Column, Text, TIMESTAMP, Boolean, DateTime, UniqueConstraint, and_
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr, backref
 from sqlalchemy.sql import func
 from flask_security.models import sqla as sqla
@@ -9,7 +10,7 @@ from bcource import db, security
 from flask_security import hash_password, RoleMixin
 from bcource.helpers import config_value as cv
 from flask import current_app, session
-from bcource.message_models import Message    
+import pytz
 
 policy_association = Table(
     "training_policies",
@@ -177,6 +178,28 @@ class Policy(db.Model):
             db.session.add(obj)
         db.session.commit()
         return(obj)
+
+
+    
+class TrainingApplication(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    application_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), 
+                                                                nullable=True, 
+                                                                server_default=func.now())
+
+    status: Mapped[str] = mapped_column(String(256), nullable=False)
+
+    student_id: Mapped[int] = mapped_column(ForeignKey("student.id"))
+    student: Mapped["Student"] = relationship(backref=backref("trainingapplications"))
+
+    training_id: Mapped[int] = mapped_column(ForeignKey("training.id"))
+    training: Mapped["Training"] = relationship(backref=backref("trainingapplications"))
+
+    
+    update_datetime: Mapped[datetime.datetime] = mapped_column(
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
 
 class Training(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -383,6 +406,62 @@ class Student(db.Model):
     def __str__(self):
         return self.user.fullname
 
+class UserMessageAssociation(db.Model):
+    __tablename__ = "user_message"
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"), primary_key=True)
+    message_id: Mapped[int] = mapped_column(ForeignKey("message.id", ondelete="CASCADE"), primary_key=True)
+
+    message_deleted: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)  
+    message_read: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)    
+
+    message: Mapped["Message"] = relationship(back_populates="envelop_to"
+                                              )
+    user: Mapped["User"] = relationship(back_populates="messages")
+
+class Message(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    subject: Mapped[str] = mapped_column(String(256), nullable=False)
+    body: Mapped[str] = mapped_column((Text()), nullable=False)
+    
+    envelop_from_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    envelop_from: Mapped["User"] = relationship(backref=backref("sent_messages", uselist=False), single_parent=True)
+    envelop_to: Mapped[List["UserMessageAssociation"]] = relationship(back_populates="message")
+    
+    in_reply_to_id: Mapped[int] = mapped_column(ForeignKey("message.id"), nullable=True)
+    in_reply_to: Mapped["Message"] = relationship(single_parent=True)
+    
+    created_date: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    
+    @property
+    def created_date_tz(self):
+        return self.created_date.replace(tzinfo=pytz.timezone('UTC'))
+    
+    @staticmethod
+    def shorten(data, text_length=30):
+        return (data[:text_length] + '..') if len(data) > text_length else data
+            
+    
+    @classmethod
+    def create_db_message(cls, db_session, envelop_from, envelop_to, subject, body, in_reply_to=None):
+        
+        message = cls(envelop_from_id=envelop_from.id,
+                      subject=subject, 
+                      body=body)
+        
+        if in_reply_to:
+            message.in_reply_to = in_reply_to
+        
+        for user in envelop_to:
+            association = UserMessageAssociation()
+            association.user = user
+            message.envelop_to.append(association)
+
+        db_session.add(message)
+        db_session.commit()
+        return(message)
+        
 class User(db.Model, sqla.FsUserMixin):
     
     phone_number: Mapped[str] = mapped_column(String(32), unique=True, nullable=True)
@@ -399,6 +478,9 @@ class User(db.Model, sqla.FsUserMixin):
     country: Mapped[str] = mapped_column(String(256), nullable=True)
     birthday: Mapped[datetime.datetime] = mapped_column(Date(), nullable=True)
     
+    messages: Mapped[List["UserMessageAssociation"]] = relationship(back_populates="user")
+
+
     @property
     def fullname(self):
         return f'{self.first_name} {self.last_name}'
@@ -427,13 +509,13 @@ class User(db.Model, sqla.FsUserMixin):
         
     def practices (self):
         return (Practice().query.all())
-        
-user_message = Table(
-    "user_message",
-    db.Model.metadata,
-    Column("user_id", ForeignKey("user.id", ondelete="CASCADE"), primary_key=True),
-    Column("message_id", ForeignKey("message.id", ondelete="CASCADE"), primary_key=True),
-)
+
+    
+    @property
+    def unread_messages(self):
+        return len(UserMessageAssociation().query.join(User).filter(and_(UserMessageAssociation.user_id==self.id,
+                                                                                    UserMessageAssociation.message_read==None,
+                                                                                    UserMessageAssociation.message_deleted==None)).all())
 
 permission_role = Table(
     "permission_role",
@@ -508,7 +590,7 @@ class WebAuthn(db.Model,sqla.FsWebAuthnMixin):
 class Content(db.Model):
     tag: Mapped[str] = mapped_column(String(256), primary_key=True)
     lang: Mapped[str] = mapped_column(String(16), default="en", primary_key=True)
-    text: Mapped[str] = mapped_column(Text, nullable=True)
+    text: Mapped[str] = mapped_column(LONGTEXT, nullable=True)
 
     @classmethod
     def get_tag(cls,tag,lang="en"):
@@ -550,6 +632,8 @@ class UserSettings(db.Model):
     
     msg_signal: Mapped[bool] = mapped_column(Boolean(), default=False)
     msg_last_min_spots: Mapped[bool] = mapped_column(Boolean(), default=True)
+    registration_complete: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    
     
     emergency_contact: Mapped[str] = mapped_column(Text(), nullable=True)
 
@@ -571,6 +655,7 @@ class SystemInitValidations():
 def db_init_data (app):
 
     role = security.datastore.find_or_create_role(cv('SUPER_USER_ROLE'))
+    student_admin = security.datastore.find_or_create_role('student-admin')
     security.datastore.add_permissions_to_role(role, {cv('SUPER_USER_ROLE')})
     user=security.datastore.find_user(email=cv('ADMIN_USER'))
 
@@ -589,6 +674,7 @@ def db_init_data (app):
         db.session.add(trainer)
         
     security.datastore.add_role_to_user(user, role)
+    security.datastore.add_role_to_user(user, student_admin)
     StudentType.default_row()
     StudentStatus.default_row()
     Policy.default_row() 

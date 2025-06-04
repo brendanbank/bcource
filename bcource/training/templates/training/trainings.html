@@ -65,7 +65,6 @@
 			</td>
 
 					<td colspan="1" class="">{{ training.name }}</td>
-					<td class="">{{ training.practice }}</td>
 					<td class="">{{ training.traningtype }}</td>
 					<td class="">
 
@@ -83,7 +82,7 @@
 					{% for events in training.trainingevents %}
 					<tr class="align-top p-0">
 						<td class="p-0 ps-0 pe-1"><i class="bi bi-clock"></i></td>
-						<td class="p-0">{{events.start_time.ctime()}}</td>
+						<td class="p-0">{{db_datetime_str(events.start_time)}}</td>
 						<td class="p-0 ps-2 pe-1"><i class="bi bi-building"></i></td>
 						<td class="p-0">{{events.location}}</td>
 					</tr>

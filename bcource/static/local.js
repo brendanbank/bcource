@@ -1,19 +1,26 @@
+let editor = undefined;
+
 // JavaScript addEventListener for password, submit and enable form
 (() => {
 	//	'use strict'
 	//
 	//	// Fetch all the forms we want to apply custom Bootstrap validation styles to
-	const forms = document.querySelectorAll('.needs-validation')
 	//
 	//	// Loop over them and prevent submission
+	
+	const forms = document.querySelectorAll('.needs-validation')
 	Array.from(forms).forEach(form => {
 		form.addEventListener('submit', event => {
+			console.log(event);
+			console.log("editor: " + editor);
+			if (editor) {
+				editor.updateSourceElement();
+			}
 			if (!form.checkValidity()) {
 				event.preventDefault()
 				event.stopPropagation()
 			};
 
-			console.log(event);
 			event.submitter.disable = true;
 
 			form.classList.add('was-validated');
@@ -128,3 +135,7 @@ function safeConfirm(msg) {
         return false;
     }
 }
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
