@@ -42,9 +42,19 @@
             </div>
                </div>
             {% elif field.widget.input_type == "checkbox" -%}
-            <div class="form-check">
+            <div class="form-check small">
 				{{ field }}
-				<small>{{ field.label(class_="form-check-label mb-0 mx-2") }}</small>
+				{{ field.label(class_="form-check-label mb-0") }}
+               <div class="invalid-feedback" id="{{ field.name }}_feedback">
+               {% if field.errors -%}
+                    {% for error in field.errors -%}
+                      {{ error }}
+                    {%- endfor %}
+                {% else -%}
+                         {{ field.label.text }} is required!
+                {%- endif %}
+               </div>
+
 			</div>
             
             {% elif field.widget.input_type == "submit" -%}

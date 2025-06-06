@@ -33,7 +33,6 @@ class Base(DeclarativeBase):
         db.session.commit()
         return(obj)
 
-
 #connect_args={"options": "-c timezone=utc"}
 
 menu_structure = Menu('root')
@@ -56,7 +55,6 @@ def get_locale():
 babel = Babel(locale_selector=get_locale)
 csrf = CSRFProtect()
 
-    
 def create_app():
     """Create Flask application."""
     app = Flask(__name__, instance_relative_config=False)
@@ -80,8 +78,6 @@ def create_app():
     from bcource.models import Content, User, Role
     
     app.jinja_env.globals.update(get_tag=Content.get_tag)
-    
-    
     
     # app.jinja_env.globals.update(has_role=has_role)
     app.jinja_env.globals.update(menu_structure=menu_structure)
@@ -121,6 +117,7 @@ def create_app():
         
         main_menu = menu_structure.add_menu('Privacy')
         main_menu.add_menu('Privacy Policy', 'home_bp.privacy')
+        main_menu.add_menu('Terms and Conditions', 'home_bp.tandc')
 
         db.create_all()  # Create sql tables for our data models
 
