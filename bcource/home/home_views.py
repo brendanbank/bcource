@@ -23,6 +23,12 @@ home_bp = Blueprint(
 def privacy():
     return render_template("home/privacy-policy.html")
 
+@home_bp.route('/tandc', methods=['GET'])
+@auth_required()
+def tandc():
+    return render_template("home/tandc.html")
+
+
 @home_bp.route('/', methods=['GET'])
 @auth_required()
 def home():

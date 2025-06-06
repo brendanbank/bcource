@@ -15,9 +15,9 @@ def check_divclass (kwargs):
 def render_validation_status(field, form_data, kwargs):
     if len(field.errors) > 0:
         if "class" in kwargs:
-            kwargs["class"] = f'{kwargs["class"]} is-invalid'
+            kwargs["class"] = f'{kwargs["class"]} is-invalid bla'
         else:
-            kwargs["class"] = 'is-invalid'
+            kwargs["class"] = 'is-invalid bla'
         
     kwargs["aria-describedby"] = f'{field.name}_feedback'
 

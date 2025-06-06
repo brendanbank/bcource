@@ -7,7 +7,7 @@
 
 {% block content %}
     <div class="container">
-        <h1>{{ _('Training Scheduler') }}</h1>
+        <h1>{{ _('Training Schedule') }}</h1>
     </div>
 
 <div class="container">
@@ -23,39 +23,43 @@
      </div>
   </div>
 <div class="row pt-3">
-          <form id="filters" method="get">
+          <form id="MyFilters" name="MyFilters" action="" method="get"
+               class="needs-validation row justify-content-md-center" >
+
                <button class="col-10 btn btn-outline-dark btn-sm mb-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
                     type="submit"
-                    value="submit"
-                    id="filter">
+                    value="clear"
+                    id=""clear"">
                     {{_("Filter")}}</button>
 
                {% for name, text, items_list in filters %}
                <div class="ps-0 pt-2">
                     <small><strong>{{text}}</strong></small>
                </div>
-               {% for item in items_list %}
-               <div class="form-check ">
-                    <input
-                         class="form-check-input"
-                         type="checkbox"
-                         {% if
-                         item.id
-                         in
-                         filters_checked[name] %} checked{% endif %}
-                    value="{{item.id}}"
-                         name="{{name}}"
-                         id="{{name}}_{{item.id}}"
-                    > <label
-                         class="form-check-label col-10"
-                         for="{{name}}_{{item.id}}"
-                    ><small>{{_(item.name)}} </small></label>
-               </div>
-               {% endfor -%} {% endfor -%}
+                    {% for item in items_list %}
+                                        
+                    <div class="form-check ">
+                         <input
+                              class="form-check-input"
+                              type="checkbox"
+                              {% if item.id in filters_checked[name] %} checked{% endif %}
+                         value="{{item.id}}"
+                              name="{{name}}"
+                              id="{{name}}_{{item.id}}"
+                              onclick="console.log(document.getElementById('MyFilters').submit())"
+                              >
+                          <label
+                              class="form-check-label col-10"
+                              for="{{name}}_{{item.id}}"
+                         ><small>{{_(item.name)}} </small></label>
+                    </div>
+               
+                    {% endfor -%}
+               {% endfor -%}
                <div class="pt-3">
                     <button
-                         name="submit"
-                         id="submit"
+                         name="submit_id"
+                         id="submit_id"
                          class="col-10 btn btn-outline-dark btn-sm mt-0"
                          style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
                          type="submit"
@@ -85,26 +89,29 @@
           <div class="row border-bottom border-start border-top border-end pb-1" >
                <div class="col-md-1 fw-semibold">#</div>
                <div class="col-md-2 fw-semibold">{{_('Name')}}</div>
-               <div class="col-md-1 fw-semibold">{{_('Type')}}</div>
+               <div class="col-md-2 fw-semibold">{{_('Type')}}</div>
                <div class="col-md-3 fw-semibold">{{_('Date')}}</div>
-               <div class="col-md-5 fw-semibold">{{_('Location')}}</div>
+               <div class="col-md-4 fw-semibold">{{_('Location')}}</div>
           </div>
      </div>
           {% for training in training -%}
       <div class=" {{ loop.cycle('evendiv', 'odddiv')}}">
               <div class="row highlight border-bottom border-start border-bottom border-end">
-               <div class="col-1 pt-1 pb-1">
+               <div class="col-md-1 pt-1 pb-1">
                     <a
                          class="icon-link link-body-emphasis"
-                         href="#"
-                    > <i class="bi bi-person-fill-add" data-toggle="tooltip" data-placement="top" title="{{_('Add yourself to this training.')}}"></i>
+                         href="{{url_for('scheduler_bp.enroll', id=training.id)}}"
+                    > <i class="bi bi-person-fill-add fs-5" data-toggle="tooltip" 
+                         data-placement="top" 
+                         title="{{_('Enrole yourself to this training.')}}"></i>
 
                     </a>
                </div>
-               <div class="col-md-2 pt-1 pb-1 small">{{ training.name }}</div>
-               <div class="col-md-1 pt-1 pb-1 small">{{ training.traningtype.name }}</div>
-               <div class="col-md-3 pt-1 pb-1 small">{{ db_datetime_str(training.trainingevents[0].start_time) }}</div>
-               <div class="col-md-5 pt-1 pb-1 small">{{ training.trainingevents[0].location }}</div>
+               <div class="col-md-2 pt-1 ps-1 pe-0"><small>{{ training.name }}</small></div>
+               <div class="col-md-2 pt-1 ps-1 pe-0"><small>{{ training.traningtype.name }}</small><a class="icon-link" 
+                    data-bs-toggle="modal" data-bs-target="#modal_{{training.traningtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
+               <div class="col-md-3 pt-1 ps-1 pe-0"><small>{{ db_datetime_str(training.trainingevents[0].start_time) }}</small></div>
+               <div class="col-md-4 pt-1 ps-1 pe-0"><small>{{ training.trainingevents[0].location }}</small></div>
           </div>
       </div>
           {% endfor %}
@@ -115,9 +122,34 @@
 
 </div>
 
+<!-- Button trigger modal -->
+<!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+  Launch demo modal
+</button>
+ -->
 
 </div>
 </div>
+
+{% for traningtype in traingingtypes %}
+<!-- Modal -->
+<div class="modal fade" id="modal_{{traningtype.description}}" tabindex="-1" aria-labelledby="label_{{traningtype.description}}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="label_{{traningtype.description}}">{{traningtype.name}}</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {{ get_tag(traningtype.description).text | safe }}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
 
 {% endblock %}
 
@@ -128,7 +160,7 @@
           placeholder : 'start typing',
           containerCssClass : "myFont",
           ajax : {
-               url : '/scheduler/search',
+               url : "{{url_for('scheduler_bp.search') }}",
                dataType : 'json'
           // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
           }
@@ -136,10 +168,11 @@
 
      $('#training_search').on('change', function() {
           var id = $("#training_search option:selected").val();
+          const href = "{{url_for('scheduler_bp.index') }}?id=" + id;
 
-          const href = "/scheduler/edit/" + id;
           window.location.href = href
      })
+     
 </script>
 
 {% endblock %}

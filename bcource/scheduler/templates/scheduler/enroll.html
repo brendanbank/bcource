@@ -1,0 +1,55 @@
+{% extends 'form.html' %}
+
+{% block formheader %}
+<div class="modal fade" id="EnroleModel" tabindex="-1" aria-labelledby="settingModelLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="EnroleModelLabel">
+               <h3 class="text-center">{{ _('Enrole into ') }} {{training.name}}</h3>
+        </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+     <div class="p-2">
+          <div class="row">
+               <div class="col-md-12 small"><strong>{{_('Start Date/Time')}}:</strong> {{ db_datetime_str(training.trainingevents[0].start_time) }}</div>
+               <div class="col-md-12 small"><strong>{{_('End Date/Time')}}:</strong> {{ db_datetime_str(training.trainingevents[0].end_time) }}</div>
+               <div class="col-md-12 small"><strong>{{_('Location')}}:</strong> {{ training.trainingevents[0].location }}</div>
+
+
+          </div>
+
+     </div>
+{% endblock %} {% block formfooter %}
+
+
+               </div>
+      <div class="modal-footer">
+<a class="icon-link p-3 small" href="{{url_for('home_bp.tandc')}}" target="_blank">{{_('Bcourse Terms and Conditions') }}</a>
+        <button onclick="this.blur();" type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{_('Close')}}</button>
+        <button onclick="this.blur();" type="submit" class="btn btn-primary">{{_('Enrole')}}</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}
+
+{% block js %}
+
+<script>
+
+$(window).on('load', function() {
+    $('#EnroleModel').modal('show');
+
+    const settingModel = document.getElementById('EnroleModel')
+    settingModel.addEventListener('hide.bs.modal', event => {
+     window.location.href = document.getElementById('url').value
+    })
+});
+
+</script>
+{% endblock %}
