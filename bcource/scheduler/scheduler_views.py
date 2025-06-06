@@ -2,9 +2,10 @@ from flask import (Blueprint, render_template, jsonify, abort, send_from_directo
                    flash, url_for, redirect, render_template_string, request)
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
-from flask_security import current_user
-from bcource import menu_structure
-from bcource.helpers import admin_has_role
+from flask_security import current_user, auth_required
+from bcource.scheduler.scheduler_forms import TrainingEnroll
+from bcource import menu_structure, db
+from bcource.helpers import admin_has_role, get_url
 from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent
 from sqlalchemy import or_, and_
 
@@ -55,10 +56,15 @@ def process_filters():
     return(filters_checked)
 
 
-def training_query():
+def training_query(search_on_id=None):
     selected_filters=process_filters()
     if not selected_filters:
         return Training().query.all()
+    
+    if search_on_id:
+        q = Training().query.join(Practice).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname,Training.id==search_on_id))
+        return q.all()
     
     if not selected_filters.get('trainingtype'):
         
@@ -81,11 +87,37 @@ def training_query():
 @scheduler_bp.route('/training', methods=['GET'])
 def index():
 
-    clear = request.args.getlist('submit')
+    clear = request.args.getlist('submit_id')
     if clear and clear[0]=='clear':
         return redirect(url_for('scheduler_bp.index'))
+    
+    search_on_id = request.args.get('id')
+    
+    traingingtypes = TrainingType().query.join(Practice).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname)
+                        ).all()
+                        
+    return render_template("scheduler/scheduler.html", training=training_query(search_on_id), 
+                           traingingtypes=traingingtypes, 
+                           filters=make_filters(), 
+                           filters_checked=process_filters())
 
-    return render_template("scheduler/scheduler.html", training=training_query(), filters=make_filters(), filters_checked=process_filters())
+
+@scheduler_bp.route('/training/enroll/<int:id>',methods=['GET', 'POST'])
+@auth_required()
+def enroll(id):
+    
+    training = Training().query.get(id)
+    
+    form = TrainingEnroll()    
+    url = get_url(form)
+    
+    if form.validate_on_submit():
+        flash(_("You have successfully enrolled into the training: ") + training.name + ".")
+        return redirect(url)
+    
+    return render_template("scheduler/enroll.html", training=training, form=form)
+
 
 @scheduler_bp.route('/search',methods=['GET'])
 def search():
