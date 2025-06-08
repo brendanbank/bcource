@@ -416,9 +416,18 @@ class Student(db.Model):
         onupdate=func.now(),
     )
     
+    
     @property
     def fullname (self):
         return self.user.fullname
+
+    @property
+    def email (self):
+        return self.user.email
+
+    @property
+    def phone_number (self):
+        return self.user.phone_number
     
     @fullname.setter
     def fullname (self,string):
@@ -454,11 +463,7 @@ class Message(db.Model):
     created_date: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-    
-    @property
-    def created_date_tz(self):
-        return self.created_date.replace(tzinfo=pytz.timezone('UTC'))
-    
+        
     @staticmethod
     def shorten(data, text_length=30):
         return (data[:text_length] + '..') if len(data) > text_length else data

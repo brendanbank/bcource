@@ -70,6 +70,10 @@ def create_app():
     csrf.init_app(app)
 
     table_admin.init_app(app)
+    
+    if app.config.get('ENVIRONMENT') == "DEVELOPMENT":
+        app.config["MAIL_BACKEND"] = 'console'
+    
     mail.init_app(app)
     migrate.init_app(app, db)
     moment.init_app(app)

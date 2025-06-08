@@ -70,7 +70,7 @@
           </div>
           <div class="row">
 
-               <small class="text-secondary">Date: {{ assiociation.message.created_date_tz.astimezone().strftime("%c %Z") }}</small>
+               <small class="text-secondary">Date: {{ db_datetime_str(assiociation.message.created_date) }}</small>
                </div>
           <div class="row">
                <small class="text-secondary mb-0">Subject: {{ assiociation.message.shorten(assiociation.message.subject) }}</small>
@@ -85,7 +85,7 @@
   <div class="row">
  {% if message_selected %}
   <span><h5 class="mb-0">From: {{ message_selected.envelop_from }}</h6></span>
-  <span class="mb-0">Date: <small>{{ message_selected.created_date_tz.astimezone().strftime("%c %Z") }}</small></span>
+  <span class="mb-0">Date: <small>{{ db_datetime_str(message_selected.created_date) }}</small></span>
   <span class="mb-0">Subject: <small>{{ message_selected.subject | safe}}</small></span>
   <span class="mb-0">To: <small>{{ current_user }}</small></span>
   
