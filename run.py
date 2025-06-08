@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from bcource import create_app
 from flask_babel import Babel
 from flask import request
