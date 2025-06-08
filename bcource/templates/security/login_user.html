@@ -21,7 +21,11 @@
     {{ render_checkbox(login_user_form.remember) }}
     {{ render_field_errors(login_user_form.csrf_token) }}
     {{ render_submit(login_user_form.submit) }}
+    
+  <div class="col-md-12 text-center ms-4"><p class="">No account yet? Please <a href="{{ url_for_security('register') }}"> {{_fsdomain('Register')}}</a></p></div>
   </div>
+     
+ 
   </form>
   </div>
   {% if security.webauthn %}
