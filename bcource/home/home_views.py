@@ -57,7 +57,7 @@ def home():
         
             msg = bmsg.StudentCreated(security.datastore.find_or_create_role('student-admin').users, 
                                      security.datastore.find_or_create_role('student-admin').users,
-                                     user=current_user).send()
+                                     user=current_user.student_from_practice).send()
     
     return render_template("home/index.html", validator=validators)
 

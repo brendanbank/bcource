@@ -111,6 +111,7 @@ def student(id):
     student = Student().query.get(id)
     
     if not student:
+        flash(_('Student not found!'))
         abort(404)
             
     form = StudentForm(obj=student)
