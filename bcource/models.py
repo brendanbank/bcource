@@ -536,6 +536,13 @@ class User(db.Model, sqla.FsUserMixin):
     def practices (self):
         return (Practice().query.all())
 
+    @property
+    def student_from_practice(self):
+        
+        return Student().query.join(User).join(Practice).filter(and_(
+            Practice.shortname==Practice.default_row().shortname,
+            Student.user==self)).first()
+
     
     @property
     def unread_messages(self):
