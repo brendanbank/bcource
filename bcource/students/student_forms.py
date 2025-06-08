@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm, RecaptchaField
 from flask import current_app
 from flask_babel import _
+from flask import url_for
 from flask_babel import lazy_gettext as _l
 import wtforms.validators as validators
 import bcource.models as models

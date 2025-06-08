@@ -144,11 +144,12 @@
 						and not skip_login_menu -%}
 						<li><a class="dropdown-item"
 							href="{{ url_for_security('us_signin') }}{%- if 'next' in request.args -%}?next={{ request.args.next|urlencode }}{%- endif -%}">{{
-								_fsdomain('Unified Sign In') }}</a></li> {% endif -%} {% if
-						security.registerable %}
+								_fsdomain('Unified Sign In') }}</a></li> {% endif -%}
+                        {% if security.registerable %}
 						<li><a class="dropdown-item"
 							href="{{ url_for_security('register') }}{%- if 'next' in request.args -%}?next={{ request.args.next|urlencode }}{%- endif -%}">{{
-								_fsdomain('Register') }}</a></li> {% endif -%} {% if security.recoverable
+								_fsdomain('Register') }}</a></li> {% endif -%}
+                                        {% if security.recoverable
 						-%}
 						<li><a class="dropdown-item"
 							href="{{ url_for_security('forgot_password') }}">{{

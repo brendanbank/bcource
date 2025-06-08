@@ -117,7 +117,7 @@ def student(id):
     form = StudentForm(obj=student)
     
     
-    url = get_url(form, (url_for('students_bp.index')))
+    url = get_url(form, default='students_bp.index')
     
     if request.form.get("submit") == 'close':
         return redirect(url)
