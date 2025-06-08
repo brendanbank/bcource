@@ -20,12 +20,10 @@ home_bp = Blueprint(
 
 
 @home_bp.route('/privacy', methods=['GET'])
-@auth_required()
 def privacy():
     return render_template("home/privacy-policy.html")
 
 @home_bp.route('/tandc', methods=['GET'])
-@auth_required()
 def tandc():
     return render_template("home/tandc.html")
 
@@ -49,17 +47,17 @@ def home():
             current_user.usersettings.registration_complete = datetime.now(timezone.utc)
             db.session.commit()
             
-    msg = bmsg.StudentWelcomeMessage(security.datastore.find_or_create_role('student-admin').users, 
-                             current_user,
-                             user=current_user).send(),
-
-    msg = bmsg.StudentApplicationToBeReviewed(security.datastore.find_or_create_role('student-admin').users, 
-                             current_user,
-                             user=current_user).send(),
-
-    msg = bmsg.StudentCreated(security.datastore.find_or_create_role('student-admin').users, 
-                             security.datastore.find_or_create_role('student-admin').users,
-                             user=current_user).send()
+            msg = bmsg.StudentWelcomeMessage(security.datastore.find_or_create_role('student-admin').users, 
+                                     current_user,
+                                     user=current_user).send(),
+        
+            msg = bmsg.StudentApplicationToBeReviewed(security.datastore.find_or_create_role('student-admin').users, 
+                                     current_user,
+                                     user=current_user).send(),
+        
+            msg = bmsg.StudentCreated(security.datastore.find_or_create_role('student-admin').users, 
+                                     security.datastore.find_or_create_role('student-admin').users,
+                                     user=current_user).send()
     
     return render_template("home/index.html", validator=validators)
 
