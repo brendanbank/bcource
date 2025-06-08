@@ -7,7 +7,7 @@
 
 {% block content %}
     <div class="container">
-        <h1>{{ _('Training Schedule') }}</h1>
+        <h1>{{page_name}}</h1>
     </div>
 
 <div class="container">
@@ -79,7 +79,7 @@
 
 }
 
-.row.highlight:hover > * {
+.highlight:hover > * {
     background-color: rgb(230, 230, 230);
 }
 </style>
@@ -95,23 +95,35 @@
           </div>
      </div>
           {% for training in training -%}
-      <div class=" {{ loop.cycle('evendiv', 'odddiv')}}">
+      <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}}">
               <div class="row highlight border-bottom border-start border-bottom border-end">
                <div class="col-md-1 pt-1 pb-1">
+               {% if training.enrolled(current_user) %}
+                    <a
+                         class="icon-link link-body-emphasis"
+                         href="{{url_for('scheduler_bp.deroll', id=training.id)}}"
+                    > <i class="bi bi-person-fill-dash fs-4 text-danger" data-toggle="tooltip" 
+                         data-placement="top" 
+                         title="{{_('Remove yourself to this training.')}}"></i>
+
+                    </a>
+
+               {% else %}
                     <a
                          class="icon-link link-body-emphasis"
                          href="{{url_for('scheduler_bp.enroll', id=training.id)}}"
-                    > <i class="bi bi-person-fill-add fs-5" data-toggle="tooltip" 
+                    > <i class="bi bi-person-fill-add fs-4 text-success" data-toggle="tooltip" 
                          data-placement="top" 
-                         title="{{_('Enrole yourself to this training.')}}"></i>
+                         title="{{_('Add yourself to this training.')}}"></i>
 
                     </a>
+               {% endif %}
                </div>
-               <div class="col-md-2 pt-1 ps-1 pe-0"><small>{{ training.name }}</small></div>
-               <div class="col-md-2 pt-1 ps-1 pe-0"><small>{{ training.traningtype.name }}</small><a class="icon-link" 
+               <div class="col-md-2 pt-1 ps-1 pe-0 align-self-center small" style="display:cell;vertical-align:middle">{{ training.name }}</div>
+               <div class="col-md-2 pt-1 ps-1 pe-0 align-self-center small">{{ training.traningtype.name }}<a class="icon-link" 
                     data-bs-toggle="modal" data-bs-target="#modal_{{training.traningtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
-               <div class="col-md-3 pt-1 ps-1 pe-0"><small>{{ db_datetime_str(training.trainingevents[0].start_time) }}</small></div>
-               <div class="col-md-4 pt-1 ps-1 pe-0"><small>{{ training.trainingevents[0].location }}</small></div>
+               <div class="col-md-3 pt-1 ps-1 pe-0 align-self-center small">{% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
+               <div class="col-md-4 pt-1 ps-1 pe-0 align-self-center small">{% for event in training.trainingevents %}{{ event.location }}<br>{% endfor %}</div>
           </div>
       </div>
           {% endfor %}

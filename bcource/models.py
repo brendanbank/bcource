@@ -180,26 +180,26 @@ class Policy(db.Model):
         return(obj)
 
 
-    
-class TrainingApplication(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    application_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), 
+class TrainingEnroll(db.Model):
+    enrole_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), 
                                                                 nullable=True, 
                                                                 server_default=func.now())
+    __table_args__ = (db.UniqueConstraint("student_id", "training_id"),)
 
     status: Mapped[str] = mapped_column(String(256), nullable=False)
 
-    student_id: Mapped[int] = mapped_column(ForeignKey("student.id"))
+    student_id: Mapped[int] = mapped_column(ForeignKey("student.id"), primary_key=True)
     student: Mapped["Student"] = relationship(backref=backref("trainingapplications"))
 
-    training_id: Mapped[int] = mapped_column(ForeignKey("training.id"))
-    training: Mapped["Training"] = relationship(backref=backref("trainingapplications"))
+    training_id: Mapped[int] = mapped_column(ForeignKey("training.id"), primary_key=True)
+    training: Mapped["Training"] = relationship(backref=backref("trainingenrollments"))
 
-    
+
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
     )
+ 
 
 class Training(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -219,15 +219,28 @@ class Training(db.Model):
     )
     
     trainingevents: Mapped[List["TrainingEvent"]] = relationship(backref="training", cascade="all, delete")
+    
+
 
     def __str__(self):
         return self.name
+    
+    @property
+    def trainer_users(self):
+        users = []
+        for trainer in self.trainers:
+            users.append(trainer.user)
+        
+        return(users)
     
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
     )
-
+    
+    def enrolled(self,user):
+        return TrainingEnroll.query.join(Training).join(Student).join(User).filter(and_(Student.user==user,
+                                                                                        Training.id == self.id)).first()
 
 class Trainer(db.Model):
     
@@ -279,7 +292,15 @@ class Location(db.Model):
 
     def __str__(self):
         return f'{self.name}, {self.street} {self.house_number}{self.house_number_extention}, {self.city}'
-    
+
+    @property
+    def ical_adress(self):
+        return f'{self.street} {self.house_number}{self.house_number_extention}, {self.city}, {self.postal_code},{self.country}'
+
+    @property
+    def ical_venue(self):
+        return f'{self.name}\n{self.street} {self.house_number}{self.house_number_extention}\n{self.city}\n{self.postal_code}\n{self.country}'
+
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
@@ -479,6 +500,11 @@ class User(db.Model, sqla.FsUserMixin):
     birthday: Mapped[datetime.datetime] = mapped_column(Date(), nullable=True)
     
     messages: Mapped[List["UserMessageAssociation"]] = relationship(back_populates="user")
+
+
+    @property
+    def name(self):
+        return self.fullname
 
 
     @property
