@@ -20,6 +20,8 @@ flask-migrate = "*"
 messagebird = "*"
 wtforms-sqlalchemy = "*"
 flask-moment = "*"
+icalendar = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 

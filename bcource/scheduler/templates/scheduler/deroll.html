@@ -6,36 +6,35 @@
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="EnroleModelLabel">
-               <h3 class="text-center">{{ _('Enrole into ') }} {{training.name}}</h3>
+               {{ _('Remove yourself from ') }}
+               {{training.name}}
+                
         </h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
 
      <div class="p-2">
-     <h4>Event(s):</h6>
-          <div class="row ms-2">
-          
-          <ol>
-               {% for event in training.trainingevents %}
-               <li>
-               <div class="col-md-12 small"><strong>{{_('Start Date/Time')}}:</strong> {{ db_datetime_str(event.start_time) }}</div>
-               <div class="col-md-12 small"><strong>{{_('End Date/Time')}}:</strong> {{ db_datetime_str(event.end_time) }}</div>
-               <div class="col-md-12 small"><strong>{{_('Location')}}:</strong> {{event.location }}</div>
-               </li>
-               {% endfor %}
-          </ol>
+          <div class="row">
+               <div class="col-md-12 small"><strong>{{_('Start Date/Time')}}:</strong> {{ db_datetime_str(training.trainingevents[0].start_time) }}</div>
+               <div class="col-md-12 small"><strong>{{_('End Date/Time')}}:</strong> {{ db_datetime_str(training.trainingevents[0].end_time) }}</div>
+               <div class="col-md-12 small"><strong>{{_('Location')}}:</strong> {{ training.trainingevents[0].location }}</div>
+
           </div>
 
      </div>
+
+<div class="p-2">
+
 {% endblock %} {% block formfooter %}
 
-
+{{ get_tag('REMOVE_FROM_TRAINING').text | safe }}
+</div>
                </div>
       <div class="modal-footer">
 <a class="icon-link p-3 small" href="{{url_for('home_bp.tandc')}}" target="_blank">{{_('Bcourse Terms and Conditions') }}</a>
         <button onclick="this.blur();" type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{_('Close')}}</button>
-        <button onclick="this.blur();" type="submit" class="btn btn-primary">{{_('Enrole')}}</button>
+        <button onclick="this.blur();" type="submit" class="btn btn-primary">{{_('Remove yourself')}}</button>
 
       </div>
     </div>

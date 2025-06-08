@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, abort, redirect, url_for, flash, request, jsonify
 from flask_babel import _
+from flask_security import current_user
 from flask import current_app as app
 from bcource.helpers import admin_has_role
 from bcource import menu_structure, db
@@ -126,7 +127,8 @@ def student(id):
         flash(_('Student %s has been updated' % student.fullname))
         
         if student.studentstatus.name == "active":
-            bmsg.StudentStatusActive(envelop_to=[student.user], status=student.studentstatus).send()
+            bmsg.StudentStatusActive(current_user, student.user,
+                    user=student.user, status=student.studentstatus).send()
         
         return redirect(url)
     

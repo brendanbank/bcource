@@ -9,13 +9,18 @@ import wtforms.validators as validators
 from flask_babel import lazy_gettext as _l
 import bcource.models as models
 
+class TrainingDerollForm(FlaskForm):
+    url  = MyHiddenField('url')
 
-class TrainingEnroll(FlaskForm):
+
+class TrainingEnrollForm(FlaskForm):
     approve_tandc  = MyBooleanField(
         _l('Accept the terms and conditions'),
         [validators.DataRequired(message='You must accept the Terms and Conditions before enrolling into this training')],
         divclass = "col-md-12",
         default=False,
-        render_kw={"class": "form-check-input", 'onClick':"document.getElementById('TrainingEnroll').submit();"})
+        render_kw={"class": "form-check-input"})
+    
+    #'onClick':"document.getElementById('TrainingEnroll').submit();
 
     url  = MyHiddenField('url')
