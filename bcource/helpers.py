@@ -1,5 +1,6 @@
 from flask_security.models.sqla import FsModels
 from sqlalchemy import ForeignKey, Table, Column
+from flask import current_app as app
 from flask_admin.contrib.sqla import ModelView
 from flask_security import current_user
 from flask import url_for, current_app, request, abort, redirect
@@ -12,7 +13,10 @@ def db_datetime(db_datetime_notz):
     return db_datetime_notz.replace(tzinfo=pytz.timezone('UTC'))
 
 def db_datetime_str(db_datetime_notz):
-    return db_datetime(db_datetime_notz).astimezone().strftime("%a, %b %d %Y, %H:%M %p %Z")
+    dt = db_datetime(db_datetime_notz)
+    TZ_NAME = app.config.get('BCOURCE_TZ', 'Europe/Amsterdam')
+    TZ = pytz.timezone(TZ_NAME)    
+    return dt.astimezone(TZ).strftime("%a, %b %d %Y, %H:%M %p %Z")
 
 def get_url (form, default=None):
     

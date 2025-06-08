@@ -51,14 +51,15 @@ def home():
                                      current_user,
                                      user=current_user).send(),
         
-            msg = bmsg.StudentApplicationToBeReviewed(security.datastore.find_or_create_role('student-admin').users, 
-                                     current_user,
-                                     user=current_user).send(),
         
             msg = bmsg.StudentCreated(security.datastore.find_or_create_role('student-admin').users, 
                                      security.datastore.find_or_create_role('student-admin').users,
                                      user=current_user.student_from_practice).send()
-    
+
+            msg = bmsg.StudentApplicationToBeReviewed(security.datastore.find_or_create_role('student-admin').users, 
+                                     current_user,
+                                     user=current_user).send(),
+
     return render_template("home/index.html", validator=validators)
 
 @home_bp.route('/ckeditor', methods=['GET'])
