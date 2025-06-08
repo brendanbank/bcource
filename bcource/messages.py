@@ -61,6 +61,7 @@ class SendEmail(SystemMessage):
         soup = BeautifulSoup(self.render_subject(), "html.parser")
         
         msg = EmailMessage(soup.get_text(), self.render_body(), 'noreply@bgwlan.nl', email_to)
+        
         msg.content_subtype = "html"
         
         self.process_attachment(msg)
@@ -72,13 +73,13 @@ class SendEmail(SystemMessage):
     def process_attachment(self, msg):
         return(msg)
 
-class StudentWelcomeMessage(SystemMessage):
+class StudentWelcomeMessage(SendEmail):
     pass
 
 class StudentApplicationToBeReviewed(SystemMessage):
     pass
 
-class StudentCreated(SystemMessage):
+class StudentCreated(SendEmail):
     pass
 
 class StudentEnrolledInTraining(SendEmail):
@@ -154,7 +155,7 @@ class StudentDerolledInTraining(SendEmail):
         
         msg.attach(f'{self.kwargs["training"].name}.ics', cal.to_ical(), 'text/calendar')
 
-class StudentStatusActive(SystemMessage):
+class StudentStatusActive(SendEmail):
     pass
 
 class StudentEnrolled(SystemMessage):
