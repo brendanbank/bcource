@@ -6,5 +6,7 @@ app = create_app()
 
 if __name__ == '__main__':
     # Only for debugging while developing
-#    app.run(host='0.0.0.0', port=5002, ssl_context=('cert.pem', 'key.pem'))
-    app.run(host='0.0.0.0', port=5001)
+    if app.config.get('ENVIRONMENT') == "TESTING":
+        app.run(host='0.0.0.0', port=5002, ssl_context=('cert.pem', 'key.pem'))
+    else:
+        app.run(host='0.0.0.0', port=5001)
