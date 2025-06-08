@@ -65,7 +65,7 @@ class Config:
     MAIL_PORT = 25
     MAIL_USE_TLS = False
     MAIL_DEFAULT_SENDER = environ.get('MAIL_DEFAULT_SENDER')
-    MAIL_BACKEND = 'console'
+    #MAIL_BACKEND = 'console'
     
     
     ## Application settings:

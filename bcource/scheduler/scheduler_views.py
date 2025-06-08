@@ -3,16 +3,15 @@ from flask import (Blueprint, render_template, jsonify, abort, send_from_directo
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
 from flask_security import current_user, auth_required
-from bcource.scheduler.scheduler_forms import TrainingEnroll
+from bcource.scheduler.scheduler_forms import TrainingEnrollForm, TrainingDerollForm
 from bcource import menu_structure, db
 from bcource.helpers import admin_has_role, get_url
-from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent
+from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent, TrainingEnroll
 from sqlalchemy import or_, and_
+import bcource.messages as system_msg
 
-my_training = menu_structure.add_menu(_l('Training Scheduler'))
-my_training.add_menu(_l('Schedule Training'), 'scheduler_bp.index')
-my_training.add_menu(_l('My schedule'), 'training_bp.index')
-
+from datetime import datetime
+import pytz
 
 # Blueprint Configuration
 scheduler_bp = Blueprint(
@@ -31,7 +30,8 @@ def has_student_role():
                         ).first()
                         
     if not q or not q.studentstatus or  q.studentstatus.name != "active":
-        flash(_("Student does not have status active!"), 'error')
+        flash(_("Student does not have an active status!"), 'error')
+        flash(_("Please check with the Student Administrators to have your status changed to active."), 'error')
         abort(403)
 
 scheduler_bp.before_request(has_student_role)
@@ -42,46 +42,94 @@ def make_filters():
     filters.append(('trainingtype', 'Training Type', 
                     TrainingType.get_all()))
     
+
+    filters.append(('my_trainings', 'My Trainings', 
+                    [current_user]))
+
     return(filters)
 
-def process_filters():
+def process_filters(my_trainings=None):
     filters_checked = {}
     
     try:
         filters_checked.update( {'trainingtype': [int(i) for i in request.args.getlist('trainingtype')]} )
+        
+        if my_trainings:
+            filters_checked.update( {'my_trainings': [current_user.id]} )
+        else:
+            filters_checked.update( {'my_trainings': [int(i) for i in request.args.getlist('my_trainings')]} )
 
     except Exception as e:
         print (f'process_filters: url args not integer {request.args}: error {e}')
-        
+                
     return(filters_checked)
 
 
-def training_query(search_on_id=None):
+def training_query(search_on_id=None, my_trainings=None):
     selected_filters=process_filters()
     if not selected_filters:
         return Training().query.all()
+    
+    time_now = datetime.now(tz=pytz.timezone('UTC'))
     
     if search_on_id:
         q = Training().query.join(Practice).filter(and_(
                         Practice.shortname==Practice.default_row().shortname,Training.id==search_on_id))
         return q.all()
     
-    if not selected_filters.get('trainingtype'):
+    
+    if not selected_filters.get('trainingtype') and not selected_filters.get('my_trainings') and not my_trainings:
         
-        q = Training().query.join(TrainingEvent).join(Practice).filter(
-                        Practice.shortname==Practice.default_row().shortname
+        q = Training().query.join(TrainingEvent).join(Practice).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname, 
+                        ~Training.trainingevents.any(TrainingEvent.start_time < time_now),
+                        Training.active==True)
                         ).order_by(TrainingEvent.start_time)
         return q.all()
-                                   
+    
+    if selected_filters.get('my_trainings') or my_trainings:
+        
+        if not selected_filters.get('trainingtype'):
+            q = Training().query.join(TrainingEnroll).join(TrainingEvent).join(Student).join(Practice, Practice.id==Training.practice_id).filter(
+                and_(Student.user_id == current_user.id,
+                     TrainingEvent.start_time > time_now)).order_by(TrainingEvent.start_time)
+        else:
+            q = Training().query.join(TrainingEnroll).join(TrainingEvent).join(Student).join(Practice, Practice.id==Training.practice_id).filter(
+                and_(Student.user_id == current_user.id,
+                     TrainingEvent.start_time > time_now), or_( 
+            Training.traningtype_id.in_(selected_filters.get('trainingtype')), 
+            )).order_by(TrainingEvent.start_time)
+        
+        return q.all()
 
-                        
-                        
-    q =  Training().query.join(Practice).filter(and_(
-                Practice.shortname==Practice.default_row().shortname), or_( 
+    q =  Training().query.join(TrainingEvent).join(Practice).filter(and_(
+                Practice.shortname==Practice.default_row().shortname,
+                ~Training.trainingevents.any(TrainingEvent.start_time < time_now),
+                Training.active==True), or_( 
         Training.traningtype_id.in_(selected_filters.get('trainingtype')), 
-        ))
+        )).order_by(TrainingEvent.start_time)
         
     return q.all()
+
+
+@scheduler_bp.route('/training/mytraining', methods=['GET'])
+def mytraining():
+
+    clear = request.args.getlist('submit_id')
+    if clear and clear[0]=='clear':
+        return redirect(url_for('scheduler_bp.mytraining'))
+    
+    search_on_id = request.args.get('id')
+    
+    traingingtypes = TrainingType().query.join(Practice).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname)
+                        ).all()
+                        
+    return render_template("scheduler/scheduler.html", training=training_query(search_on_id,my_trainings=True), 
+                           traingingtypes=traingingtypes, 
+                           filters=make_filters(), 
+                           filters_checked=process_filters(my_trainings=True),
+                           page_name=_l('My Training Schedule'))
 
 
 @scheduler_bp.route('/training', methods=['GET'])
@@ -100,7 +148,48 @@ def index():
     return render_template("scheduler/scheduler.html", training=training_query(search_on_id), 
                            traingingtypes=traingingtypes, 
                            filters=make_filters(), 
-                           filters_checked=process_filters())
+                           filters_checked=process_filters(),
+                           page_name=_l('Training Schedule'))
+
+
+@scheduler_bp.route('/training/deroll/<int:id>',methods=['GET', 'POST'])
+@auth_required()
+def deroll(id):
+    
+    training = Training().query.get(id)
+        
+    form = TrainingDerollForm()    
+    url = get_url(form)
+    
+    training_enroll = training.enrolled(current_user)
+    
+    
+        
+    if not training_enroll:
+        flash(_("You are not enrolled for this training: ") + training.name + ".",'error')
+        return redirect(url)
+    
+    time_now = datetime.now(tz=pytz.timezone('UTC'))
+    
+    q = Training().query.join(TrainingEnroll).join(TrainingEvent).filter(
+        and_(~Training.trainingevents.any(TrainingEvent.start_time < time_now),
+             Training.id == training.id)).first()
+    if not q:
+        flash(_("You cannot remove yourself from a training that has already started: ") + training.name + ".", 'error')
+        return redirect(url)
+    
+    if form.validate_on_submit():
+        
+        
+        db.session.delete(training_enroll)        
+        db.session.commit()
+        
+        system_msg.StudentDerolled(current_user, training.trainer_users, user=current_user, training=training).send()
+        system_msg.StudentDerolledInTraining(training.trainer_users, current_user, training=training, user=current_user).send()
+        flash(_("You are successfully removed yourself from the training: ") + training.name + ".")
+        return redirect(url)
+    
+    return render_template("scheduler/deroll.html", training=training, form=form)
 
 
 @scheduler_bp.route('/training/enroll/<int:id>',methods=['GET', 'POST'])
@@ -109,10 +198,39 @@ def enroll(id):
     
     training = Training().query.get(id)
     
-    form = TrainingEnroll()    
+    print (training.enrolled(current_user))
+    
+    form = TrainingEnrollForm()    
     url = get_url(form)
     
+        
+    if training.enrolled(current_user):
+        flash(_("You are already enrolled for this training: ") + training.name + ".",'error')
+        return redirect(url)
+    
     if form.validate_on_submit():
+        
+        enroll = TrainingEnroll()
+
+        student = Student().query.join(Practice).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname, Student.user==current_user)
+                        ).first()
+        if not student:
+            flash(_("enroll: Student Not Found!"), 'error')
+            abort(403)
+            
+        enroll.student = student          
+        enroll.training = training   
+        
+        enroll.status = "enrolled"
+        
+        db.session.add(enroll)
+        
+        db.session.commit()
+        
+        system_msg.StudentEnrolledInTraining(training.trainer_users, current_user, training=training, user=current_user).send()
+        system_msg.StudentEnrolled(current_user, training.trainer_users, user=current_user, training=training).send()
+        
         flash(_("You have successfully enrolled into the training: ") + training.name + ".")
         return redirect(url)
     
@@ -127,16 +245,30 @@ def search():
     query_term = request.args.get('q')
     
     r = []
+    time_now = datetime.now(tz=pytz.timezone('UTC'))
     
     if query_term:
-        r = Training().query.join(Practice).filter(and_(
-                Practice.shortname==Practice.default_row().shortname, Training.active==True), or_( 
-            Training.name.ilike(f'%{query_term}%'))).order_by(Training.name).all()
+        r = Training().query.join(TrainingEvent).join(Practice).filter(and_(
+                Practice.shortname==Practice.default_row().shortname, 
+                Training.active==True,
+                ~Training.trainingevents.any(TrainingEvent.start_time < time_now)
+                ), or_( 
+            Training.name.ilike(f'%{query_term}%'))).order_by(TrainingEvent.start_time).all()
     else:
     
-        r = Training().query.join(Practice).filter(and_(
-            Practice.shortname==Practice.default_row().shortname, Training.active==True)).order_by(Training.name).all()
+
+        r = Training().query.join(TrainingEvent).join(Practice).filter(and_(
+            Practice.shortname==Practice.default_row().shortname,
+            Training.active==True, 
+            ~Training.trainingevents.any(TrainingEvent.start_time < time_now),
+            )).order_by(TrainingEvent.start_time).all()
         
     for training in r:
         results["results"].append({"id": training.id,  "text":  training.name})
     return jsonify(results)
+
+my_training = menu_structure.add_menu(_l('Training Scheduler'))
+my_training.add_menu(_l('Schedule Training'), 'scheduler_bp.index')
+my_training.add_menu(_l('My schedule'), 'scheduler_bp.mytraining' )
+
+

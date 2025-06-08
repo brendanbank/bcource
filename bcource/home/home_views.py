@@ -5,8 +5,9 @@ import os
 from flask_security import auth_required
 import flask_security.decorators as fsd
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
-from bcource import db, menu_structure
+from bcource import db, menu_structure, security
 from datetime import datetime, timezone
+
 import bcource.messages as bmsg 
 # Blueprint Configuration
 home_bp = Blueprint(
@@ -48,15 +49,17 @@ def home():
             current_user.usersettings.registration_complete = datetime.now(timezone.utc)
             db.session.commit()
             
-            msg = bmsg.StudentWelcomeMessage()
-            msg.send()
-            
-            msg = bmsg.StudentApplicationToBeReviewed()
-            msg.send()
-            
-            msg = bmsg.StudentCreated()
-            msg.send()
-            
+    msg = bmsg.StudentWelcomeMessage(security.datastore.find_or_create_role('student-admin').users, 
+                             current_user,
+                             user=current_user).send(),
+
+    msg = bmsg.StudentApplicationToBeReviewed(security.datastore.find_or_create_role('student-admin').users, 
+                             current_user,
+                             user=current_user).send(),
+
+    msg = bmsg.StudentCreated(security.datastore.find_or_create_role('student-admin').users, 
+                             security.datastore.find_or_create_role('student-admin').users,
+                             user=current_user).send()
     
     return render_template("home/index.html", validator=validators)
 
