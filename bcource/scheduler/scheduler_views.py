@@ -267,8 +267,8 @@ def search():
         results["results"].append({"id": training.id,  "text":  training.name})
     return jsonify(results)
 
-my_training = menu_structure.add_menu(_l('Training Scheduler'))
-my_training.add_menu(_l('Schedule Training'), 'scheduler_bp.index')
-my_training.add_menu(_l('My schedule'), 'scheduler_bp.mytraining' )
+my_training = menu_structure.add_menu(_l('Training Scheduler'), role='student')
+my_training.add_menu(_l('Schedule Training'), 'scheduler_bp.index', role='student')
+my_training.add_menu(_l('My schedule'), 'scheduler_bp.mytraining', role='student' )
 
 
