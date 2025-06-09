@@ -37,12 +37,26 @@ def has_student_role():
 scheduler_bp.before_request(has_student_role)
 
 
-def make_filters():
-    filters = []
-    filters.append(('trainingtype', 'Training Type', 
-                    TrainingType.get_all()))
-    
+def make_filters(my_trainings=None):
 
+    filters = []
+    
+    time_now = datetime.now(tz=pytz.timezone('UTC'))
+    if my_trainings:
+        
+        traingingtypes = TrainingType().query.join(Training).join(TrainingEvent).join(Practice, Practice.id==Training.practice_id).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname,
+                        TrainingEvent.start_time > time_now
+                        )).all()
+    else:
+        traingingtypes = TrainingType().query.join(Training).join(TrainingEvent).join(Practice, Practice.id==Training.practice_id).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname,
+                        ~Training.trainingevents.any(TrainingEvent.start_time < time_now)
+                        )).all()
+
+    filters.append(('trainingtype', 'Training Type', 
+                    traingingtypes))
+    
     filters.append(('my_trainings', 'My Trainings', 
                     [current_user]))
 
@@ -127,7 +141,7 @@ def mytraining():
                         
     return render_template("scheduler/scheduler.html", training=training_query(search_on_id,my_trainings=True), 
                            traingingtypes=traingingtypes, 
-                           filters=make_filters(), 
+                           filters=make_filters(my_trainings=True), 
                            filters_checked=process_filters(my_trainings=True),
                            page_name=_l('My Training Schedule'))
 
@@ -140,13 +154,8 @@ def index():
         return redirect(url_for('scheduler_bp.index'))
     
     search_on_id = request.args.get('id')
-    
-    traingingtypes = TrainingType().query.join(Practice).filter(and_(
-                        Practice.shortname==Practice.default_row().shortname)
-                        ).all()
                         
-    return render_template("scheduler/scheduler.html", training=training_query(search_on_id), 
-                           traingingtypes=traingingtypes, 
+    return render_template("scheduler/scheduler.html", training=training_query(search_on_id),  
                            filters=make_filters(), 
                            filters_checked=process_filters(),
                            page_name=_l('Training Schedule'))
