@@ -18,7 +18,6 @@ home_bp = Blueprint(
     static_url_path='/static'
 )
 
-
 @home_bp.route('/privacy', methods=['GET'])
 def privacy():
     return render_template("home/privacy-policy.html")
@@ -27,15 +26,14 @@ def privacy():
 def tandc():
     return render_template("home/tandc.html")
 
-
 @home_bp.route('/', methods=['GET'])
-@auth_required()
 def home():
-    # return render_template("home/index.html")
-
+    if current_user.is_anonymous:
+        return render_template("home/index.html")
+    
     #check if system tables are OK for user
     UserProfileSystemChecks().validate()
-    
+        
     validators = UserProfileChecks()
     if not validators.validate():
         for validator in validators:
@@ -60,7 +58,7 @@ def home():
                                      current_user,
                                      user=current_user).send(),
 
-    return render_template("home/index.html", validator=validators)
+    return render_template("home/index.html")
 
 @home_bp.route('/ckeditor', methods=['GET'])
 @auth_required()
