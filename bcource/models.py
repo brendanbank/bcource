@@ -8,6 +8,7 @@ from sqlalchemy.sql import func
 from flask_security.models import sqla as sqla
 from bcource import db, security
 from flask_security import hash_password, RoleMixin
+from flask import render_template_string
 from bcource.helpers import config_value as cv
 from flask import current_app, session
 import pytz
@@ -631,13 +632,13 @@ class Content(db.Model):
     text: Mapped[str] = mapped_column(LONGTEXT, nullable=True)
 
     @classmethod
-    def get_tag(cls,tag,lang="en"):
+    def get_tag(cls,tag,lang="en", **kwargs):
         content = db.session.query(cls).filter(cls.tag==tag, lang==lang).first()
         if not content:
             content=cls(tag=tag,text="")
             db.session.add(content)
             db.session.commit()
-        return(content)
+        return(render_template_string(content.text, **kwargs))
     
     def update(self):
         db.session.commit()

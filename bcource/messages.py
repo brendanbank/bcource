@@ -1,32 +1,23 @@
-from bcource import db, security
-from flask import render_template_string
-from flask_security import current_user
-from flask_babel import _
-from flask_babel import lazy_gettext as _l
+from bcource import db
 from bcource.models import Content, Message
 from flask_mailman import EmailMessage
 from bs4 import BeautifulSoup
 from icalendar import Calendar, Event
 from bcource.helpers import db_datetime
 import datetime as dt
-import re
 import zoneinfo
 
-
-
-# as per recommendation from @freylis, compile once only
-CLEANR = re.compile('<.*?>') 
-
 def cleanhtml(raw_html):
-  cleantext = re.sub(CLEANR, '', raw_html)
-  return cleantext
+    # cleantext = re.sub(CLEANR, '', raw_html)
+    cleantext = BeautifulSoup(raw_html, "html.parser")
+    return cleantext
 
 class SystemMessage(object):
     def __init__(self, envelop_from, envelop_to, **kwargs):
         self.kwargs=kwargs
         self.TAG = self.__class__.__name__
-        self.body = Content.get_tag(self.TAG).text
-        self.subject = Content.get_tag(f'{self.TAG}Subject').text
+        self.body = Content.get_tag(self.TAG, **self.kwargs)
+        self.subject = Content.get_tag(f'{self.TAG}Subject', **self.kwargs)
         if not isinstance(envelop_to, list):
             envelop_to = [envelop_to]
 
@@ -37,18 +28,18 @@ class SystemMessage(object):
         self.envelop_to = envelop_to
         
     def render_subject(self):
-        return render_template_string(cleanhtml(self.subject), **self.kwargs)
+        return cleanhtml(self.subject)
                 
     def render_body(self):
-        return render_template_string(self.body, **self.kwargs)
+        return self.body
         
     def send(self):
-                
         Message.create_db_message(db_session=db.session,
                                   envelop_from=self.envelop_from,
                                   envelop_to=self.envelop_to,
-                                  body=self.render_body(), 
+                                  body=self.render_body(),
                                   subject=self.render_subject())
+
 
 class SendEmail(SystemMessage):
     
@@ -60,10 +51,9 @@ class SendEmail(SystemMessage):
             
         soup = BeautifulSoup(self.render_subject(), "html.parser")
         
-        msg = EmailMessage(soup.get_text(), self.render_body(), 'noreply@bgwlan.nl', email_to)
+        msg = EmailMessage(self.render_subject(), self.render_body(), 'noreply@bgwlan.nl', email_to)
         
         msg.content_subtype = "html"
-        
         self.process_attachment(msg)
         
         msg.send()
@@ -164,5 +154,3 @@ class StudentEnrolled(SystemMessage):
 # message to trainers to notify that the student has derolled
 class StudentDerolled(SystemMessage):
     pass
-
-# 
