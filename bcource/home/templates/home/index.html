@@ -7,8 +7,15 @@
 
 {% block content %}
     <div class="container">
-        <h1>Home</h1>
-    <div>{{ get_tag('home').text |safe 	 }}
+{% if current_user.is_anonymous %}
+    <div>{{ get_tag('home') |safe    }}
+{% else %}
+    <div>{{ get_tag('home') | safe       }}
+{% endif %}
+    </div>
+
     </div>
     </div>
+
+
 {% endblock %}

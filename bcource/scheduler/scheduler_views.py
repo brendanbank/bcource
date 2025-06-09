@@ -127,6 +127,7 @@ def training_query(search_on_id=None, my_trainings=None):
 
 
 @scheduler_bp.route('/training/mytraining', methods=['GET'])
+@auth_required()
 def mytraining():
 
     clear = request.args.getlist('submit_id')
@@ -140,13 +141,14 @@ def mytraining():
                         ).all()
                         
     return render_template("scheduler/scheduler.html", training=training_query(search_on_id,my_trainings=True), 
-                           traingingtypes=traingingtypes, 
+                           trainingtypes=traingingtypes, 
                            filters=make_filters(my_trainings=True), 
                            filters_checked=process_filters(my_trainings=True),
                            page_name=_l('My Training Schedule'))
 
 
 @scheduler_bp.route('/training', methods=['GET'])
+@auth_required()
 def index():
 
     clear = request.args.getlist('submit_id')
@@ -154,9 +156,12 @@ def index():
         return redirect(url_for('scheduler_bp.index'))
     
     search_on_id = request.args.get('id')
-                        
+    traingingtypes = TrainingType().query.join(Practice).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname)
+                        ).all()
     return render_template("scheduler/scheduler.html", training=training_query(search_on_id),  
                            filters=make_filters(), 
+                           trainingtypes=traingingtypes, 
                            filters_checked=process_filters(),
                            page_name=_l('Training Schedule'))
 
@@ -247,6 +252,7 @@ def enroll(id):
 
 
 @scheduler_bp.route('/search',methods=['GET'])
+@auth_required()
 def search():
     results = {}
     results.update({"results": []})

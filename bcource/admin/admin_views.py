@@ -71,6 +71,7 @@ class ContentModelView(CkModelView, AuthModelView):
     edit_template = 'admin/cms.html'
     column_list = ['tag', 'lang']
     permission = "cms-admin"
+    column_searchable_list = ['tag']
     
 
 table_admin.add_view(ContentModelView(Content, db.session, ckfields=["text"])) #@UndefinedVariable
