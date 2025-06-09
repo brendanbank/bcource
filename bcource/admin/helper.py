@@ -39,6 +39,7 @@ def authorize_user():
             url = url_for(endpoint)
             if url == request.path:
                 if not accessible_as_admin(role):
+                    print (role)
                     abort(403)
  
 
