@@ -10,7 +10,7 @@ import zoneinfo
 def cleanhtml(raw_html):
     # cleantext = re.sub(CLEANR, '', raw_html)
     cleantext = BeautifulSoup(raw_html, "html.parser")
-    return cleantext
+    return cleantext.getText()
 
 class SystemMessage(object):
     def __init__(self, envelop_from, envelop_to, **kwargs):
@@ -49,8 +49,6 @@ class SendEmail(SystemMessage):
         for email_user in self.envelop_to:
             email_to.append(f'{email_user.fullname} <{email_user.email}>')
             
-        soup = BeautifulSoup(self.render_subject(), "html.parser")
-        
         msg = EmailMessage(self.render_subject(), self.render_body(), 'noreply@bgwlan.nl', email_to)
         
         msg.content_subtype = "html"
