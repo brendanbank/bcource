@@ -39,20 +39,19 @@ def accessible_by_permission(permission=current_app.config['BCOURSE_SUPER_USER_R
 
 def authorize_user():
     if current_app.config.get('SECURITY_AUTHORIZE_REQUEST'):
-        has_permission = False
+        
         for endpoint, roles in current_app.config.get('SECURITY_AUTHORIZE_REQUEST').items():
             url = url_for(endpoint)
             if url == request.path:
+                has_permission = False
                 for role in roles:
                     print (f'for role: {role}')
                     if accessible_as_admin(role):
                         has_permission = True
-            #         else:
-            #
-            #             pass
-            #             abort(403)
+                        
+                if not has_permission:
+                    abort(403)
  
-        print (f'has_permission: {has_permission}')
 
 # Create customized model view class
 class AuthModelView(ModelView):
