@@ -242,7 +242,7 @@ class Training(db.Model):
     def enrolled(self,user):
         return TrainingEnroll.query.join(Training).join(Student).join(User).filter(and_(Student.user==user,
                                                                                         Training.id == self.id)).first()
-
+                                                                                        
 class Trainer(db.Model):
     
     __table_args__ = (
@@ -560,6 +560,27 @@ class User(db.Model, sqla.FsUserMixin):
         return len(UserMessageAssociation().query.join(User).filter(and_(UserMessageAssociation.user_id==self.id,
                                                                                     UserMessageAssociation.message_read==None,
                                                                                     UserMessageAssociation.message_deleted==None)).all())
+    def accessible_by_permission(self, permission):        
+        if self.has_role(current_app.config['BCOURSE_SUPER_USER_ROLE']):
+            return (True)
+
+        permissionObj = Permission().query.filter(Permission.name==permission).first()
+                
+        if not permissionObj:
+            permissionObj = Permission(name=permission)
+            db.session.add(permissionObj)
+            db.session.commit()
+    
+        print (vars(permissionObj))
+        
+        print(self.has_permission(permission))
+
+
+        return (
+            self.is_active
+            and self.is_authenticated
+            and self.has_permission(permission)
+        )
 
 permission_role = Table(
     "permission_role",

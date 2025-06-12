@@ -84,14 +84,14 @@
 }
 </style>
 
-<div class="col-md-10">
-     <div>
+<div class="col-md-10 ">
+     <div class="d-none d-md-block d-lg-block d-xl-block d-xxl-block">
           <div class="row border-bottom border-start border-top border-end pb-1" >
-               <div class="col-md-1 fw-semibold">#</div>
-               <div class="col-md-2 fw-semibold">{{_('Name')}}</div>
-               <div class="col-md-2 fw-semibold">{{_('Type')}}</div>
-               <div class="col-md-3 fw-semibold">{{_('Date')}}</div>
-               <div class="col-md-4 fw-semibold">{{_('Location')}}</div>
+               <div class="col-1 fw-semibold">#</div>
+               <div class="col-2 fw-semibold ps-0">{{_('Name')}}</div>
+               <div class="col-2 fw-semibold ps-0">{{_('Type')}}</div>
+               <div class="col-3 fw-semibold ps-0">{{_('Date')}}</div>
+               <div class="col-4 fw-semibold ps-0">{{_('Spots available/reserved')}}</div>
           </div>
      </div>
           {% for training in training -%}
@@ -123,7 +123,7 @@
                <div class="col-md-2 pt-1 ps-1 pe-0 align-self-center small">{{ training.traningtype.name }}<a class="icon-link" 
                     data-bs-toggle="modal" data-bs-target="#modal_{{training.traningtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
                <div class="col-md-3 pt-1 ps-1 pe-0 align-self-center small">{% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
-               <div class="col-md-4 pt-1 ps-1 pe-0 align-self-center small">{% for event in training.trainingevents %}{{ event.location }}<br>{% endfor %}</div>
+               <div class="col-md-4 pt-1 ps-1 pe-0 align-self-center small">{{ training.max_participants }}/{{ training.trainingenrollments | length }}</div>
           </div>
       </div>
           {% endfor %}

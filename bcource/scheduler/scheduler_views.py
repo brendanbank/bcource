@@ -240,10 +240,10 @@ def enroll(id):
         
         db.session.add(enroll)
         
+        system_msg.EmailStudentEnrolledInTraining(training.trainer_users, current_user, training=training, user=current_user).send()
+        system_msg.EmailStudentEnrolled(current_user, training.trainer_users, user=current_user, training=training).send()
         db.session.commit()
         
-        system_msg.StudentEnrolledInTraining(training.trainer_users, current_user, training=training, user=current_user).send()
-        system_msg.StudentEnrolled(current_user, training.trainer_users, user=current_user, training=training).send()
         
         flash(_("You have successfully enrolled into the training: ") + training.name + ".")
         return redirect(url)
