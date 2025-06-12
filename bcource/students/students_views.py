@@ -128,7 +128,7 @@ def student(id):
         flash(_('Student %s has been updated' % student.fullname))
         
         if student.studentstatus.name == "active":
-            bmsg.StudentStatusActive(current_user, student.user,
+            bmsg.EmailStudentStatusActive(current_user, student.user,
                     user=student.user, status=student.studentstatus).send()
         
         return redirect(url)

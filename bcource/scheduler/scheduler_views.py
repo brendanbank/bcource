@@ -198,8 +198,8 @@ def deroll(id):
         db.session.delete(training_enroll)        
         db.session.commit()
         
-        system_msg.StudentDerolled(current_user, training.trainer_users, user=current_user, training=training).send()
-        system_msg.StudentDerolledInTraining(training.trainer_users, current_user, training=training, user=current_user).send()
+        system_msg.EmailStudentDerolled(current_user, training.trainer_users, user=current_user, training=training).send()
+        system_msg.EmailStudentDerolledInTraining(training.trainer_users, current_user, training=training, user=current_user).send()
         flash(_("You are successfully removed yourself from the training: ") + training.name + ".")
         return redirect(url)
     

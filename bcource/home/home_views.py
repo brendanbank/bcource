@@ -28,6 +28,7 @@ def tandc():
 
 @home_bp.route('/', methods=['GET'])
 def home():
+
     if current_user.is_anonymous:
         return render_template("home/index.html")
     
@@ -45,16 +46,16 @@ def home():
             current_user.usersettings.registration_complete = datetime.now(timezone.utc)
             db.session.commit()
             
-            msg = bmsg.StudentWelcomeMessage(security.datastore.find_or_create_role('student-admin').users, 
+            msg = bmsg.EmailStudentWelcomeMessage(security.datastore.find_or_create_role('student-admin').users, 
                                      current_user,
                                      user=current_user).send(),
         
         
-            msg = bmsg.StudentCreated(security.datastore.find_or_create_role('student-admin').users, 
+            msg = bmsg.EmailStudentCreated(security.datastore.find_or_create_role('student-admin').users, 
                                      security.datastore.find_or_create_role('student-admin').users,
                                      user=current_user.student_from_practice).send()
 
-            msg = bmsg.StudentApplicationToBeReviewed(security.datastore.find_or_create_role('student-admin').users, 
+            msg = bmsg.EmailStudentApplicationToBeReviewed(security.datastore.find_or_create_role('student-admin').users, 
                                      current_user,
                                      user=current_user).send(),
 
