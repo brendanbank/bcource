@@ -6,11 +6,15 @@ from bcource.models import Role, Permission
 from bcource import db
 from flask_admin.contrib.sqla import ModelView
 
-def accessible_as_admin(role=current_app.config['BCOURSE_SUPER_USER_ROLE']):
-    role = Role().query.filter(Role.name==role).first()
+def accessible_as_admin(role_name=current_app.config['BCOURSE_SUPER_USER_ROLE']):
+    print (f'test role {role_name}')
+    role = Role().query.filter(Role.name==role_name).first()
+    print (f'test role query: {role_name}')
     if not role:
-        role = Role(name=role)
+        
+        role = Role(name=role_name)
         db.session.add(role)
+        print (role)
         db.session.commit()
         
     return (
@@ -35,18 +39,20 @@ def accessible_by_permission(permission=current_app.config['BCOURSE_SUPER_USER_R
 
 def authorize_user():
     if current_app.config.get('SECURITY_AUTHORIZE_REQUEST'):
-        access=False
+        has_permission = False
         for endpoint, roles in current_app.config.get('SECURITY_AUTHORIZE_REQUEST').items():
-            for role in roles:
-                url = url_for(endpoint)
-                if url == request.path:
-                    print (role)
+            url = url_for(endpoint)
+            if url == request.path:
+                for role in roles:
+                    print (f'for role: {role}')
                     if accessible_as_admin(role):
-                        access = True
-
-        if not access:
-            abort(403)
-            
+                        has_permission = True
+            #         else:
+            #
+            #             pass
+            #             abort(403)
+ 
+        print (f'has_permission: {has_permission}')
 
 # Create customized model view class
 class AuthModelView(ModelView):
@@ -181,7 +187,7 @@ class TagMixIn(object):
             
             content = Content.get_tag(pkkey)
                         
-            form[self.tag_field_name].data = content.text
+            form[self.tag_field_name].data = content
             form[self.tag_field_name].label.text += f' (tag = {pkkey})'
         
         return super(TagMixIn, self).on_form_prefill(form, id)
@@ -216,7 +222,7 @@ class TagMixIn(object):
         
         if form[self.tag_field_name].data != None:
             pkkey= f'{model.__class__.__name__}_{model.id}'
-            tag = Content.get_tag(pkkey)
+            tag = Content.get_tag(pkkey, obj=True)
             
             tag.text = form[self.tag_field_name].data            
             

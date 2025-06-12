@@ -61,16 +61,16 @@ class SendEmail(SystemMessage):
     def process_attachment(self, msg):
         return(msg)
 
-class StudentWelcomeMessage(SendEmail):
+class EmailStudentWelcomeMessage(SendEmail):
     pass
 
-class StudentApplicationToBeReviewed(SystemMessage):
+class EmailStudentApplicationToBeReviewed(SystemMessage):
     pass
 
-class StudentCreated(SendEmail):
+class EmailStudentCreated(SendEmail):
     pass
 
-class StudentEnrolledInTraining(SendEmail):
+class EmailStudentEnrolledInTraining(SendEmail):
     def process_attachment(self, msg):
         if not 'training' in self.kwargs:
             raise Exception(f"'training' not present into kwargs")
@@ -106,7 +106,7 @@ class StudentEnrolledInTraining(SendEmail):
         
         msg.attach(f'{self.kwargs["training"].name}.ics', cal.to_ical(), 'text/calendar')
         
-class StudentDerolledInTraining(SendEmail):
+class EmailStudentDerolledInTraining(SendEmail):
     def process_attachment(self, msg):
         if not 'training' in self.kwargs:
             raise Exception(f"'training' not present into kwargs")
@@ -143,12 +143,12 @@ class StudentDerolledInTraining(SendEmail):
         
         msg.attach(f'{self.kwargs["training"].name}.ics', cal.to_ical(), 'text/calendar')
 
-class StudentStatusActive(SendEmail):
+class EmailStudentStatusActive(SendEmail):
     pass
 
-class StudentEnrolled(SystemMessage):
+class EmailStudentEnrolled(SystemMessage):
     pass
 
 # message to trainers to notify that the student has derolled
-class StudentDerolled(SystemMessage):
+class EmailStudentDerolled(SystemMessage):
     pass
