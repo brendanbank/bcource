@@ -9,6 +9,7 @@ from flask_admin.menu import MenuLink
 import uuid
 from flask_security import naive_utcnow
 from bcource.admin.helper import AuthModelView, PhoneField, CkModelView
+from sqlalchemy import not_, func
 
 
 class MainIndexLink(MenuLink):
@@ -72,7 +73,12 @@ class ContentModelView(CkModelView, AuthModelView):
     column_list = ['tag', 'lang']
     permission = "cms-admin"
     column_searchable_list = ['tag']
+
+    def get_query(self):
+        return self.session.query(self.model).filter(not_(self.model.tag.regexp_match('\_\d+$')))
     
+    def get_count_query(self):
+        return self.session.query(func.count('*')).filter(not_(self.model.tag.regexp_match('\_\d+$')))   
 
 table_admin.add_view(ContentModelView(Content, db.session, ckfields=["text"])) #@UndefinedVariable
 

@@ -534,10 +534,15 @@ class User(db.Model, sqla.FsUserMixin):
         if current_app.config['BCOURSE_SUPER_USER_ROLE'] in self.roles:
             return True
         
+        has_role = None
+        
         if isinstance(role, str):
-            return role in (role.name for role in self.roles)
+            has_role = role in (role.name for role in self.roles)
         else:
-            return role in self.roles
+            has_role = role in self.roles
+            
+        print (f'has_role: role = {role}, has_role={has_role}')
+        return (has_role)
         
     def practices (self):
         return (Practice().query.all())
@@ -616,6 +621,8 @@ class Role(db.Model, sqla.FsRoleMixin):
                 continue
             self.permissions_items.append(p)
         
+    def __repr__(self)->str:
+        return f'<{self.__class__.__name__} id = {self.id} name="{self.name}">'
     
 class WebAuthn(db.Model,sqla.FsWebAuthnMixin):
     credential_id: Mapped[str] = mapped_column(String(1024))
@@ -632,12 +639,14 @@ class Content(db.Model):
     text: Mapped[str] = mapped_column(LONGTEXT, nullable=True)
 
     @classmethod
-    def get_tag(cls,tag,lang="en", **kwargs):
+    def get_tag(cls,tag,obj=False,lang="en", **kwargs):
         content = db.session.query(cls).filter(cls.tag==tag, lang==lang).first()
         if not content:
             content=cls(tag=tag,text="")
             db.session.add(content)
             db.session.commit()
+        if obj:
+            return (content)
         return(render_template_string(content.text, **kwargs))
     
     def update(self):
