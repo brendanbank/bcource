@@ -22,14 +22,17 @@
 
           </div>
 
+
+     </div>
+     <div class="p-2">
+          <div class="row">
+{{ get_tag('REMOVE_FROM_TRAINING') | safe }}
+          </div>
      </div>
 
-<div class="p-2">
 
 {% endblock %} {% block formfooter %}
 
-{{ get_tag('REMOVE_FROM_TRAINING') | safe }}
-</div>
                </div>
       <div class="modal-footer">
 <a class="icon-link p-3 small" href="{{url_for('home_bp.tandc')}}" target="_blank">{{_('Bcourse Terms and Conditions') }}</a>
@@ -41,6 +44,7 @@
   </div>
 </div>
 </form>
+
 {% endblock %}
 
 {% block js %}

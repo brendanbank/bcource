@@ -26,10 +26,18 @@
                {% endfor %}
           </ol>
           </div>
+{%- if training.trainingenrollments | length >= training.max_participants %}
+
+     <div class="p-2">
+          <div class="row">
+          {{ get_tag('ENROLE_TO_TRAINING_WAITLIST') | safe }}
+          </div>
+     </div>
+{% endif %}
 
      </div>
+     
 {% endblock %} {% block formfooter %}
-
 
                </div>
       <div class="modal-footer">
@@ -41,7 +49,9 @@
     </div>
   </div>
 </div>
+
 </form>
+
 {% endblock %}
 
 {% block js %}

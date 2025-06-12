@@ -234,9 +234,12 @@ def enroll(id):
             abort(403)
             
         enroll.student = student          
-        enroll.training = training   
+        enroll.training = training
         
-        enroll.status = "enrolled"
+        if len(training.trainingenrollments) >= training.max_participants:
+            enroll.status = "waitlist"
+        else:
+            enroll.status = "enrolled"
         
         db.session.add(enroll)
         
