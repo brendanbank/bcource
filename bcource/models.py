@@ -10,6 +10,7 @@ from bcource import db, security
 from flask_security import hash_password, RoleMixin
 from flask import render_template_string
 from bcource.helpers import config_value as cv
+from bcource.helpers import genpwd
 from flask import current_app, session
 import pytz
 
@@ -541,7 +542,6 @@ class User(db.Model, sqla.FsUserMixin):
         else:
             has_role = role in self.roles
             
-        print (f'has_role: role = {role}, has_role={has_role}')
         return (has_role)
         
     def practices (self):
@@ -570,11 +570,6 @@ class User(db.Model, sqla.FsUserMixin):
             permissionObj = Permission(name=permission)
             db.session.add(permissionObj)
             db.session.commit()
-    
-        print (vars(permissionObj))
-        
-        print(self.has_permission(permission))
-
 
         return (
             self.is_active
@@ -741,6 +736,17 @@ def db_init_data (app):
         trainer.user = user
         trainer.practice = practice
         db.session.add(trainer)
+    
+    system_user=security.datastore.find_user(email=cv('SYSTEM_USER'))
+
+    if not (system_user):
+        system_user = security.datastore.create_user(email=cv('SYSTEM_USER'),
+                                            password=hash_password(genpwd()))
+        system_user.first_name = cv('SYSTEM_FIRSTNAME')
+        system_user.last_name = cv('SYSTEM_LASTNAME')
+        system_user.confirmed_at = security.datetime_factory()
+
+    current_app.config["SYSTEM_USER"] = system_user
         
     security.datastore.add_role_to_user(user, role)
     security.datastore.add_role_to_user(user, student_admin)

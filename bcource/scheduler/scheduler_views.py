@@ -198,8 +198,8 @@ def deroll(id):
         db.session.delete(training_enroll)        
         db.session.commit()
         
-        system_msg.EmailStudentDerolled(current_user, training.trainer_users, user=current_user, training=training).send()
-        system_msg.EmailStudentDerolledInTraining(training.trainer_users, current_user, training=training, user=current_user).send()
+        system_msg.EmailStudentDerolled(envelop_to=training.trainer_users, user=current_user, training=training).send()
+        system_msg.EmailStudentDerolledInTraining(envelop_to=current_user, training=training, user=current_user).send()
         flash(_("You are successfully removed yourself from the training: ") + training.name + ".")
         return redirect(url)
     
@@ -238,17 +238,28 @@ def enroll(id):
         
         if len(training.trainingenrollments) >= training.max_participants:
             enroll.status = "waitlist"
+
         else:
             enroll.status = "enrolled"
         
         db.session.add(enroll)
-        
-        system_msg.EmailStudentEnrolledInTraining(training.trainer_users, current_user, training=training, user=current_user).send()
-        system_msg.EmailStudentEnrolled(current_user, training.trainer_users, user=current_user, training=training).send()
+
+        if len(training.trainingenrollments) >= training.max_participants:
+            system_msg.EmailStudentEnrolledInTrainingWaitlist(envelop_to=current_user, training=training, user=current_user).send()
+            system_msg.EmailStudentEnrolledWaitlist(envelop_to=training.trainer_users, user=current_user, training=training).send()
+
+        else:
+            system_msg.EmailStudentEnrolledInTraining(envelop_to=current_user, training=training, user=current_user).send()
+            system_msg.EmailStudentEnrolled(envelop_to=training.trainer_users, user=current_user, training=training).send()
+            
+
         db.session.commit()
         
+        if len(training.trainingenrollments) >= training.max_participants:
+            flash(_("You have been added to the wait list of training training: ") + training.name + ".")
+        else:
+            flash(_("You have successfully enrolled into the training: ") + training.name + ".")
         
-        flash(_("You have successfully enrolled into the training: ") + training.name + ".")
         return redirect(url)
     
     return render_template("scheduler/enroll.html", training=training, form=form)

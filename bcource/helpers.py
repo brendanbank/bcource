@@ -7,7 +7,8 @@ from flask import url_for, current_app, request, abort, redirect
 from flask_principal import Identity, Permission, RoleNeed, identity_changed
 from collections import OrderedDict
 import pytz
-
+import string
+import secrets
 
 def db_datetime(db_datetime_notz):
     return db_datetime_notz.replace(tzinfo=pytz.timezone('UTC'))
@@ -103,3 +104,20 @@ def config_value(key, app=None, default=None, strict=True):
 
 
     
+def genpwd():
+    letters = string.ascii_letters
+    digits = string.digits
+    special_chars = string.punctuation
+    
+    alphabet = letters + digits + special_chars
+    
+    # fix password length
+    pwd_length = 16
+    while True:
+        pwd = ''
+        for i in range(pwd_length):
+            pwd += ''.join(secrets.choice(alphabet))
+    
+        break
+    
+    return (pwd)

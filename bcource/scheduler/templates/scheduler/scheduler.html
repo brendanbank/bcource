@@ -148,15 +148,15 @@
                <div class="col-md-2 pt-1 ps-1 pe-0 align-self-center small">
                
                                                         {% if training.enrolled(current_user).status == 'enrolled' %}
-                                                            <span class="text-success">{{_('You are enrolled') }}</span>
+                                                            <span class="fw-bold text-success">{{_('You are enrolled') }}</span>
                                                         {% elif training.enrolled(current_user).status == 'waitlist' %}
-                                                            <span class="text-warning">{{_('You are on the wait list') }}</span>
+                                                            <span class="fw-bold text-danger">{{_('You are on the wait list') }}</span>
                                                         {% elif training.trainingenrollments | length == training.max_participants %}
-                                                            <span class="text-success">{{_('Max Participants') }}</span>
+                                                            <span class="fw-bold text-success">{{_('Max Capacity') }}</span>
                                                         {% elif training.trainingenrollments | length > training.max_participants %}
-                                                            <span class="text-warning">{{_('Training has a wait list') }}</span>
+                                                            <span class="fw-bold text-warning">{{_('Training has a wait list') }}</span>
                                                         {% else %}
-                                                            <span class="text-success">{{_('Open') }}</span>
+                                                            <span class="fw-bold text-success">{{_('Open') }}</span>
                                                         {% endif %}
                                                         </div>
           </div>
