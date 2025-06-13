@@ -46,17 +46,15 @@ def home():
             current_user.usersettings.registration_complete = datetime.now(timezone.utc)
             db.session.commit()
             
-            msg = bmsg.EmailStudentWelcomeMessage(security.datastore.find_or_create_role('student-admin').users, 
-                                     current_user,
-                                     user=current_user).send(),
+            msg = bmsg.EmailStudentWelcomeMessage(envelop_to=current_user,
+                                     user=current_user).send()
         
         
-            msg = bmsg.EmailStudentCreated(security.datastore.find_or_create_role('student-admin').users, 
-                                     security.datastore.find_or_create_role('student-admin').users,
+            msg = bmsg.EmailStudentCreated(
+                                     envelop_to=security.datastore.find_or_create_role('student-admin').users,
                                      user=current_user.student_from_practice).send()
-
-            msg = bmsg.EmailStudentApplicationToBeReviewed(security.datastore.find_or_create_role('student-admin').users, 
-                                     current_user,
+        
+            msg = bmsg.EmailStudentApplicationToBeReviewed(envelop_to=current_user,
                                      user=current_user).send(),
 
     return render_template("home/index.html")
