@@ -122,13 +122,16 @@ def student(id):
     if request.form.get("submit") == 'close':
         return redirect(url)
     
+    
     if  form.validate_on_submit():
         form.populate_obj(student)
+        print (db.session.is_modified(student))
+
         db.session.commit()
         flash(_('Student %s has been updated' % student.fullname))
         
         if student.studentstatus.name == "active":
-            bmsg.EmailStudentStatusActive(current_user, student.user,
+            bmsg.EmailStudentStatusActive(envelop_to=student.user,
                     user=student.user, status=student.studentstatus).send()
         
         return redirect(url)

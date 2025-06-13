@@ -7,14 +7,11 @@ from bcource import db
 from flask_admin.contrib.sqla import ModelView
 
 def accessible_as_admin(role_name=current_app.config['BCOURSE_SUPER_USER_ROLE']):
-    print (f'test role {role_name}')
     role = Role().query.filter(Role.name==role_name).first()
-    print (f'test role query: {role_name}')
     if not role:
         
         role = Role(name=role_name)
         db.session.add(role)
-        print (role)
         db.session.commit()
         
     return (
@@ -45,7 +42,6 @@ def authorize_user():
             if url == request.path:
                 has_permission = False
                 for role in roles:
-                    print (f'for role: {role}')
                     if accessible_as_admin(role):
                         has_permission = True
                         
