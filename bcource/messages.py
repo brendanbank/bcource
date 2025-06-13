@@ -1,11 +1,13 @@
-from bcource import db
+from bcource import db, security
 from bcource.models import Content, Message
 from flask_mailman import EmailMessage
 from bs4 import BeautifulSoup
 from icalendar import Calendar, Event
 from bcource.helpers import db_datetime
+from bcource.helpers import config_value as cv
 import datetime as dt
 import zoneinfo
+
 
 def cleanhtml(raw_html):
     # cleantext = re.sub(CLEANR, '', raw_html)
@@ -13,7 +15,13 @@ def cleanhtml(raw_html):
     return cleantext.getText()
 
 class SystemMessage(object):
-    def __init__(self, envelop_from, envelop_to, **kwargs):
+    def __init__(self, envelop_to=None, envelop_from=None, **kwargs):
+        if not envelop_to:
+            raise Exception('envelop_to cannot be None')
+        
+        if not envelop_from:
+            envelop_from = security.datastore.find_user(email=cv('SYSTEM_USER'))
+            
         self.kwargs=kwargs
         self.TAG = self.__class__.__name__
         self.body = Content.get_tag(self.TAG, **self.kwargs)
@@ -26,6 +34,7 @@ class SystemMessage(object):
 
         self.envelop_from = envelop_from
         self.envelop_to = envelop_to
+        
         
     def render_subject(self):
         return cleanhtml(self.subject)
@@ -48,8 +57,11 @@ class SendEmail(SystemMessage):
         email_to = []
         for email_user in self.envelop_to:
             email_to.append(f'{email_user.fullname} <{email_user.email}>')
-            
-        msg = EmailMessage(self.render_subject(), self.render_body(), 'noreply@bgwlan.nl', email_to)
+        
+        
+        email_from = f'{self.envelop_from.fullname} <{self.envelop_from.email}>'
+        
+        msg = EmailMessage(self.render_subject(), self.render_body(),email_from , email_to)
         
         msg.content_subtype = "html"
         self.process_attachment(msg)
@@ -70,6 +82,13 @@ class EmailStudentApplicationToBeReviewed(SystemMessage):
 class EmailStudentCreated(SendEmail):
     pass
 
+
+class EmailStudentEnrolledInTrainingWaitlist(SendEmail):
+    pass
+
+class EmailStudentEnrolledWaitlist(SendEmail):
+    pass
+
 class EmailStudentEnrolledInTraining(SendEmail):
     def process_attachment(self, msg):
         if not 'training' in self.kwargs:
@@ -83,7 +102,7 @@ class EmailStudentEnrolledInTraining(SendEmail):
         cal = Calendar()
         cal.add("prodid", "-//bcourse//bcource//EN")
         cal.add("version", "2.0")
-        cal.add("summary", "Bcourse 2")
+        cal.add('summary', self.kwargs['training'].name)
 
         for db_event in self.kwargs['training'].trainingevents:
             
@@ -119,7 +138,7 @@ class EmailStudentDerolledInTraining(SendEmail):
         cal = Calendar()
         cal.add("prodid", "-//bcourse//bcource//EN")
         cal.add("version", "2.0")
-        cal.add("summary", "Bcourse 2")
+        cal.add('summary', self.kwargs['training'].name)
         cal.add('method', "CANCEL")
         
         for db_event in self.kwargs['training'].trainingevents:
