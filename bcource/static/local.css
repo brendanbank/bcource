@@ -12,13 +12,14 @@
 	transform: translateY(-50%);
 	width: 100%;
 	margin: 0;
-	z-index: -1000;
+ 	z-index: 1;
 }
 
 .text-line {
 	margin: 0;
 	background-color: white;
-	z-index: 1000;
+	z-index: 1;
+	position: relative;
 	display: inline-block;
 	margin: 0 auto;
 	padding-left: 20px;

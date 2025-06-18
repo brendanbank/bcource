@@ -9,6 +9,7 @@ from bcource.helpers import admin_has_role, get_url
 from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent, TrainingEnroll
 from sqlalchemy import or_, and_
 import bcource.messages as system_msg
+from sqlalchemy.orm import joinedload
 
 from datetime import datetime
 import pytz
@@ -81,50 +82,58 @@ def process_filters(my_trainings=None):
 
 def training_query(search_on_id=None, my_trainings=None):
     selected_filters=process_filters()
-    if not selected_filters:
-        return Training().query.all()
     
     time_now = datetime.now(tz=pytz.timezone('UTC'))
+
     
+
     if search_on_id:
         q = Training().query.join(Practice).filter(and_(
                         Practice.shortname==Practice.default_row().shortname,Training.id==search_on_id))
-        return q.all()
     
-    
-    if not selected_filters.get('trainingtype') and not selected_filters.get('my_trainings') and not my_trainings:
+    elif not selected_filters.get('trainingtype') and not selected_filters.get('my_trainings') and not my_trainings:
+        print (f'bla {selected_filters}')
         
-        q = Training().query.join(TrainingEvent).join(Practice).filter(and_(
+        q = Training().query.join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Practice).filter(and_(
                         Practice.shortname==Practice.default_row().shortname, 
                         ~Training.trainingevents.any(TrainingEvent.start_time < time_now),
                         Training.active==True)
                         ).order_by(TrainingEvent.start_time)
-        return q.all()
     
-    if selected_filters.get('my_trainings') or my_trainings:
+    elif selected_filters.get('my_trainings') or my_trainings:
         
         if not selected_filters.get('trainingtype'):
-            q = Training().query.join(TrainingEnroll).join(TrainingEvent).join(Student).join(Practice, Practice.id==Training.practice_id).filter(
+            q = Training().query.join(TrainingEnroll).join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Student).join(Practice, Practice.id==Training.practice_id).filter(
                 and_(Student.user_id == current_user.id,
                      TrainingEvent.start_time > time_now)).order_by(TrainingEvent.start_time)
         else:
-            q = Training().query.join(TrainingEnroll).join(TrainingEvent).join(Student).join(Practice, Practice.id==Training.practice_id).filter(
+            q = Training().query.join(TrainingEnroll).join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Student).join(Practice, Practice.id==Training.practice_id).filter(
                 and_(Student.user_id == current_user.id,
                      TrainingEvent.start_time > time_now), or_( 
             Training.traningtype_id.in_(selected_filters.get('trainingtype')), 
             )).order_by(TrainingEvent.start_time)
         
-        return q.all()
 
-    q =  Training().query.join(TrainingEvent).join(Practice).filter(and_(
-                Practice.shortname==Practice.default_row().shortname,
-                ~Training.trainingevents.any(TrainingEvent.start_time < time_now),
-                Training.active==True), or_( 
-        Training.traningtype_id.in_(selected_filters.get('trainingtype')), 
-        )).order_by(TrainingEvent.start_time)
+    else:
+        q =  Training().query.join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Practice).filter(and_(
+                    Practice.shortname==Practice.default_row().shortname,
+                    ~Training.trainingevents.any(TrainingEvent.start_time < time_now),
+                    Training.active==True), or_( 
+            Training.traningtype_id.in_(selected_filters.get('trainingtype')), 
+            )).order_by(TrainingEvent.start_time)
+    
+    
+    trainings = q.all()
+    for t in trainings:
+        t.fill_numbers(current_user)
         
-    return q.all()
+    return trainings
 
+
+@scheduler_bp.route('/training/cancelation-policy', methods=['GET'])
+@auth_required()
+def cancellation():
+    return render_template("scheduler/cancellation_policy.html")
 
 @scheduler_bp.route('/training/mytraining', methods=['GET'])
 @auth_required()
@@ -144,7 +153,8 @@ def mytraining():
                            trainingtypes=traingingtypes, 
                            filters=make_filters(my_trainings=True), 
                            filters_checked=process_filters(my_trainings=True),
-                           page_name=_l('My Training Schedule'))
+                           page_name=_l('My Training Schedule'),
+                           )
 
 
 @scheduler_bp.route('/training', methods=['GET'])
@@ -163,7 +173,8 @@ def index():
                            filters=make_filters(), 
                            trainingtypes=traingingtypes, 
                            filters_checked=process_filters(),
-                           page_name=_l('Training Schedule'))
+                           page_name=_l('Training Schedule'),
+                           )
 
 
 @scheduler_bp.route('/training/deroll/<int:id>',methods=['GET', 'POST'])
@@ -203,7 +214,7 @@ def deroll(id):
         flash(_("You are successfully removed yourself from the training: ") + training.name + ".")
         return redirect(url)
     
-    return render_template("scheduler/deroll.html", training=training, form=form)
+    return render_template("scheduler/deroll.html", training=training, form=form, return_url=url)
 
 
 @scheduler_bp.route('/training/enroll/<int:id>',methods=['GET', 'POST'])
@@ -262,7 +273,7 @@ def enroll(id):
         
         return redirect(url)
     
-    return render_template("scheduler/enroll.html", training=training, form=form)
+    return render_template("scheduler/enroll.html", training=training, form=form, return_url=url)
 
 
 @scheduler_bp.route('/search',methods=['GET'])

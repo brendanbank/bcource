@@ -8,24 +8,24 @@ let editor = undefined;
 	//
 	//	// Loop over them and prevent submission
 	
-	const forms = document.querySelectorAll('.needs-validation')
-	Array.from(forms).forEach(form => {
-		form.addEventListener('submit', event => {
-			console.log(event);
-			console.log("editor: " + editor);
-			if (editor) {
-				editor.updateSourceElement();
-			}
-			if (!form.checkValidity()) {
-				event.preventDefault()
-				event.stopPropagation()
-			};
-
-			event.submitter.disable = true;
-
-			form.classList.add('was-validated');
-		}, true)
-	})
+//	const forms = document.querySelectorAll('.needs-validation')
+//	Array.from(forms).forEach(form => {
+//		form.addEventListener('submit', event => {
+//			console.log(event);
+//			console.log("editor: " + editor);
+//			if (editor) {
+//				editor.updateSourceElement();
+//			}
+//			if (!form.checkValidity()) {
+//				event.preventDefault()
+//				event.stopPropagation()
+//			};
+//
+//			event.submitter.disable = true;
+//
+//			form.classList.add('was-validated');
+//		}, true)
+//	})
 
 	const togglePasswordbutton = document.querySelectorAll('.toggle-password');
 

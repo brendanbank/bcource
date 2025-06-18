@@ -25,8 +25,10 @@ class StudentForm(FlaskForm):
     }
     
     url  = MyHiddenField('url')
+    
+    id  = MyHiddenField('id')
 
-    fullname = MyStringField(_l('Fullname'),
+    email = MyStringField(_l('Email'),
                              # [validators.Disabled()],
                              divclass="col-md-12 mt-1",
                              render_kw={"class": "position-relative form-control", "disabled": True })
@@ -48,8 +50,113 @@ class StudentForm(FlaskForm):
                                       divclass="col-md-6 mt-1",
                                       render_kw={"class": "position-relative form-control form-select"})
 
-    # submit = MySubmitField(_l('Update'), 
-    #         render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1"},
-    #         divclass="col-md-12")
+class UserStudentForm(FlaskForm):
+    form_description = "User Editor"
+    formclass =  "col-md-12"
+    hrfields = { 
+        "fullname": "",
+        "submit": ""
+    }
+    
+    url  = MyHiddenField('url')
+    id  = MyHiddenField('id')
+    hrfields = { 
+        "email": "User Details",
+        "postal_code": "Address"
+    }
+    email = MyStringField(
+        _l('Email'),
+        [validators.DataRequired()],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control", "autocomplete": "given-name",  "disabled": True})
+
+    first_name = MyStringField(
+        _l('Firstname'),
+        [validators.DataRequired()],
+        divclass = "col-md-6 mt-1",
+        render_kw={"class": "position-relative form-control", "autocomplete": "given-name"})
+
+    last_name = MyStringField(
+        _l('Lastname'),
+        [validators.DataRequired()],
+        divclass = "col-md-6 mt-1",
+        render_kw={"class": "position-relative form-control", "autocomplete": "family-name"})
+
+    # email = MyEmailField(
+    #     _l('E-mail Address'),
+    #     [validators.Email(message=_l('Not a valid email address.')),
+    #      validators.DataRequired()],
+    #     divclass = "col-md-6 mt-1",
+    #     render_kw={"class": "position-relative form-control", "autocomplete": "off"})
+
+    phone_number = MyTelField(_l('Mobile Phone'),
+                           [validators.DataRequired()],
+                           divclass = "col-md-6 pt-1",
+                           render_kw={"class": "phone_number position-relative form-control", "autocomplete": "tel"})
+           
+    birthday = MyDateField(_l('Birth day'),
+                           [validators.DataRequired()],
+                           divclass = "col-md-4 mt-1",
+                           render_kw={"class": "position-relative form-control"})     
+
+    gender = MySelectField(_l('Gender'),
+                           [validators.DataRequired()],
+                           choices=(("", _l("Choose")),("F", _l("Female")), ("M", _l("Male")), ("O",_l("Other"))),
+                           divclass = "col-md-4 mt-1",
+                           render_kw={"class": "position-relative form-control form-select"})     
+
+    active = MyBooleanField(
+        _l('User is enabled'),
+        divclass = "col-md-4 mt-2 pt-4 pb-1",
+        render_kw={"class": "form-check-input"})
+
+    confirmed_at = MyDateTimeLocalField(_l("User is verified at"),
+                                   [validators.Optional()],
+                                 divclass = "col-md-12 pb-0",
+                                 render_kw={"class": "position-relative form-control"})
+
+    
+    postal_code = MyStringField(
+        _l('Postal Code'),
+        [validators.DataRequired()],
+        divclass = "col-md-4",
+        render_kw={"class": "position-relative form-control", "autocomplete": "postal-code"})
+
+
+    house_number = MyStringField(
+        _l('Number'),
+        [validators.DataRequired()],
+        divclass = "col-md-4 mt-1",
+        render_kw={"class": "position-relative form-control", "autocomplete": "address-level4"})
+
+    house_number_extention = MyStringField(
+        _l('Ext.'),
+        divclass = "col-md-4 mt-1",
+        render_kw={"class": "position-relative form-control"})
+
+    street = MyStringField(
+        _l('Street'),
+        [validators.DataRequired()],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control", "autocomplete": "address-line1"})
+
+    address_line2 = MyStringField(
+        _l('Street line 2'),
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control"})
+
+
+    city = MyStringField(
+        _l('City'),
+        [validators.DataRequired()],
+        divclass = "col-md-6 mt-1",
+        render_kw={"class": "position-relative form-control", "autocomplete": "address-line2"})
+
+    country = MyStringField(
+        _l('Country'), 
+        [validators.DataRequired(), validators.Length(min=2,max=2)],
+        default="NL",
+        divclass = "col-md-2 mt-1",
+        render_kw={"class": "position-relative form-control", "autocomplete": "country"})
 
 

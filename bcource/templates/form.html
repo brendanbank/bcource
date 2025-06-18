@@ -16,7 +16,7 @@
 	{%- endif -%}
     {% if field.name in form.hrfields -%}
             <div class="col-md-12 position-relative text-center div-line mt-1">
-                   <hr class="hr-line ">
+                   <hr class="hr-line">
                    <span class="text-line fw-bold fs-6"><small>{{ form.hrfields[field.name] }}</small></span>
             </div>
     {%- endif %}
@@ -72,6 +72,12 @@
 	           		<div class="row"><small>{{ field.label.text }} is required!</small></div>
 	           {%- endif %}
                </div>
+               {% if field.errors and field.name == "phone_number" %}
+               {% for error in field.errors -%}
+               <small class="text-danger">{{error}}</small>
+               {%- endfor %}
+               {% endif %}
+               
            {%- endif %}
      </div>
 	{%- endfor %}

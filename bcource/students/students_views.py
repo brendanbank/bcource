@@ -5,10 +5,11 @@ from flask import current_app as app
 from bcource.helpers import admin_has_role
 from bcource import menu_structure, db
 from bcource.models import Student, StudentStatus, StudentType, User, Practice
-from bcource.students.student_forms import StudentForm
+from bcource.students.student_forms import StudentForm, UserStudentForm
 from bcource.helpers import get_url
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, not_
 import bcource.messages as bmsg 
+import datetime
 
 # Blueprint Configuration
 students_bp = Blueprint(
@@ -48,16 +49,17 @@ def process_filters():
     return(filters_checked)
 
 def students_query():
+    orphan_users()
+
     selected_filters=process_filters()
     if not selected_filters:
-        return Student().query.all()
+        return Student().query.order_by(User.email).all()
     
     if not selected_filters.get('studentstatus') and not selected_filters.get('studenttype'):
         
         q = Student().query.join(Practice).join(User).filter(
                         Practice.shortname==Practice.default_row().shortname
-                        ).order_by(User.first_name, 
-                                   User.last_name)
+                        ).order_by(User.first_name, User.last_name, User.email)
         return q.all()
                                    
 
@@ -66,11 +68,32 @@ def students_query():
     q =  Student().query.join(User).join(Practice).filter(and_(
                 Practice.shortname==Practice.default_row().shortname), or_( 
         Student.studentstatus_id.in_(selected_filters.get('studentstatus')), 
-        Student.studenttype_id.in_(selected_filters.get('studenttype')))).order_by(
-            User.first_name, 
-            User.last_name)
+        Student.studenttype_id.in_(selected_filters.get('studenttype')))).order_by(User.email)
+    
         
     return q.all()
+
+# if there are any users that do not have a student record add them.
+def orphan_users():
+    orphan_user_list = db.session.query(User).filter(~User.students.any()).all() #@UndefinedVariable
+    print (orphan_user_list)
+    
+    studenttype = StudentType.default_row() #@UndefinedVariable
+    studentstatus = StudentStatus.default_row() #@UndefinedVariable
+    practice = Practice.default_row() #@UndefinedVariable
+    
+    for user in orphan_user_list:
+        if user.email == "do-not-reply@bgwlan.nl":
+            continue    
+            
+        student=Student(user=user, 
+                        studentstatus=studentstatus,
+                        studenttype=studenttype,
+                        practice=practice)
+        
+        db.session.add(student)
+        
+    db.session.commit()
 
 
 @students_bp.route('/', methods=['GET'])
@@ -105,8 +128,35 @@ def search():
         results["results"].append({"id": student.id,  "text":  student.fullname})
     return jsonify(results)
 
+@students_bp.route('/user-edit/<int:id>',methods=['GET', 'POST'])
+def edit_user(id):
+    
+    user = User().query.get(id)
 
-@students_bp.route('/edit/<int:id>',methods=['GET', 'POST'])
+    
+    if not user:
+        flash(_('Student not found!'))
+        abort(404)
+            
+    form = UserStudentForm(obj=user)
+    
+    url = get_url(form, default='students_bp.index')
+    
+    print (request.form)
+        
+    if  form.validate_on_submit():
+            
+        form.populate_obj(user)
+
+        db.session.commit()
+        flash(_('User %s has been updated' % user.fullname))
+                
+        return redirect(url)
+    
+    return render_template("students/student.html", form=form)
+
+
+@students_bp.route('/student-edit/<int:id>',methods=['GET', 'POST'])
 def student(id):
     student = Student().query.get(id)
     
@@ -137,4 +187,3 @@ def student(id):
         return redirect(url)
     
     return render_template("students/student.html", form=form)
-

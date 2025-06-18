@@ -222,7 +222,18 @@ class Training(db.Model):
     
     trainingevents: Mapped[List["TrainingEvent"]] = relationship(backref="training", cascade="all, delete")
     
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._amount_enrolled = 0
+        self._amount_waitlist = 0
+        self.__available = 0
+        self._user_status = None
+        
+    def fill_numbers(self,user):
+        self._amount_enrolled = len(self.trainingenrollments)
+        e = self.enrolled(user)
+        if e:
+            self._user_status = self.enrolled(user).status
 
     def __str__(self):
         return self.name
@@ -426,7 +437,11 @@ class Student(db.Model):
     @property
     def email (self):
         return self.user.email
-
+    
+    @email.setter
+    def email (self,string):
+        pass
+    
     @property
     def phone_number (self):
         return self.user.phone_number
@@ -516,9 +531,13 @@ class User(db.Model, sqla.FsUserMixin):
 
     @property
     def fullname(self):
+        if not self.first_name or not self.last_name:
+            return self.email
         return f'{self.first_name} {self.last_name}'
 
     def __str__(self):
+        if not self.first_name or not self.last_name:
+            return self.email
         return f'{self.first_name} {self.last_name}'
 
     @declared_attr
@@ -576,6 +595,9 @@ class User(db.Model, sqla.FsUserMixin):
             and self.is_authenticated
             and self.has_permission(permission)
         )
+
+    def __repr__(self)->str:
+        return f'<{self.__class__.__name__} id = {self.id} email="{self.email}">'
 
 permission_role = Table(
     "permission_role",

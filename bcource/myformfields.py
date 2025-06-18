@@ -4,6 +4,7 @@ from flask_babel import _
 from flask import flash
 from wtforms_sqlalchemy.fields import  QuerySelectMultipleField, QuerySelectField
 import wtforms
+from setuptools._vendor.jaraco.functools import except_
 
 def check_divclass (kwargs):
         if "divclass" in kwargs:
@@ -38,12 +39,14 @@ class MixInField(object):
         
         return super(MixInField, self).__call__(**kwargs)
 
-            
-        
-
 class MyTelField(MixInField, wtforms.TelField):
     def pre_validate(self, form):
-        if User().query.filter(User.phone_number==self.data, User.email != current_user.email).first():
+        try: 
+            form.id
+        except AttributeError as e:
+            raise AttributeError("ensure that the form has a hidden field with the User.id")
+        
+        if User().query.filter(User.phone_number==self.data, User.id != form.id.data).first():
             msg = _("Phone number is already used by an other user!")
             flash(msg,'error')
             raise wtforms.ValidationError(msg)
