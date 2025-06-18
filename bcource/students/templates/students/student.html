@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block formheader %}
+
 <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -20,7 +21,7 @@
 {% block formfooter %}
       </div>
       <div class="modal-footer">
-        <button onclick="this.blur();" type="submit" name="submit" value="close" class="btn btn-secondary" data-bs-dismiss="modal">{{_('Close')}}</button>
+        <a onclick="this.blur();" type="submit" id="close" name="close" value="close" class="btn btn-secondary" data-bs-dismiss="modal">{{_('Close')}}</a>
         <button onclick="this.blur();" type="submit" name="submit" value="submit"  class="btn btn-primary">{{_('Save changes')}}</button>
 
       </div>
@@ -35,7 +36,9 @@
 
 
 {% block js %}
+
 <script>
+
 
 $(window).on('load', function() {
     $('#studentModal').modal({keyboard: false});
@@ -46,20 +49,22 @@ $(window).on('load', function() {
     	const url =  document.getElementById('url').value;
     	$('#studentModal').blur();
     	$('#studentModal').modal('hide');
-    	console.log (url)
-        window.location.replace('http://127.0.0.1:5001/students/');
+        window.location.replace(url);
     })
 
     studentModal.addEventListener('hidden.bs.modal', event => {
     	const url =  document.getElementById('url').value;
     	$('#studentModal').blur();
-    	console.log (url)
-        window.location.replace('http://127.0.0.1:5001/students/');
+        window.location.replace(url);
     })
 });
 
+//{% include 'postcode.js' %}
 
 </script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
 
 {% endblock %}
 

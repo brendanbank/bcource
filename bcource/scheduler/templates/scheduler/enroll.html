@@ -1,14 +1,13 @@
 {% extends 'form.html' %}
 
 {% block formheader %}
-<div class="modal fade" id="EnroleModel" tabindex="-1" aria-labelledby="settingModelLabel" aria-hidden="true">
+<div class="modal" data-bs-backdrop="static" data-bs-keyboard="false"  id="EnroleModal" tabindex="-1" aria-labelledby="settingModelLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="EnroleModelLabel">
+        <h1 class="modal-title fs-5" id="EnroleModalLabel">
                <h3 class="text-center">{{ _('Enrole into ') }} {{training.name}}</h3>
         </h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
 
@@ -41,8 +40,12 @@
 
                </div>
       <div class="modal-footer">
-<a class="icon-link p-3 small" href="{{url_for('home_bp.tandc')}}" target="_blank">{{_('Bcourse Terms and Conditions') }}</a>
-        <button onclick="this.blur();" type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{_('Close')}}</button>
+<div class="col-7 me-4">
+<a class="icon-link small" onclick="this.blur();" href="#" data-bs-target="#TandCID" data-bs-toggle="modal">{{_('Terms and Conditions') }}</a><br>
+<a class="icon-link small" onclick="this.blur();" href="#" data-bs-target="#CancellationPolicyId" data-bs-toggle="modal">{{_('Cancellation Policy') }}</a>
+</div>
+        
+        <a onclick="this.blur();" href="{{return_url}}" id="close" type="button" class="btn btn-secondary">{{_('Close')}}</a>
         <button onclick="this.blur();" type="submit" class="btn btn-primary">{{_('Enrole')}}</button>
 
       </div>
@@ -52,19 +55,74 @@
 
 </form>
 
+<div class="modal modal-dialog-scrollable fade" data-bs-keyboard="false" data-bs-backdrop="static"  id="CancellationPolicyId" aria-hidden="true" aria-labelledby="CancellationPolicyIdLabel" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="CancellationPolicyIdLabel">{{_('Cancellation Policy') }}</h1>
+
+      </div>
+      <div class="modal-body">
+        {{ get_tag('Cancellation Policy') |safe   }}
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-primary" onclick="this.blur();" data-bs-target="#EnroleModal" data-bs-toggle="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade"  data-bs-keyboard="false" data-bs-backdrop="static" 	id="TandCID" aria-hidden="true" aria-labelledby="TandCIDLabel" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="TandCIDLabel">{{_('Terms and Conditions') }}</h1>
+      </div>
+      <div class="modal-body">
+        {{ get_tag('tandc') |safe   }}
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-primary" onclick="this.blur();" data-bs-target="#EnroleModal" data-bs-toggle="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block js %}
 
+
 <script>
 
 $(window).on('load', function() {
-    $('#EnroleModel').modal('show');
+    $('#EnroleModal').modal('show');
 
-    const settingModel = document.getElementById('EnroleModel')
-    settingModel.addEventListener('hide.bs.modal', event => {
-     window.location.href = document.getElementById('url').value
+    const EnroleModal = document.getElementById('EnroleModal')
+     EnroleModal.addEventListener('hidePrevented.bs.modal', event => {
+    	 console.log('{{ return_url }}');
+    	 $('#EnroleModal').modal('hide');
+    	 setTimeout(function(){document.location.href = "{{ return_url }}";},1);
+
+    	 //window.location.href = '{{ return_url }}';
     })
+    
+    const TandcModal = document.getElementById('TandCID')
+    TandcModal.addEventListener('hidePrevented.bs.modal', event => {
+   	 	console.log('{{ return_url }}');
+   	 	$('#TandCID').modal('hide');
+   		$('#EnroleModal').modal('show');
+   	 //window.location.href = '{{ return_url }}';
+   })
+
+   const CancellationPolicyId = document.getElementById('CancellationPolicyId')
+   CancellationPolicyId.addEventListener('hidePrevented.bs.modal', event => {
+  	 	console.log('{{ return_url }}');
+  	 	$('#CancellationPolicyId').modal('hide');
+  		$('#EnroleModal').modal('show');
+  	 //window.location.href = '{{ return_url }}';
+  })
+
 });
 
 </script>
