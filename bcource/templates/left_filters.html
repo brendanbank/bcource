@@ -1,0 +1,47 @@
+<div class="row pt-3">
+          <form id="MyFilters" name="MyFilters" action="" method="get"
+               class="needs-validation row justify-content-md-center" >
+
+               <button class="col-10 btn btn-outline-dark btn-sm mb-2" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+                    type="submit"
+                    value="clear"
+                    id=""clear"">
+                    {{_("Filter")}}</button>
+
+               {% for name, text, items_list in filters %}
+               <div class="ps-0 pt-2">
+                    <small><strong>{{text}}</strong></small>
+               </div>
+                    {% for item in items_list %}
+                                        
+                    <div class="form-check ">
+                         <input
+                              class="form-check-input"
+                              type="checkbox"
+                              {% if item.id in filters_checked[name] %} checked{% endif %}
+                         value="{{item.id}}"
+                              name="{{name}}"
+                              id="{{name}}_{{item.id}}"
+                              onclick="console.log(document.getElementById('MyFilters').submit())"
+                              >
+                          <label
+                              class="form-check-label col-10"
+                              for="{{name}}_{{item.id}}"
+                         ><small>{{_(item.name)}} </small></label>
+                    </div>
+               
+                    {% endfor -%}
+               {% endfor -%}
+               <div class="pt-3">
+                    <button
+                         name="submit_id"
+                         id="submit_id"
+                         class="col-10 btn btn-outline-dark btn-sm mt-0"
+                         style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+                         type="submit"
+                         value="clear"
+                    >{{_("Clear filters")}}</button>
+                    </div>
+          </form>
+
+</div>
