@@ -99,7 +99,7 @@
 	$('#student_search').on('change', function() {
 		var id = $("#student_search option:selected").val();
 
-		const href = "/students/student-edit/" + id;
+		const href = "{{url_for('students_bp.index')}}?id="+ id;
 		window.location.href = href
 	})
 </script>

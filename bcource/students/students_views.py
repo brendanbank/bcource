@@ -48,27 +48,31 @@ def process_filters():
         
     return(filters_checked)
 
-def students_query():
+def students_query(search_on_id=None):
     orphan_users()
 
+    print (search_on_id)
     selected_filters=process_filters()
-    if not selected_filters:
-        return Student().query.order_by(User.email).all()
+
+
+    if search_on_id:
+        q = Student().query.join(Practice).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname,Student.id==search_on_id))
+        
+    elif not selected_filters:
+        q = Student().query.order_by(User.email)
     
-    if not selected_filters.get('studentstatus') and not selected_filters.get('studenttype'):
+    elif not selected_filters.get('studentstatus') and not selected_filters.get('studenttype'):
         
         q = Student().query.join(Practice).join(User).filter(
                         Practice.shortname==Practice.default_row().shortname
                         ).order_by(User.first_name, User.last_name, User.email)
-        return q.all()
                                    
-
-                        
-                        
-    q =  Student().query.join(User).join(Practice).filter(and_(
-                Practice.shortname==Practice.default_row().shortname), or_( 
-        Student.studentstatus_id.in_(selected_filters.get('studentstatus')), 
-        Student.studenttype_id.in_(selected_filters.get('studenttype')))).order_by(User.email)
+    else:
+        q =  Student().query.join(User).join(Practice).filter(and_(
+                    Practice.shortname==Practice.default_row().shortname), or_( 
+            Student.studentstatus_id.in_(selected_filters.get('studentstatus')), 
+            Student.studenttype_id.in_(selected_filters.get('studenttype')))).order_by(User.email)
     
         
     return q.all()
@@ -102,7 +106,9 @@ def index():
     if clear and clear[0]=='clear':
         return redirect(url_for('students_bp.index'))
     
-    students = students_query()
+    search_on_id = request.args.get('id')
+
+    students = students_query(search_on_id)
     
     return render_template("students/students.html", students=students, filters=make_filters(), filters_checked=process_filters())
 
