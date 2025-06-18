@@ -15,7 +15,7 @@ class TrainingDerollForm(FlaskForm):
 
 class TrainingEnrollForm(FlaskForm):
     approve_tandc  = MyBooleanField(
-        _l('Accept the terms and conditions'),
+        _l('Accept Bcourse Terms and Conditions and Cancellation Policy'),
         [validators.DataRequired(message='You must accept the Terms and Conditions before enrolling into this training')],
         divclass = "col-md-12",
         default=False,
