@@ -73,6 +73,10 @@ class MySubmitField(MixInField, wtforms.SubmitField):
 class MyHiddenField(wtforms.HiddenField):
     pass
 
+class MyHiddenIdField(wtforms.HiddenField):
+    def populate_obj(self, obj, name):
+        pass
+
 class MyBooleanField(MixInField, wtforms.BooleanField):
     pass
 
@@ -92,6 +96,9 @@ class MyTextAreaField(MixInField, wtforms.TextAreaField):
     pass
 
 class MyQuerySelectMultipleField(MixInField, QuerySelectMultipleField):
+    pass
+
+class MySelectMultipleField(MixInField,wtforms.SelectMultipleField):
     pass
 
 class MyQuerySelectField(MixInField, QuerySelectField):

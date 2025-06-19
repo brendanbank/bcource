@@ -19,12 +19,12 @@ def db_datetime_str(db_datetime_notz):
     TZ = pytz.timezone(TZ_NAME)    
     return dt.astimezone(TZ).strftime("%a, %b %d %Y, %H:%M %p %Z")
 
-def get_url (form, default=None):
+def get_url (form=None,default=None):
     
     if not default:
         default = 'home_bp.home'
         
-    if form.is_submitted():
+    if form and form.is_submitted():
         url=form.url.data
     else:
         url = request.args.get('url')
@@ -38,10 +38,11 @@ def get_url (form, default=None):
         if url_for(u) == url:
             url = url_for(default)
             break
-    if url:
-        form.url.data = url
-    else:
-        form.url.data=url_for(default)
+    if form:
+        if url:
+            form.url.data = url
+        else:
+            form.url.data=url_for(default)
         
     return(url)
 
