@@ -1,16 +1,26 @@
-{% extends 'filters.html' %}
+{% extends 'base.html' %}
 
-{% block head_row %}
 
+{% block nav %}
+    {% include 'nav.html' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+<div class="row border-start border-top border-end p-3" >
     <div class="col-3 text-center">
      </div>
     <div class="col-6 text-center">
         <h3 class="">{{page_name}} </h3>
      </div>
 
-{% endblock %}
+</div>
 
-{% block searchbox %}
+<div class="row">
+<div class="col-md-2 border-top border-start border-end border-bottom ">
+
+<!-- menu --> 
 <div class="row">
   <small class="col-md-12 mt-2"><strong>{{_('Training Search')}}</strong></small>
   
@@ -18,9 +28,25 @@
      <select  class="col-12" id="training_search" class="training_search"></select>
      </div>
   </div>
-{% endblock %}
+{% include 'left_filters.html' %}
 
-{% block data_headers %}
+</div>
+<style>
+.evendiv div{background-color: rgb(244, 244, 244);
+
+}
+.odddiv div{background-color: rgb(255, 255, 255);
+
+}
+
+.highlight:hover > * {
+    background-color: rgb(230, 230, 230);
+}
+</style>
+
+<div class="col-md-10 ">
+     <div class="d-none d-md-block d-lg-block d-xl-block d-xxl-block">
+          <div class="row border-bottom border-top border-end pb-1" >
                <div class="col-1 fw-semibold">#</div>
                <div class="col-2 fw-semibold ps-0">{{_('Name')}}</div>
                <div class="col-2 fw-semibold ps-0">{{_('Type')}}</div>
@@ -30,31 +56,28 @@
                                                             data-placement="top" 
                                                             title="{{_('participants max/current/waitlist') }}"></i></div>
                <div class="col-2 fw-semibold ps-0">{{_('Status')}}</div>
-{% endblock %}
-
-{% block data_rows %}
+          </div>
+     </div>
           {% for training in training -%}
       <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}}">
               <div class="row highlight border-bottom border-bottom border-end">
-               <div class="col-md-1 mt-0 d-flex align-items-center">
+               <div class="col-md-1 pt-1 pb-1">
                {% if training._user_status == 'enrolled' or training._user_status == 'waitlist' %}
-                    <form method="POST" class="p-0 m-0" action="{{url_for('scheduler_bp.deroll', id=training.id)}}">
-                    {{ deroll_form.csrf_token }}
-                                <button type="submit" class="btn p-0 m-0 lh-1" data-toggle="tooltip" data-placement="top" 
-                                                            title="{{_('Remove yourself to this training.')}}" style="height: 29px;">
-                                                            <i class="fs-5 lh-1 text-danger bi bi-person-fill-dash" 
-                 onclick="return safeConfirm('{{_("Are you sure you want to remove user %(email)s from this training?", 
-                                   email=current_user.email)}}');"></i>
-                 
-                 </button>
-                                   
+                    <a
+                         class="icon-link link-body-emphasis"
+                         href="{{url_for('scheduler_bp.deroll', id=training.id)}}"
+                    > <i class="bi bi-person-fill-dash fs-4 text-danger" data-toggle="tooltip" 
+                         data-placement="top" 
+                         title="{{_('Remove yourself to this training.')}}"></i>
 
-                    </form>
+                    </a>
+
                {%- else -%}
+               
                     {% if training._amount_enrolled >= training.max_participants %}
                     <a class="icon-link link-body-emphasis"
                          href="{{url_for('scheduler_bp.enroll', id=training.id)}}"
-                    > <i class="mb-2 fs-5 bi bi-person-fill-add text-warning" data-toggle="tooltip" 
+                    > <i class="bi bi-person-fill-add fs-4 text-warning" data-toggle="tooltip" 
                          data-placement="top" 
                          title="{{_('Add yourself to the waitlist of this training.')}}"></i>
 
@@ -62,7 +85,7 @@
                     {%- else -%}
                     <a class="icon-link link-body-emphasis"
                          href="{{url_for('scheduler_bp.enroll', id=training.id)}}"
-                    > <i class="mb-2 fs-5 bi bi-person-fill-add text-success" data-toggle="tooltip" 
+                    > <i class="bi bi-person-fill-add fs-4 text-success" data-toggle="tooltip" 
                          data-placement="top" 
                          title="{{_('Add yourself to this training.')}}"></i>
 
@@ -98,10 +121,22 @@
           </div>
       </div>
           {% endfor %}
+          
 
-{% endblock %}
 
-{% block modals %}
+
+
+</div>
+
+<!-- Button trigger modal -->
+<!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+  Launch demo modal
+</button>
+ -->
+
+</div>
+</div>
+
 {% for traningtype in trainingtypes %}
 <!-- Modal -->
 <div class="modal fade" id="modal_{{traningtype.description}}" tabindex="-1" aria-labelledby="label_{{traningtype.description}}" aria-hidden="true">
@@ -147,4 +182,3 @@
 </script>
 
 {% endblock %}
-

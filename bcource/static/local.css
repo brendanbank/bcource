@@ -75,3 +75,278 @@ select#practice_selector {
 
 select#practice_selector:hover {
 }
+
+/* Higlighted (hover) result */
+.select2-results__option--highlighted { 
+	
+}
+    
+Selected option
+.select2-results__option[aria-selected=true] { 
+	
+	}
+ 
+/* Search field */
+.select2-search input { 
+	font-size: 14px;
+}
+
+
+/* Input field */
+.select2-selection__rendered { 
+	font-size: 14px;
+}
+	
+/* Input field */
+.select2-selection { 
+    height: 25px ;
+	font-size: 18px;
+	line-height: 18px ;
+}
+
+/* Around the search field */
+.select2-search {  
+	font-size: 14px;
+}
+      
+/* Each result */
+.select2-results {  
+	font-size: 14px;
+	
+}
+    
+/* Custom CSS for line with text through */
+.div-line {
+	position: relative;
+	text-align: center;
+}
+
+.hr-line {
+	position: absolute;
+	top: 50%;
+	left: 0%;
+	-webkit-transform: translateY(-50%);
+	transform: translateY(-50%);
+	width: 100%;
+	margin: 0;
+ 	z-index: 1;
+}
+
+.text-line {
+	margin: 0;
+	background-color: white;
+	z-index: 1;
+	position: relative;
+	display: inline-block;
+	margin: 0 auto;
+	padding-left: 20px;
+	padding-right: 20px;
+}
+
+.f-small {
+	font-size: 10px;
+}
+
+.dropdown-divider {
+	background-color: black;
+}
+
+.dropdown-menu {
+	background-color: #FFFFFF;
+	border: 1px solid black;
+}
+
+.dropdown-item {
+	color: #000000;
+}
+
+svg#mailicon:hover {
+	stroke: rgba(255, 255, 255, 0.75);
+	transition: stroke .15s ease-in-out, background-color .15s ease-in-out,
+		border-color .15s ease-in-out;
+}
+
+svg#mailicon {
+	stroke: #9b9d9e;
+	transition: color .15s ease-in-out, background-color .15s ease-in-out,
+		border-color .15s ease-in-out;
+}
+
+div#practiceheader {
+	color: #9b9d9e;
+	transition: color .15s ease-in-out, background-color .15s ease-in-out,
+		border-color .15s ease-in-out;
+	font-size: 12pt;
+	pointer-events:all;
+}
+
+div#practiceheader:hover * {
+	color: rgba(255, 255, 255, 0.75);
+	transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+	border-color: rgba(255, 255, 255, 0.75);
+}
+
+select#practice_selector {
+	color: #9b9d9e;
+}
+
+select#practice_selector:hover {
+}
+
+/* Higlighted (hover) result */
+.select2-results__option--highlighted { 
+	
+}
+    
+Selected option
+.select2-results__option[aria-selected=true] { 
+	
+	}
+ 
+/* Search field */
+.select2-search input { 
+	font-size: 14px;
+}
+
+
+/* Input field */
+.select2-selection__rendered { 
+	font-size: 14px;
+}
+	
+/* Input field */
+.select2-selection { 
+    height: 25px ;
+	font-size: 18px;
+	line-height: 18px ;
+}
+
+/* Around the search field */
+.select2-search {  
+	font-size: 14px;
+}
+      
+/* Each result */
+.select2-results {  
+	font-size: 14px;
+	
+}
+    
+    /* Custom CSS for line with text through */
+.div-line {
+	position: relative;
+	text-align: center;
+}
+
+.hr-line {
+	position: absolute;
+	top: 50%;
+	left: 0%;
+	-webkit-transform: translateY(-50%);
+	transform: translateY(-50%);
+	width: 100%;
+	margin: 0;
+ 	z-index: 1;
+}
+
+.text-line {
+	margin: 0;
+	background-color: white;
+	z-index: 1;
+	position: relative;
+	display: inline-block;
+	margin: 0 auto;
+	padding-left: 20px;
+	padding-right: 20px;
+}
+
+.f-small {
+	font-size: 10px;
+}
+
+.dropdown-divider {
+	background-color: black;
+}
+
+.dropdown-menu {
+	background-color: #FFFFFF;
+	border: 1px solid black;
+}
+
+.dropdown-item {
+	color: #000000;
+}
+
+svg#mailicon:hover {
+	stroke: rgba(255, 255, 255, 0.75);
+	transition: stroke .15s ease-in-out, background-color .15s ease-in-out,
+		border-color .15s ease-in-out;
+}
+
+svg#mailicon {
+	stroke: #9b9d9e;
+	transition: color .15s ease-in-out, background-color .15s ease-in-out,
+		border-color .15s ease-in-out;
+}
+
+div#practiceheader {
+	color: #9b9d9e;
+	transition: color .15s ease-in-out, background-color .15s ease-in-out,
+		border-color .15s ease-in-out;
+	font-size: 12pt;
+	pointer-events:all;
+}
+
+div#practiceheader:hover * {
+	color: rgba(255, 255, 255, 0.75);
+	transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+	border-color: rgba(255, 255, 255, 0.75);
+}
+
+select#practice_selector {
+	color: #9b9d9e;
+}
+
+select#practice_selector:hover {
+}
+
+/* Higlighted (hover) result */
+.select2-results__option--highlighted { 
+	
+}
+    
+/* Selected option */
+.select2-results__option[aria-selected=true] { 
+	
+	}
+ 
+/* Search field */
+.select2-search input { 
+	font-size: 14px;
+}
+
+
+/* Input field */
+.select2-selection__rendered { 
+	font-size: 14px;
+}
+	
+/* Input field */
+.select2-selection { 
+    height: 25px ;
+	font-size: 18px;
+	line-height: 18px ;
+}
+
+/* Around the search field */
+.select2-search {  
+	font-size: 14px;
+
+}
+      
+/* Each result */
+.select2-results {  
+	font-size: 14px;
+	
+	
+}

@@ -58,9 +58,10 @@
 			</div>
             
             {% elif field.widget.input_type == "submit" -%}
-				<div class="row justify-content-md-center">
+<!-- 				<div class="row justify-content-md-center">
 					<div class="col-md-5">{{ field }}</div>
 				</div>
+ -->                    {{ field }}
             {% else -%}
 			{{ field }}
                <div class="invalid-feedback" id="{{ field.name }}_feedback">

@@ -40,6 +40,8 @@ class EventForm(FlaskForm):
 
 class TrainingDeleteForm(FlaskForm):
     id = MyHiddenField("id")
+    url = MyHiddenField("url")
+    
     submit = MySubmitField(_l('Update'), 
             render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1"},
             divclass="col-md-12")
@@ -55,6 +57,8 @@ class TrainingForm(FlaskForm):
 
     # id = MyHiddenField("id")
 
+    url = MyHiddenField()
+    
     name = MyStringField(
         _l('Training Name'),
         [validators.DataRequired()],
@@ -85,4 +89,9 @@ class TrainingForm(FlaskForm):
 
     submit = MySubmitField(_l('Update'), 
             render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1"},
-            divclass="col-md-12")
+            divclass="col-md-3 position-relative text-center")
+    
+    close = MySubmitField(_l('Close'), 
+            render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1 align-self-start"},
+            divclass="col-md-3 position-relative text-center")
+

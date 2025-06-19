@@ -13,6 +13,7 @@ from bcource.helpers import config_value as cv
 from bcource.helpers import genpwd
 from flask import current_app, session
 import pytz
+from uuid import UUID, uuid4
 
 policy_association = Table(
     "training_policies",
@@ -183,6 +184,13 @@ class Policy(db.Model):
 
 
 class TrainingEnroll(db.Model):
+    
+    
+    def __init__(self, **kwargs):
+        if 'uuid' not in kwargs:
+            kwargs['uuid'] = uuid4()
+        super().__init__(**kwargs)
+
     enrole_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), 
                                                                 nullable=True, 
                                                                 server_default=func.now())
@@ -196,6 +204,7 @@ class TrainingEnroll(db.Model):
     training_id: Mapped[int] = mapped_column(ForeignKey("training.id"), primary_key=True)
     training: Mapped["Training"] = relationship(backref=backref("trainingenrollments"))
 
+    uuid: Mapped[str] = mapped_column(String(256), default=uuid4)
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
@@ -222,13 +231,9 @@ class Training(db.Model):
     
     trainingevents: Mapped[List["TrainingEvent"]] = relationship(backref="training", cascade="all, delete")
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._amount_enrolled = 0
-        self._amount_waitlist = 0
-        self.__available = 0
-        self._user_status = None
-        
+    _amount_enrolled = 0
+    _user_status = None
+            
     def fill_numbers(self,user):
         self._amount_enrolled = len(self.trainingenrollments)
         e = self.enrolled(user)
@@ -250,6 +255,12 @@ class Training(db.Model):
         server_default=func.now(),
         onupdate=func.now(),
     )
+    @property
+    def trainingenrollments_sorted(self):
+        q = TrainingEnroll.query.join(Training).filter(
+            TrainingEnroll.training_id==self.id
+            ).order_by(TrainingEnroll.enrole_date)
+        return q.all()
     
     def enrolled(self,user):
         return TrainingEnroll.query.join(Training).join(Student).join(User).filter(and_(Student.user==user,
@@ -266,6 +277,7 @@ class Trainer(db.Model):
     
     
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    
     user: Mapped["User"] = relationship(backref="trainers")
 
     practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id", ondelete="CASCADE"))
@@ -276,6 +288,10 @@ class Trainer(db.Model):
     )
     
     def __str__(self):
+        return f'{self.user.fullname}'
+    
+    @property
+    def name(self):
         return f'{self.user.fullname}'
     
     update_datetime: Mapped[datetime.datetime] = mapped_column(

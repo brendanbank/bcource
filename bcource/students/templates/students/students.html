@@ -1,109 +1,126 @@
-{% extends 'base.html' %}
+{% extends 'filters.html' %}
 
-{% block nav %}
-    {% include 'nav.html' %}
-{% endblock %}
 
-{% block content %}
-
-    <div class="container">
-        <h1>{{page_name}}</h1>
+{% block head_row %}
+    <div class="col-6 text-end">
+        <h3 class="">{{page_name}}</h3>
+     </div>
+    <div class="col-6 align-self-center">
+     <a
+          name="submit_id"
+          id="submit_id"
+          class="btn btn-outline-dark btn-sm "
+          style=""
+          href="{{url_for('students_bp.edit_user')}}"
+          value="create"
+     >{{_("Create New User")}}</a>
     </div>
 
-<div class="container">
-<div class="row">
-<div class="col-md-2">
+{% endblock %}
 
-<!-- menu --> 
-<div class="row">
-  <small class="col-md-12"><strong>{{_('Student Search')}}</strong></small>
-  
+{% block searchbox %}
+<small class="col-md-12 mt-2"><strong>{{_('User Search')}}</strong></small>
      <div class="">
      <select  class="col-12" id="student_search" class="student_search"></select>
-     </div>
-  </div>
-{% include 'left_filters.html' %}
 </div>
-<style>
-.evendiv div{background-color: rgb(244, 244, 244);
+{% endblock %}
 
-}
-.odddiv div{background-color: rgb(255, 255, 255);
-
-}
-
-.highlight:hover > * {
-    background-color: rgb(230, 230, 230);
-}
-</style>
-
-
- <div class="col-md-10 ">
-     <div class="d-none d-md-block d-lg-block d-xl-block d-xxl-block">
-          <div class="row border-bottom border-start border-top border-end pb-1" >
+{% block data_headers %}
                <div class="col-md-1 fw-semibold">#</div>
                <div class="col-md-3 fw-semibold">Name</div>
                <div class="col-md-3 fw-semibold">Email</div>
-               <div class="col-md-2 fw-semibold">Status</div>
+               <div class="col-md-2 fw-semibold">Student/User Status</div>
                <div class="col-md-1 fw-semibold">Type</div>
                <div class="col-md-2 fw-semibold">Phone</div>
-          </div>
-     </div>
-          {% for student in students -%}
+{% endblock %}
+
+{% block data_rows %}
+
+      {% for student in students -%}
       <div class=" {{ loop.cycle('evendiv', 'odddiv')}}">
-              <div class="row highlight border-bottom border-start border-bottom border-end">
-               <div class="col-1 pt-1 pb-1">
+              <div class="row highlight border-bottom border-bottom border-end">
+               <div class="col-1 pt-0 pb-0">
                     <a class="icon-link link-body-emphasis"
-                         href="{{ url_for('students_bp.edit_user',id=student.user_id ) }}"> <i class="bi bi-pencil-fill"></i>
+                         href="{{ url_for('students_bp.student_training',id=student.user_id ) }}" data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Show enrolled Trainings') }}"> <i class="bi bi-mortarboard"></i>
                     </a>
 
+                    <a class="icon-link link-body-emphasis small"
+                         href="{{ url_for('students_bp.edit_user',id=student.user_id ) }}" data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Edit user details') }}"> <i class="bi bi-pencil-fill"></i>
+                    </a>
+                    {% if student.user_id != current_user.id %}
+                   <form method="POST" style="display: inline-flex;" action="{{url_for('students_bp.delete', id=student.user_id)}}">
+                    {{ delete_form.csrf_token }}
+                                <button type="submit" class="btn p-0" data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Delete User') }}"><i class="bi bi-trash-fill small" 
+                 onclick="return safeConfirm('{{_("Are you sure you want to delete user %(email)s!?", email=student.email)}}');" title="Delete record"></i>
+                 
+                      </button>
+                    </form>
+                    {% endif %}
+
                </div>
-               <div class="col-md-3 pt-1 pb-1">{{ student.user.fullname }}</div>
-               <div class="col-md-3 pt-1 pb-1">{{ student.user.email }}</div>
-               <div class="col-md-2 pt-1 pb-1">
+               <div class="col-md-3 pt-1 pb-1 small">{{ student.user.fullname }}</div>
+               <div class="col-md-3 pt-1 pb-1 small">{{ student.user.email }}</div>
+               <div class="col-md-2 pt-1 pb-1 small">
+               
                
                     <a class="icon-link link-body-emphasis"
-                         href="{{ url_for('students_bp.student',id=student.id ) }}"> <i class="bi bi-pencil-fill"></i>
+                         href="{{ url_for('students_bp.student',id=student.id ) }}">
+                         {% if student.studentstatus.name == "active" %}
+                         <i class="bi text-success bi-person-check lh-1 fs-5 p-0 m-0" data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Student can book a training') }}"></i>
+                         {% else %} 
+                         <i class="bi text-danger bi-person-dash lh-1 fs-5 p-0 m-0" data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Student can not book any training') }}"></i>
+                         {% endif %}
+                    </a> /
+                    <a class="icon-link link-body-emphasis"
+                         href="{{ url_for('students_bp.edit_user',id=student.user_id ) }}">
+                         {% if student.user.active %}
+                         <i class="bi text-success bi-unlock lh-1 fs-6 p-0 m-0" data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('User is enabled and can login') }}"></i>
+                         {% else %} 
+                         <i class="bi text-danger bi-lock lh-1 fs-6 p-0 m-0"  data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('User is disabled and cannot login') }}"></i>
+                         {% endif %}
                     </a>
-               {{ student.studentstatus }} 
-               
+                    
+<!--                {{ student.studentstatus }} 
+ -->               
                </div>
-               <div class="col-md-1 pt-1 pb-1">{{ student.studenttype }} 
+               <div class="col-md-1 pt-1 pb-1 small">{{ student.studenttype }} 
                </div>
-               <div class="col-md-2 pt-1 pb-1">{{ student.user.phone_number }}</div>
+               <div class="col-md-2 pt-1 pb-1 small">{{ student.user.phone_number }}</div>
           </div>
       </div>
           {% endfor %}
-          
-
-
-
-
-</div>
-
-          {% endblock %}
+{% endblock %}
 
 {% block js %}
 
 <script type="text/javascript">
-	$('#student_search').select2({
-		placeholder : 'start typing',
-		containerCssClass : "myFont",
-		ajax : {
-			url : '/students/search',
-			dataType : 'json'
-		// Additional AJAX parameters go here; see the end of this chapter for the full code of this example
-		}
-	});
+$('#student_search').select2({
+     placeholder : 'start typing',
+     minimumInputLength: 2,
+     containerCssClass : "myFont",
+     ajax : {
+          url : '/students/search',
+          dataType : 'json'
+     // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+     }
+});
 
-	$('#student_search').on('change', function() {
-		var id = $("#student_search option:selected").val();
+$('#student_search').on('change', function() {
+     var id = $("#student_search option:selected").val();
 
-		const href = "{{url_for('students_bp.index')}}?id="+ id;
-		window.location.href = href
-	})
+     const href = "{{url_for('students_bp.index')}}?id="+ id;
+     window.location.href = href
+})
 </script>
 
 {% endblock %}
 
 
+          

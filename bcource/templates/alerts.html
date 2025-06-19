@@ -1,13 +1,13 @@
 <!--  alerts --> 
  {%- with messages = get_flashed_messages(with_categories=True) %}
-     <div class="floating-alerts position-relative">
+     <div class="floating-alerts position-relative" style="z-index: 100000;">
      <div class="row">
 		<div id="liveAlertPlaceholder" class="col-md-4 position-absolute top-0 end-0">
 		{%- for category, message in messages %}{% if category == "error" %}
 		{% set category = "danger" %}{% endif -%}
 		{%- if category == "message" %}{% set category = "success" %}{% endif -%}
     <div id="alert_{{loop.index0}}" class="alert alert-{{ category }} alert-dismissible floating-alert-close show fade z-1" timeout="3000" role="alert">
-        <div class="justify-content-md-center">{{ message }}</div>
+        <div class="justify-content-md-center">{{ message | safe}}</div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
    {% endfor -%}

@@ -7,7 +7,7 @@
 {% block formheader %}
 
 <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="studentModalLabel">
@@ -60,6 +60,29 @@ $(window).on('load', function() {
 });
 
 //{% include 'postcode.js' %}
+
+</script>
+
+<style>
+    
+.select2-container{
+    z-index:100000;
+
+}
+    
+</style>
+<script type="text/javascript">
+
+
+$(function() {
+    $(".roles_select").select2({
+    	    multiple: true,
+    	    dropdownAutoWidth: 'true',
+    	    width: '100%'
+
+    });
+});
+
 
 </script>
 

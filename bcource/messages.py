@@ -96,6 +96,9 @@ class EmailStudentEnrolledInTraining(SendEmail):
 
         if not 'user' in self.kwargs:
             raise Exception(f"'user' not present into kwargs")
+
+        if not 'uuid' in self.kwargs:
+            raise Exception(f"'uuid' not present into kwargs")
         
         user = self.kwargs['user']
 
@@ -106,7 +109,7 @@ class EmailStudentEnrolledInTraining(SendEmail):
 
         for db_event in self.kwargs['training'].trainingevents:
             
-            uuid = f'bonding_event_id_{db_event.id}@events'
+            uuid = self.kwargs['uuid']
 
             event = Event()
             event.add('dtstart', db_datetime(db_event.start_time))
@@ -132,7 +135,10 @@ class EmailStudentDerolledInTraining(SendEmail):
 
         if not 'user' in self.kwargs:
             raise Exception(f"'user' not present into kwargs")
-        
+
+        if not 'uuid' in self.kwargs:
+            raise Exception(f"'uuid' not present into kwargs")
+
         user = self.kwargs['user']
 
         cal = Calendar()
@@ -143,7 +149,7 @@ class EmailStudentDerolledInTraining(SendEmail):
         
         for db_event in self.kwargs['training'].trainingevents:
             
-            uuid = f'bonding_event_id_{db_event.id}@events'
+            uuid = self.kwargs['uuid']
             
             event = Event()
             event.add('dtstart', db_datetime(db_event.start_time))

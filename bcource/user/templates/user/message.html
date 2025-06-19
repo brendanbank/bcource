@@ -13,6 +13,19 @@
 {% block js %}
      {% include 'ckeditor-js.html' %}
 
+<script type="text/javascript">
+     $('#envelop_tos').select2({
+          placeholder : 'start typing',
+          minimumInputLength: 1,
+          containerCssClass : "myFont",
+          ajax : {
+               url : "{{url_for('user_bp.search')}}",
+               dataType : 'json'
+          // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+          }
+     });
+</script>
+
 <script>
 
 </script>
@@ -26,4 +39,7 @@
 </div>
           
 {% endblock %}
+
+
+
 

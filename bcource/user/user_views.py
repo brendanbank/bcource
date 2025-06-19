@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for
+from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for, jsonify
 from flask_babel import _
 from flask_security import current_user
 from bcource.models import UserSettings, Message, User, UserMessageAssociation
@@ -10,7 +10,7 @@ from bcource.helpers import get_url
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
 from bcource import db, menu_structure
 from setuptools._vendor.jaraco.functools import except_
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from datetime import datetime, timezone
 import pytz
 from flask_babel import lazy_gettext as _l
@@ -159,7 +159,26 @@ def message():
 
     return render_template("user/message.html", form=form)
     
+
+@user_bp.route('/search',methods=['GET'])
+def search():
+    results = {}
+    results.update({"results": []})
+
+    query_term = request.args.get('q')
+    r = []
     
+    if query_term:
+        r = User().query.filter(or_( 
+            User.first_name.ilike(f'%{query_term}%'), 
+            User.last_name.ilike(f'%{query_term}%'),
+            User.email.ilike(f'%{query_term}%'))).order_by(User.first_name, User.last_name).all()
+
+    for student in r:
+        results["results"].append({"id": student.id,  "text":  student.fullname})
+    return jsonify(results)
+
+
 @user_bp.route('/account-settings', methods=['GET', 'POST'])
 @auth_required()
 def settings():

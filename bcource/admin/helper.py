@@ -107,11 +107,9 @@ class AuthModelView(ModelView):
         url_for that itself requires an app context
         """
         if hasattr(self, "extra_js"):
-            self.extra_js += [ 'https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js',
-                        '/static/local.js']
+            self.extra_js += [ '/static/intlTelInput.min.js', '/static/local.js']
         else:
-            self.extra_js = [ 'https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js',
-                        '/static/local.js']
+            self.extra_js = [ '/static/intlTelInput.min.js', '/static/local.js']
 
         return super(AuthModelView, self).render(template, **kwargs)
 
