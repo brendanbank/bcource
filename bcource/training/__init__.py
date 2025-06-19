@@ -7,4 +7,5 @@ import flask_security.decorators as fsd
 
 
 import bcource.training.training_admin
+import bcource.training.training_detail_view
 from bcource.training.training_views import training_bp

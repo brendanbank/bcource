@@ -10,11 +10,18 @@ from wtforms_sqlalchemy.fields import  QuerySelectMultipleField, QuerySelectFiel
 from bcource.myformfields import (MyStringField, MySubmitField, MyPasswordField, MyHiddenField, 
                             MyEmailField, MyTelField, MyDateField, MySelectField, MyTextAreaField,
                             MyQuerySelectMultipleField, MyQuerySelectField, MyDateTimeField, MyDateTimeLocalField,
-                            MyIntegerField, MyBooleanField)
-from bcource.models import Practice
+                            MyIntegerField, MyBooleanField, MySelectMultipleField, MyHiddenIdField)
+from bcource.models import Practice, Role
 
 
 
+class StudentDeleteForm(FlaskForm):
+    id = MyHiddenIdField("id")
+    url = MyHiddenField("url")
+    
+    submit = MySubmitField(_l('Update'), 
+            render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1"},
+            divclass="col-md-12")
 
 class StudentForm(FlaskForm):
     form_description = "Student Editor"
@@ -59,73 +66,71 @@ class UserStudentForm(FlaskForm):
     }
     
     url  = MyHiddenField('url')
-    id  = MyHiddenField('id')
+    id  = MyHiddenIdField('id')
     hrfields = { 
-        "email": "User Details",
-        "postal_code": "Address"
+        "postal_code": "",
+        "active": ""
     }
     email = MyStringField(
         _l('Email'),
         [validators.DataRequired()],
         divclass = "col-md-12 mt-1",
-        render_kw={"class": "position-relative form-control", "autocomplete": "given-name",  "disabled": True})
+        render_kw={"class": "position-relative form-control", "autocomplete": "given-name"})
 
     first_name = MyStringField(
         _l('Firstname'),
-        [validators.DataRequired()],
+        [validators.Optional()],
         divclass = "col-md-6 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "given-name"})
 
     last_name = MyStringField(
         _l('Lastname'),
-        [validators.DataRequired()],
+        [validators.Optional()],
         divclass = "col-md-6 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "family-name"})
 
-    # email = MyEmailField(
-    #     _l('E-mail Address'),
-    #     [validators.Email(message=_l('Not a valid email address.')),
-    #      validators.DataRequired()],
-    #     divclass = "col-md-6 mt-1",
-    #     render_kw={"class": "position-relative form-control", "autocomplete": "off"})
 
+    
     phone_number = MyTelField(_l('Mobile Phone'),
                            [validators.DataRequired()],
                            divclass = "col-md-6 pt-1",
                            render_kw={"class": "phone_number position-relative form-control", "autocomplete": "tel"})
            
     birthday = MyDateField(_l('Birth day'),
-                           [validators.DataRequired()],
+                           [validators.Optional()],
                            divclass = "col-md-4 mt-1",
                            render_kw={"class": "position-relative form-control"})     
 
     gender = MySelectField(_l('Gender'),
-                           [validators.DataRequired()],
+                           [validators.Optional()],
                            choices=(("", _l("Choose")),("F", _l("Female")), ("M", _l("Male")), ("O",_l("Other"))),
-                           divclass = "col-md-4 mt-1",
+                           divclass = "col-md-12 mt-1",
                            render_kw={"class": "position-relative form-control form-select"})     
+
 
     active = MyBooleanField(
         _l('User is enabled'),
-        divclass = "col-md-4 mt-2 pt-4 pb-1",
+        divclass = "col-md-6 mt-2 pt-4 pb-1",
         render_kw={"class": "form-check-input"})
 
     confirmed_at = MyDateTimeLocalField(_l("User is verified at"),
                                    [validators.Optional()],
-                                 divclass = "col-md-12 pb-0",
+                                 divclass = "col-md-6 pb-0",
                                  render_kw={"class": "position-relative form-control"})
-
     
+    roles = MyQuerySelectMultipleField(_l("Roles"),
+                                          divclass = "col-md-12 mt-1",
+                                          render_kw={"class": "position-relative form-control select2-js"}) #select2-js
     postal_code = MyStringField(
         _l('Postal Code'),
-        [validators.DataRequired()],
+        [validators.Optional()],
         divclass = "col-md-4",
         render_kw={"class": "position-relative form-control", "autocomplete": "postal-code"})
 
 
     house_number = MyStringField(
         _l('Number'),
-        [validators.DataRequired()],
+        [validators.Optional()],
         divclass = "col-md-4 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "address-level4"})
 
@@ -136,7 +141,7 @@ class UserStudentForm(FlaskForm):
 
     street = MyStringField(
         _l('Street'),
-        [validators.DataRequired()],
+        [validators.Optional()],
         divclass = "col-md-12 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "address-line1"})
 
@@ -148,15 +153,27 @@ class UserStudentForm(FlaskForm):
 
     city = MyStringField(
         _l('City'),
-        [validators.DataRequired()],
+        [validators.Optional()],
         divclass = "col-md-6 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "address-line2"})
 
     country = MyStringField(
         _l('Country'), 
-        [validators.DataRequired(), validators.Length(min=2,max=2)],
+        [validators.Optional(), validators.Length(min=2,max=2)],
         default="NL",
         divclass = "col-md-2 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "country"})
 
+class UserDerollForm(FlaskForm):
+    url  = MyHiddenField('url')
+    
+class UserBackForm(FlaskForm):
+    url  = MyHiddenField('url')
 
+class UserDeleteForm(FlaskForm):
+    id = MyHiddenField("id")
+    url = MyHiddenField("url")
+    
+    submit = MySubmitField(_l('Update'), 
+            render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1"},
+            divclass="col-md-12")
