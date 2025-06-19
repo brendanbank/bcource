@@ -108,7 +108,8 @@ let editor = undefined;
 		}
 
 		selectElement.select2({
-	    	templateResult: filterSelectedOptions
+	    	templateResult: filterSelectedOptions,
+			width: "100%"
 		});
 	})
 

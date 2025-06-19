@@ -123,7 +123,7 @@ def create_app():
         main_menu.add_menu('Privacy Policy', 'home_bp.privacy')
         main_menu.add_menu('Terms and Conditions', 'home_bp.tandc')
 
-        db.create_all()  # Create sql tables for our data models
+        # db.create_all()  # Create sql tables for our data models
 
         def get_locale():
             return request.accept_languages.best_match(cv('LANGUAGES'))

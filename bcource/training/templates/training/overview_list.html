@@ -1,0 +1,148 @@
+{% extends 'filters.html' %}
+
+{% block head_row %}
+
+    <div class="col-6 text-end align-self-center">
+        <h3 class="">{{page_name}}</h3>
+
+     </div>
+    <div class="col-6 align-self-center">
+
+     <a
+          name="submit_id"
+          id="submit_id"
+          class="btn btn-outline-dark btn-sm "
+          style=""
+          href="{{url_for('training_bp.edit_training')}}"
+          value="create"
+     >{{_("Create New Training")}}</a>
+    </div>
+{% endblock %}
+
+
+{% block searchbox %}
+
+<small class="col-md-12 mt-2"><strong>{{_('Training Search')}}</strong></small>
+<div class="">
+     <select  class="col-12" id="training_search" class="training_search"></select>
+</div>
+
+{% endblock %}
+
+{% block data_headers %}
+               <div class="col-1 fw-semibold">#</div>
+               <div class="col-2 fw-semibold">{{_('Name')}}</div>
+               <div class="col-2 fw-semibold ps-0">{{_('Type')}}</div>
+               <div class="col-3 fw-semibold ps-0">{{_('Date')}}</div>
+               <div class="col-1 fw-semibold ps-0">{{_('Spots')}} <i class="text-primary fs-6 bi bi-question" 
+                                                            data-toggle="tooltip" 
+                                                            data-placement="top" 
+                                                            title="{{_('participants max/current/waitlist') }}"></i></div>
+               <div class="col-3 fw-semibold ps-0">{{_('Trainers')}}</div>
+{% endblock %}
+               
+{% block data_rows %}
+          
+          {% for training in trainings -%}
+      <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}}">
+               <div class="row highlight border-bottom  border-bottom border-end">
+               <div class="col-1 fw-semibold text-nowrap align-self-center">
+                    
+
+                     <a class="icon-link link-body-emphasis pb-1 "
+                         href="{{url_for('training_bp.training_detail', id=training.id)}}"> <i class="bi bi-people-fill p-0 m-0" data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Show Attendee List') }}"></i>
+                     </a>
+
+                    
+                                                            
+                    <a class="icon-link link-body-emphasis pb-1 "
+                         href="{{url_for('training_bp.edit_training', id=training.id)}}"> <i class="small bi bi-pencil-fill"
+                              data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Edit Training') }}"></i>
+                     </a>
+                     
+                   <form method="POST" style="display: inline-flex;" action="{{url_for('training_bp.delete', id=training.id)}}">
+                    {{ delete_form.csrf_token }}
+                                <button type="submit" class="btn p-0" data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Delete Training') }}"><i class="small bi bi-trash-fill" 
+                 onclick="return safeConfirm('{{_("Are you sure you want to delete this record?")}}');" title="Delete record"></i>
+                 
+                 </button>
+                                   
+
+                    </form>
+                    
+               </div>
+               <div class="col-md-2 pt-1 ps-1 pe-0 align-self-center small" style="display:cell;vertical-align:middle">{{ training.name }}</div>
+               <div class="col-md-2 pt-1 ps-1 pe-0 align-self-center small">{{ training.traningtype.name }}<a class="icon-link" 
+                    data-bs-toggle="modal" data-bs-target="#modal_{{training.traningtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
+               <div class="col-md-3 pt-1 ps-1 pe-0 align-self-center small">{% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
+               <div class="col-md-1 pt-1 ps-1 pe-0 align-self-center small">{{ training.max_participants }}&nbsp;/&nbsp;{{training._amount_enrolled }}&nbsp;/
+                                                  {%- if training._amount_enrolled >= training.max_participants %}
+                                                       <span class="text-warning">{{ training._amount_enrolled - training.max_participants}}</span>
+                                                   {% else %}
+                                                       <span class="text-success">0</span>
+                                                   {%- endif -%}
+                                                   
+                                                   </div>
+               <div class="col-md-3 pt-1 ps-1 pe-0 align-self-center small">
+               {% for trainer in training.trainers %}{{ trainer }}{% if not loop.last %}, {%endif%}{% endfor %}
+               
+               </div>
+          </div>
+      </div>
+          {% endfor %}
+          
+{% endblock %}
+
+{% block modals %}
+
+{% for traningtype in trainingtypes %}
+<!-- Modal -->
+<div class="modal fade" id="modal_{{traningtype.description}}" tabindex="-1" aria-labelledby="label_{{traningtype.description}}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="label_{{traningtype.description}}">{{traningtype.name}}</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {{ get_tag(traningtype.description) | safe }}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+
+{% block js %}
+<script type="text/javascript">
+
+jQuery('#training_search').select2({
+          placeholder : 'start typing',
+          minimumInputLength: 1,
+          containerCssClass : "myFont",
+          ajax : {
+               url : "{{url_for('training_bp.search')}}",
+               dataType : 'json'
+          // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+          }
+     })
+
+     $('#training_search').on('change', function() {
+          var id = $("#training_search option:selected").val();
+
+          const href = "{{url_for('training_bp.overview_list')}}?id="+ id;
+          window.location.href = href
+     })
+</script>
+{% endblock %}
+
+
+               

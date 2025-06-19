@@ -1,3 +1,25 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+    {% include 'nav.html' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+<div class="row border-start border-top border-end p-3" >
+<!-- block head_row -->
+{% block head_row %}{% endblock %}
+</div>
+<div class="row ">
+<div class="col-md-2 border-top border-start border-end border-bottom ">
+
+<!-- menu --> 
+<div class="row ">
+<!-- block searchbox -->
+{% block searchbox %}{% endblock %}
+</div>
+ 
 <div class="row pt-3">
           <form id="MyFilters" name="MyFilters" action="" method="get"
                class="needs-validation row justify-content-md-center m-0" >
@@ -41,7 +63,7 @@
                     </div>
                {% if return_url %}
                <input id="url" name="url" type="hidden" value="{{return_url}}">    
-               <div class="p-0 pt-3 pb-1">
+               <div class="p-0 pt-1 pb-1">
                     <button
                          name="submit_id"
                          id="submit_id"
@@ -56,3 +78,28 @@
           </form>
 
 </div>
+</div>
+<style>
+.evendiv div{background-color: rgb(244, 244, 244);}
+.odddiv div{background-color: rgb(255, 255, 255);}
+.highlight:hover > * {background-color: rgb(230, 230, 230);}
+</style>
+
+ <div class="col-md-10 ">
+     {% block pre_data_headers %}{% endblock %}
+
+     <div class="d-none d-md-block d-lg-block d-xl-block d-xxl-block">
+     <!-- block data_headers -->
+          <div class="row border-bottom border-top border-end pb-1" >
+          {% block data_headers %}{% endblock %}
+          </div>
+     </div>
+     <!-- block data_rows -->
+          {% block data_rows %}{% endblock %}
+
+</div>
+
+{% block modals %}{% endblock %}
+
+          {% endblock %}
+

@@ -1,0 +1,70 @@
+{% extends 'filters.html' %}
+
+{% block head_row %}
+
+    <div class="col-12 text-center align-self-center">
+        <h3 class="">{{page_name}}</h3>
+
+     </div>
+{% endblock %}
+
+{% block pre_data_headers %}
+
+
+<div class="row border-top border-end pb-1">
+     <div class="col-2 small fw-semibold">{{_('Trainers:')}}</div>
+     <div class="col-2 small">
+     <ol>
+
+          {% for trainer in training.trainers %}
+          <li>{{trainer}}</li>
+          {% endfor %}
+     </ol>
+     </div>
+</div>
+<div class="row border-end pb-1">
+     <div class="col-2 small fw-semibold">{{_('Training Days:')}}</div>
+     <div class="col-8 small">
+     <ol>
+          {% for event in training.trainingevents %}
+          <li>{{db_datetime_str(event.start_time)}} - {{db_datetime_str(event.end_time)}}<br>{{event.location}}</li>
+          {% endfor %}
+     </ol>
+     </div>
+</div>
+{% endblock %}
+
+{% block searchbox %}
+{% endblock %}
+
+{% block data_headers %}
+               <div class="col-md-1 small fw-semibold">#</div>
+               <div class="col-md-3 small fw-semibold">Name</div>
+               <div class="col-md-3 small fw-semibold">Email</div>
+               <div class="col-md-2 small fw-semibold">Phone</div>
+               <div class="col-md-3 small fw-semibold">Status</div>
+
+{% endblock %}
+
+{% block data_rows %}
+
+{% for student_enrollment in training.trainingenrollments_sorted -%}
+
+<div class=" {{ loop.cycle('evendiv', 'odddiv')}}">
+     <div class="row highlight border-bottom border-bottom border-end">
+          <div class="col-1 pt-0 pb-0 small">{{ loop.index }}</div>
+          <div class="col-3 pt-0 pb-0 small">{{ student_enrollment.student.fullname }}</div>
+          <div class="col-3 pt-0 pb-0 small">{{ student_enrollment.student.email }}</div>
+          <div class="col-2 pt-0 pb-0 small">{{ student_enrollment.student.phone_number }}</div>
+          <div class="col-3 pt-0 pb-0 small">{{ student_enrollment.status }}</div>
+
+     </div>
+
+</div>
+
+
+{% endfor %}
+
+{% endblock %}
+
+
