@@ -14,8 +14,8 @@ from datetime import datetime
 import uuid, pytz
 from flask_babel import lazy_gettext as _l
 from sqlalchemy.orm import joinedload
-from bcource.scheduler.common import derole_common
-from bcource.scheduler.scheduler_forms import TrainingDerollForm
+from bcource.students.common import deroll_common, enroll_common
+from bcource.training.training_forms import TrainingDerollForm, TrainingEnrollForm
 
 # Blueprint Configuration
 students_bp = Blueprint(
@@ -67,13 +67,13 @@ def students_query(search_on_id=None):
                         Practice.shortname==Practice.default_row().shortname,Student.id==search_on_id))
         
     elif not selected_filters:
-        q = Student().query.join(User).order_by(User.first_name, User.last_name, User.email)
+        q = Student().query.join(User).order_by(User.email)
     
     elif not selected_filters.get('studentstatus') and not selected_filters.get('studenttype'):
         
         q = Student().query.join(Practice).join(User).filter(
                         Practice.shortname==Practice.default_row().shortname
-                        ).order_by(User.first_name, User.last_name, User.email)
+                        ).order_by(User.email)
                                    
     else:
         q =  Student().query.join(User).join(Practice).filter(and_(
@@ -154,10 +154,7 @@ def delete(id):
     if not user:
         abort(404)
     
-              
-    form = UserDeleteForm()
-    
-    url = get_url(form, default='training_bp.overview_list')
+    url = get_url()
     if user.id == current_user.id:
         flash(_('You cannot delete yourself!'), "error")
         return redirect(url)
@@ -166,16 +163,15 @@ def delete(id):
         flash(_('You cannot delete user <span class="fw-bold" style="white-space:nowrap;">%s</span>. First delete the trainer record.<br>' % user.email), "error")
         return redirect(url)
     
-    if form.validate_on_submit():
-        for student in user.students:
-            db.session.delete(student)
+    for student in user.students:
+        db.session.delete(student)
 
-        UserMessageAssociation().query.filter(UserMessageAssociation.user_id == user.id).delete()
-        UserSettings().query.filter(UserSettings.user_id == user.id).delete()
-        
-        db.session.delete(user)
-        db.session.commit()
-        flash(_('Successfully deleted training: %s' % user))
+    UserMessageAssociation().query.filter(UserMessageAssociation.user_id == user.id).delete()
+    UserSettings().query.filter(UserSettings.user_id == user.id).delete()
+    
+    db.session.delete(user)
+    db.session.rollback ()
+    flash(_('Successfully deleted training: %s' % user))
     
     return redirect(url)
 
@@ -330,16 +326,33 @@ def user_training_query(user,search_on_id=None):
 @students_bp.route('/student-trainings/deroll/<int:user_id>/<int:training_id>',methods=['GET', 'POST'])
 def deroll(user_id,training_id):
     
-    form = TrainingDerollForm()    
     training = Training().query.get(training_id)
     user = User().query.get(user_id)
-    url = get_url(form)
+    url = get_url()
+    print (url)
+    deroll_common(training, user)
+    return redirect(url)
 
     
-    return_acton =  derole_common(url, form, training, user)
-
-    return (return_acton)
+@students_bp.route('/student-trainings/enroll/<int:training_id>',methods=['GET', 'POST'])
+def enroll(training_id):
     
+    student_id = request.args.get('student_id')
+    if not student_id:
+        flash(_('Could get student from query!'), 'error')
+        return redirect(get_url())
+    
+    training = Training().query.get(training_id)
+    user = User().query.join(Student).filter(Student.id==student_id).first()
+    if not user:
+        flash(_('Could get user from query!'), 'error')
+        return redirect(get_url())
+    
+    url = get_url()
+    
+    return_acton =  enroll_common(training, user)
+    
+    return redirect(url)
 
 
 @students_bp.route('/student-trainings/<int:id>', methods=['GET', 'POST'])
@@ -354,10 +367,11 @@ def student_training(id):
 
     user = User().query.get(id)
     
-    return_url = get_url()
     
-
-    
+    deroll_form = TrainingDerollForm()
+    url = get_url(deroll_form, default='training_bp.overview_list', back_button=True)
+    if not deroll_form.first_url.data:
+        deroll_form.first_url.data = url
     
     traingingtypes = TrainingType().query.join(Practice).filter(and_(
                         Practice.shortname==Practice.default_row().shortname)
@@ -369,8 +383,8 @@ def student_training(id):
                            filters_checked=scheduler_process_filters(my_trainings=True),
                            page_name=_l('Training Schedule'),
                            user=user,
-                           deroll_form=UserDerollForm(),
-                           return_url=return_url
+                           deroll_form=deroll_form,
+                           return_url=url
                            )
 
 
