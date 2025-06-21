@@ -170,7 +170,7 @@ def delete(id):
     UserSettings().query.filter(UserSettings.user_id == user.id).delete()
     
     db.session.delete(user)
-    db.session.rollback ()
+    db.session.commit()
     flash(_('Successfully deleted training: %s' % user))
     
     return redirect(url)
