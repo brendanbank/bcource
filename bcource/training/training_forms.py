@@ -7,6 +7,7 @@ from bcource.myformfields import (MyStringField, MySubmitField, MyPasswordField,
 
 import wtforms.validators as validators
 from wtforms.fields import IntegerField
+from wtforms import DateTimeField
 
 from flask_babel import lazy_gettext as _l
 from bcource.models import TrainingType
@@ -17,7 +18,14 @@ def training_types():
 # def cancellation_types ():
 #     return TrainingPolicy().query.order_by(TrainingPolicy.name).all()
 
-from wtforms import DateTimeField
+
+
+class TrainingDerollForm(FlaskForm):
+    url  = MyHiddenField('url')
+    first_url  = MyHiddenField('first_url')
+
+class TrainingEnrollForm(TrainingDerollForm):
+    pass
 
 class EventForm(FlaskForm):
     form_description = "Event Editor"

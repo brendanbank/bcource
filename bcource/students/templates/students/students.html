@@ -19,80 +19,97 @@
 {% endblock %}
 
 {% block searchbox %}
-<small class="col-md-12 mt-2"><strong>{{_('User Search')}}</strong></small>
+<l class="col-lg-12 mt-2"><strong>{{_('User Search')}}</strong></l>
      <div class="">
      <select  class="col-12" id="student_search" class="student_search"></select>
 </div>
 {% endblock %}
 
 {% block data_headers %}
-               <div class="col-md-1 fw-semibold">#</div>
-               <div class="col-md-3 fw-semibold">Name</div>
-               <div class="col-md-3 fw-semibold">Email</div>
-               <div class="col-md-2 fw-semibold">Student/User Status</div>
-               <div class="col-md-1 fw-semibold">Type</div>
-               <div class="col-md-2 fw-semibold">Phone</div>
+               <div class="col-lg-3 fw-semibold">Name</div>
+               <div class="col-lg-1 fw-semibold"></div>
+               <div class="col-lg-3 fw-semibold">Email</div>
+               <div class="col-lg-2 fw-semibold">Student/User Status</div>
+               <div class="col-lg-1 fw-semibold">Type</div>
+               <div class="col-lg-2 fw-semibold">Phone</div>
 {% endblock %}
 
 {% block data_rows %}
 
       {% for student in students -%}
       <div class=" {{ loop.cycle('evendiv', 'odddiv')}}">
-              <div class="row highlight border-bottom border-bottom border-end">
-               <div class="col-1 pt-0 pb-0">
+              <div class="row highlight d-flex align-items-stretch">
+              <span class="{{show_mobile}} border-top border-dark-subtle"></span>
+               <div class="col-lg-3 pt-1 pb-1"><span class="align-middle">
+               <span class="{{show_mobile}} h2">{{ student.user.fullname }}</span>
+               <span class="{{hide_mobile}}">{{ student.user.fullname }}</span></div>
+               <div class="col-lg-1 p-0 m-0">
+                    <span class="align-middle ms-2 p-0 m-0">
                     <a class="icon-link link-body-emphasis"
                          href="{{ url_for('students_bp.student_training',id=student.user_id ) }}" data-toggle="tooltip" data-placement="top" 
-                                                            title="{{_('Show enrolled Trainings') }}"> <i class="bi bi-mortarboard"></i>
+                                                            title="{{_('Show enrolled Trainings') }}"> <i class="p-0 m-0 bi bi-mortarboard"></i>
+                    
+                    <span class="mt-1 me-1 {{show_mobile}} small"> {{_("Show trainings") }} </span>
                     </a>
 
-                    <a class="icon-link link-body-emphasis small"
+                    <a class="icon-link link-body-emphasis"
                          href="{{ url_for('students_bp.edit_user',id=student.user_id ) }}" data-toggle="tooltip" data-placement="top" 
-                                                            title="{{_('Edit user details') }}"> <i class="bi bi-pencil-fill"></i>
+                                                            title="{{_('Edit user details') }}"> <i class="p-0 m-0 bi bi-pencil-fill"></i>
+                    <span class="mt-1 me-1 {{show_mobile}} small">{{_("Edit user") }}</span>
+
                     </a>
                     {% if student.user_id != current_user.id %}
-                   <form method="POST" style="display: inline-flex;" action="{{url_for('students_bp.delete', id=student.user_id)}}">
-                    {{ delete_form.csrf_token }}
-                                <button type="submit" class="btn p-0" data-toggle="tooltip" data-placement="top" 
-                                                            title="{{_('Delete User') }}"><i class="bi bi-trash-fill small" 
-                 onclick="return safeConfirm('{{_("Are you sure you want to delete user %(email)s!?", email=student.email)}}');" title="Delete record"></i>
-                 
-                      </button>
-                    </form>
-                    {% endif %}
+                    <a class="icon-link link-body-emphasis"
+                         href="{{ url_for('students_bp.delete',id=student.user_id ) }}" data-toggle="tooltip" data-placement="top" 
+                                   title="{{_('Delete User') }}"> 
+                    <i class="p-0 m-0 bi bi-trash-fill"
+                    
+                    onclick="return safeConfirm('{{_("Are you sure you want to delete user %(email)s!?", email=student.email)}}');" 
+                    title="Delete record">
+                    </i>
+                    <span class="mt-1 {{show_mobile}} fw-semibold small"> {{_("Delete user") }}</span>
+                    </a>
 
+                    {% endif %}
+                    </span>
                </div>
-               <div class="col-md-3 pt-1 pb-1 small">{{ student.user.fullname }}</div>
-               <div class="col-md-3 pt-1 pb-1 small">{{ student.user.email }}</div>
-               <div class="col-md-2 pt-1 pb-1 small">
+               <div class="col-lg-3 pt-1 pb-1"><span class="align-middle">
+               <span class="{{show_mobile}}"> {{_("e-mail") }}: </span>
+               {{ student.user.email | format_email | safe }}</span></div>
+               <div class="col-lg-2 pt-1 pb-1">
                
-               
+               <span class="align-middle">
                     <a class="icon-link link-body-emphasis"
                          href="{{ url_for('students_bp.student',id=student.id ) }}">
                          {% if student.studentstatus.name == "active" %}
+                         
                          <i class="bi text-success bi-person-check lh-1 fs-5 p-0 m-0" data-toggle="tooltip" data-placement="top" 
                                                             title="{{_('Student can book a training') }}"></i>
+                         <span class="{{show_mobile}} small">{{_("Student Active") }}</span>
                          {% else %} 
                          <i class="bi text-danger bi-person-dash lh-1 fs-5 p-0 m-0" data-toggle="tooltip" data-placement="top" 
                                                             title="{{_('Student can not book any training') }}"></i>
+                         <span class="{{show_mobile}} small">{{_("Student Inactive") }}</span>
                          {% endif %}
                     </a> /
                     <a class="icon-link link-body-emphasis"
                          href="{{ url_for('students_bp.edit_user',id=student.user_id ) }}">
                          {% if student.user.active %}
-                         <i class="bi text-success bi-unlock lh-1 fs-6 p-0 m-0" data-toggle="tooltip" data-placement="top" 
+                         <i class="bi text-success bi-unlock lh-1 fs-5 p-0 m-0" data-toggle="tooltip" data-placement="top" 
                                                             title="{{_('User is enabled and can login') }}"></i>
+                         <span class="{{show_mobile}} small">{{_("User Enabled") }}</span>
                          {% else %} 
-                         <i class="bi text-danger bi-lock lh-1 fs-6 p-0 m-0"  data-toggle="tooltip" data-placement="top" 
+                         <i class="bi text-danger bi-lock lh-1 fs-5 p-0 m-0"  data-toggle="tooltip" data-placement="top" 
                                                             title="{{_('User is disabled and cannot login') }}"></i>
+                         <span class="{{show_mobile}} small">{{_("User Disabled") }}</span>
                          {% endif %}
+                         
                     </a>
-                    
-<!--                {{ student.studentstatus }} 
- -->               
+               </span>                    
                </div>
-               <div class="col-md-1 pt-1 pb-1 small">{{ student.studenttype }} 
+               <div class="col-lg-1 pt-1 pb-1 l"><span class="mt-1 {{show_mobile}} fw-semibold"> {{_("Student Type") }}: </span>{{ student.studenttype }} 
                </div>
-               <div class="col-md-2 pt-1 pb-1 small">{{ student.user.phone_number }}</div>
+               <div class="col-lg-2 pt-1 pb-1 l"><span class="mt-1 {{show_mobile}} fw-semibold"> {{_("Phone") }}: </span>{{ student.user.phone_number | format_phone_number | safe}}</div>
           </div>
       </div>
           {% endfor %}
