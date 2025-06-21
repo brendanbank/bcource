@@ -3,13 +3,14 @@ from flask import (Blueprint, render_template, jsonify, abort, send_from_directo
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
 from flask_security import current_user, auth_required
-from bcource.scheduler.scheduler_forms import TrainingEnrollForm, TrainingDerollForm
+from bcource.scheduler.scheduler_forms import SchedulerTrainingEnrollForm
+from bcource.training.training_forms import TrainingDerollForm, TrainingEnrollForm
 from bcource import menu_structure, db
 from bcource.helpers import admin_has_role, get_url
 from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent, TrainingEnroll
 from sqlalchemy import or_, and_
 import bcource.messages as system_msg
-from bcource.scheduler.common import derole_common
+from bcource.students.common import deroll_common, enroll_common
 from sqlalchemy.orm import joinedload
 
 from datetime import datetime
@@ -212,10 +213,10 @@ def deroll(id):
     training = Training().query.get(id)
     url = get_url(form)
 
-    return_acton =  derole_common(url, form, training, current_user)
-
-    if return_acton:
-        return (return_acton)
+    if form.validate_on_submit():
+        return_acton =  deroll_common(training, current_user)
+        if return_acton:
+            return redirect(url)
 
     return render_template("scheduler/deroll.html", training=training, form=form, return_url=url)
 
@@ -228,55 +229,14 @@ def enroll(id):
     
     print (training.enrolled(current_user))
     
-    form = TrainingEnrollForm()    
+    form = SchedulerTrainingEnrollForm()    
     url = get_url(form)
     
-        
-    if training.enrolled(current_user):
-        flash(_("You are already enrolled for this training: ") + training.name + ".",'error')
-        return redirect(url)
-    
     if form.validate_on_submit():
+        redirect_url = enroll_common(training, current_user)  
+        if redirect_url:
+            return redirect(url)
         
-        enroll = TrainingEnroll()
-
-        student = Student().query.join(Practice).filter(and_(
-                        Practice.shortname==Practice.default_row().shortname, Student.user==current_user)
-                        ).first()
-        if not student:
-            flash(_("enroll: Student Not Found!"), 'error')
-            abort(403)
-            
-        enroll.student = student          
-        enroll.training = training
-        
-        if len(training.trainingenrollments) >= training.max_participants:
-            enroll.status = "waitlist"
-            flash(_("You have been added to the wait list of training training: ") + training.name + ".")
-
-        else:
-            enroll.status = "enrolled"
-            flash(_("You have successfully enrolled into the training: ") + training.name + ".")
-
-        
-        db.session.add(enroll)
-
-        if len(training.trainingenrollments) >= training.max_participants:
-            system_msg.EmailStudentEnrolledInTrainingWaitlist(envelop_to=current_user, training=training, user=current_user).send()
-            system_msg.EmailStudentEnrolledWaitlist(envelop_to=training.trainer_users, user=current_user, training=training).send()
-
-        else:
-            system_msg.EmailStudentEnrolledInTraining(envelop_to=current_user, 
-                                                      training=training, 
-                                                      user=current_user, 
-                                                      uuid=enroll.uuid).send()
-            system_msg.EmailStudentEnrolled(envelop_to=training.trainer_users, user=current_user, training=training).send()
-            
-
-        db.session.commit()
-                
-        return redirect(url)
-    
     return render_template("scheduler/enroll.html", training=training, form=form, return_url=url)
 
 

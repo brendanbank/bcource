@@ -22,6 +22,7 @@ wtforms-sqlalchemy = "*"
 flask-moment = "*"
 icalendar = "*"
 beautifulsoup4 = "*"
+phonenumbers = "*"
 
 [dev-packages]
 

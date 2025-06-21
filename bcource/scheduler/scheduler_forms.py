@@ -9,11 +9,8 @@ import wtforms.validators as validators
 from flask_babel import lazy_gettext as _l
 import bcource.models as models
 
-class TrainingDerollForm(FlaskForm):
-    url  = MyHiddenField('url')
 
-
-class TrainingEnrollForm(FlaskForm):
+class SchedulerTrainingEnrollForm(FlaskForm):
     approve_tandc  = MyBooleanField(
         _l('Accept Bcourse Terms and Conditions and Cancellation Policy'),
         [validators.DataRequired(message='You must accept the Terms and Conditions before enrolling into this training')],

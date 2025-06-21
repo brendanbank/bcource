@@ -26,6 +26,10 @@
 	padding-right: 20px;
 }
 
+.cell-middel {
+	display:cell;
+	vertical-align:middle"
+}
 .f-small {
 	font-size: 10px;
 }

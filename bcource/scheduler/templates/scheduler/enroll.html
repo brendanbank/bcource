@@ -102,7 +102,7 @@ $(window).on('load', function() {
      EnroleModal.addEventListener('hidePrevented.bs.modal', event => {
     	 console.log('{{ return_url }}');
     	 $('#EnroleModal').modal('hide');
-    	 setTimeout(function(){document.location.href = "{{ return_url }}";},1);
+    	 setTimeout(function(){window.location.replace = "{{ return_url }}";},1000);
 
     	 //window.location.href = '{{ return_url }}';
     })

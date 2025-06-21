@@ -13,7 +13,7 @@ from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemySessionUserDatastore, roles_required, current_user, hash_password
 from flask_moment import Moment
 from bcource.menus import Menu
-from bcource.helpers import MyFsModels, admin_has_role, db_datetime, db_datetime_str
+from bcource.helpers import MyFsModels, admin_has_role, db_datetime, db_datetime_str, format_phone_number, format_email
 from bcource.helpers import config_value as cv
 
 class Base(DeclarativeBase):
@@ -87,6 +87,13 @@ def create_app():
     app.jinja_env.globals.update(menu_structure=menu_structure)
     app.jinja_env.globals.update(db_datetime=db_datetime)
     app.jinja_env.globals.update(db_datetime_str=db_datetime_str)
+    app.jinja_env.globals.update(show_mobile="d-lg-none")
+    app.jinja_env.globals.update(hide_mobile="d-none d-lg-block d-xl-block d-xxl-block")
+    
+    app.jinja_env.filters.update(format_phone_number=format_phone_number)
+    app.jinja_env.filters.update(format_email=format_email)
+    
+    
     
     
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)

@@ -2,61 +2,104 @@
 
 {% block head_row %}
 
-    <div class="col-12 text-center align-self-center">
+    <div class="col-lg-12 text-center align-self-center">
         <h3 class="">{{page_name}}</h3>
 
      </div>
 {% endblock %}
 
+
+
 {% block pre_data_headers %}
 
-
-<div class="row border-top border-end pb-1">
-     <div class="col-2 small fw-semibold">{{_('Trainers:')}}</div>
-     <div class="col-2 small">
+<div class="row border-top small">
+     <div class="col-lg-12 fw-semibold">{{_('Training Statistics:')}}</div>
+     <div class="col-lg-12">{{_('Max Participants:')}}<span> {{training.max_participants}}</span></div>
+     <div class="col-lg-12">{{_('Current enrolled:')}}<span> {{training.trainingenrollments  | length }}</span></div>
+     <div class="col-lg-12">{{_('Current Waitlist:')}}{%- if training.trainingenrollments  | length > training.max_participants -%}
+                    <span class="fw-bold text-danger"> {{training.trainingenrollments  | length - training.max_participants}}</span></div>
+                    {%- else -%}
+                         <span class="">0</span>
+                    {%- endif %}
+<div class="border-top">
+     <div class="col-lg-12 fw-semibold">{{_('Trainers:')}}</div>
+     <div class="col-lg-12">
      <ol>
-
           {% for trainer in training.trainers %}
           <li>{{trainer}}</li>
           {% endfor %}
+                    
      </ol>
      </div>
 </div>
-<div class="row border-end pb-1">
-     <div class="col-2 small fw-semibold">{{_('Training Days:')}}</div>
-     <div class="col-8 small">
+<div class="border-top">
+     <div class="col-12 fw-semibold">{{_('Training Days:')}}</div>
+     <div class="col-12">
      <ol>
           {% for event in training.trainingevents %}
           <li>{{db_datetime_str(event.start_time)}} - {{db_datetime_str(event.end_time)}}<br>{{event.location}}</li>
           {% endfor %}
+          
      </ol>
      </div>
+</div>
+<div class="pb-1 pt-2 border-top">
+     <div class="col-lg-12 fw-semibold">{{_('Students enrolled:')}}</div>
+
+</div>
 </div>
 {% endblock %}
 
 {% block searchbox %}
+<l class="col-lg-12 mt-2"><strong>{{_('Add User')}}</strong></l>
+     <div class="">
+     <select  class="col-12" id="student_search" class="student_search"></select>
+</div>
 {% endblock %}
 
 {% block data_headers %}
-               <div class="col-md-1 small fw-semibold">#</div>
-               <div class="col-md-3 small fw-semibold">Name</div>
-               <div class="col-md-3 small fw-semibold">Email</div>
-               <div class="col-md-2 small fw-semibold">Phone</div>
-               <div class="col-md-3 small fw-semibold">Status</div>
+               <div class="col-lg-1 fw-semibold">#</div>
+               <div class="col-lg-3 fw-semibold">Name</div>
+               <div class="col-lg-3 fw-semibold">Email</div>
+               <div class="col-lg-2 fw-semibold">Phone</div>
+               <div class="col-lg-3 fw-semibold">Status</div>
 
 {% endblock %}
 
 {% block data_rows %}
 
-{% for student_enrollment in training.trainingenrollments_sorted -%}
+{% for student_enrollment in enrolled -%}
 
 <div class=" {{ loop.cycle('evendiv', 'odddiv')}}">
-     <div class="row highlight border-bottom border-bottom border-end">
-          <div class="col-1 pt-0 pb-0 small">{{ loop.index }}</div>
-          <div class="col-3 pt-0 pb-0 small">{{ student_enrollment.student.fullname }}</div>
-          <div class="col-3 pt-0 pb-0 small">{{ student_enrollment.student.email }}</div>
-          <div class="col-2 pt-0 pb-0 small">{{ student_enrollment.student.phone_number }}</div>
-          <div class="col-3 pt-0 pb-0 small">{{ student_enrollment.status }}</div>
+     
+     <div class="row highlight 
+     {% if "waitlist" in student_enrollment.status %} text-danger{% endif %}">
+          <div class="{{show_mobile}} border-top border-dark-subtle"></div>
+          <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center">
+                   <span class="{{show_mobile}} h2">{{ loop.index }}. {{ student_enrollment.student.fullname }}<br></span>
+                   <span class="{{hide_mobile}}">{{ loop.index }}. {{ student_enrollment.student.fullname }}</span>
+               </div>
+          <div class="col-lg-1 pt-0 pb-0 align-self-center ">
+          <a class="icon-link link-body-emphasis align-self-center"
+               href="{{url_for('students_bp.deroll', user_id=student_enrollment.student.user_id, training_id=training.id, first_url=return_url)}}"
+               onclick="return safeConfirm('{{_("Are you sure you want to remove user %(email)s from this training?", email=student_enrollment.student.email)}}');"
+               > 
+               <i class="fs-5 text-danger bi bi-person-fill-dash align-self-center"
+                    data-toggle="tooltip" data-placement="top" 
+                                                  title="{{_('Deroll user from this training.') }}"></i>
+               
+               <span class="{{show_mobile}} small mt-2">{{_('Deroll user from this training')}}</span>
+           </a>
+
+          </div>
+          <div class="col-lg-3 pt-0 pb-0 align-self-center">
+                 <span class="{{show_mobile}}">{{_('Email: ')}}</span>
+                {{ student_enrollment.student.email | format_email | safe }}</div>
+          <div class="col-lg-2 pt-0 pb-0 align-self-center">
+                <span class="{{show_mobile}}">{{_('Phone: ')}}</span>
+               {{ student_enrollment.student.phone_number | format_phone_number | safe }}</div>
+          <div class="col-lg-3 pt-0 pb-0 align-self-center">
+                <span class="{{show_mobile}}">{{_('Enrollment Status: ')}}</span>{{ student_enrollment.status }}</div>
 
      </div>
 
@@ -67,4 +110,41 @@
 
 {% endblock %}
 
+{% block js %}
+
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
+
+          <script>
+          const input = document.querySelector("#phone");
+          window.intlTelInput(input, {
+      	    loadUtils: () => import("https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/utils.js"),
+    	    initialCountry: "NL",
+    	    nationalMode: true,
+
+          });          
+          </script>
+
+
+<script type="text/javascript">
+$('#student_search').select2({
+     placeholder : 'start typing',
+//     minimumInputLength: 1,
+     containerCssClass : "myFont",
+     ajax : {
+          url : '/students/search',
+          dataType : 'json',
+          
+     // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+     }
+});
+
+$('#student_search').on('change', function() {
+     var id = $("#student_search option:selected").val();
+
+     const href = "{{url_for('students_bp.enroll', training_id=training.id)}}?student_id="+ id + "&first_url={{return_url}}";
+     window.location.href = href
+})
+</script>
+
+{% endblock %}
 
