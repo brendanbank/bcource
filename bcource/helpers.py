@@ -9,6 +9,19 @@ from collections import OrderedDict
 import pytz
 import string
 import secrets
+import phonenumbers
+from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
+
+def add_url_argument(url, key, value):
+    parsed_url = urlparse(url)
+    query_params = parse_qs(parsed_url.query)
+
+    # Add or update the new argument
+    query_params[key] = [value] # parse_qs returns lists of values
+
+    new_query_string = urlencode(query_params, doseq=True)
+    new_url = urlunparse(parsed_url._replace(query=new_query_string))
+    return new_url
 
 def db_datetime(db_datetime_notz):
     return db_datetime_notz.replace(tzinfo=pytz.timezone('UTC'))
@@ -19,15 +32,25 @@ def db_datetime_str(db_datetime_notz):
     TZ = pytz.timezone(TZ_NAME)    
     return dt.astimezone(TZ).strftime("%a, %b %d %Y, %H:%M %p %Z")
 
-def get_url (form=None,default=None):
+def get_url (form=None,default=None, back_button=False):
     
     if not default:
         default = 'home_bp.home'
         
+    first_url = None
+        
     if form and form.is_submitted():
         url=form.url.data
     else:
-        url = request.args.get('url')
+        if request.args.get('first_url'):
+            first_url = request.args.get('first_url')
+            if back_button:
+                url = first_url
+            else:
+                url = request.referrer
+                url = add_url_argument(url, 'first_url', first_url)
+        else:
+            url = request.args.get('url')
         
 
     if url == None:
@@ -122,3 +145,55 @@ def genpwd():
         break
     
     return (pwd)
+
+
+def format_email(email):
+    return (f'<a href="mailto:{email}" target="_blank" class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">{email}</a>')
+
+# Define the country code for which you want local notation
+TARGET_LOCAL_COUNTRY_CODE = "NL" # For Netherlands
+
+def format_phone_link(phone_number_str, parsed_number):
+    return (f'<a href="tel:{phone_number_str}" class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">{parsed_number}</a>')
+
+
+def format_phone_number(phone_number_str, user_country_code=None):
+    """
+    Formats a phone number. If the number is from the TARGET_LOCAL_COUNTRY_CODE,
+    it's displayed in local (NATIONAL) notation. Otherwise, it's displayed
+    in INTERNATIONAL format.
+
+    Args:
+        phone_number_str (str): The phone number string.
+        user_country_code (str, optional): The 2-letter ISO country code associated with the user
+                                           or the number, if available. This helps in parsing
+                                           local numbers.
+    Returns:
+        str: The formatted phone number, or the original string if parsing fails.
+    """
+    try:
+        # Parse the phone number.
+        # Provide user_country_code if the number might be local (e.g., "0612345678" for NL)
+        # If the number is already in E.164 format (+CC-NNNN...), user_country_code can be None.
+        parsed_number = phonenumbers.parse(phone_number_str, user_country_code)
+
+        # Check if the number is valid
+        if not phonenumbers.is_valid_number(parsed_number):
+            return format_phone_link(phone_number_str, phone_number_str) # Return original if invalid
+
+        # Get the region code (country code) of the parsed number
+        region_code = phonenumbers.region_code_for_number(parsed_number)
+
+        if region_code == TARGET_LOCAL_COUNTRY_CODE:
+            # If it's a Dutch number, format it in NATIONAL (local) format
+            parsed_number =  phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.NATIONAL)
+            return format_phone_link(phone_number_str, parsed_number)
+        
+        else:
+            # For all other numbers, format them in INTERNATIONAL format
+            parsed_number =  phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+            return format_phone_link(phone_number_str, parsed_number)
+
+    except phonenumbers.NumberParseException:
+        # Handle cases where the number string is not parsable
+        return phone_number_str# Return original if invalid

@@ -99,18 +99,17 @@ def delete(id):
     training_name = training.name
     
         
-    form = TrainingDeleteForm()
+
     
-    url = get_url(form, default='training_bp.overview_list')
+    url = get_url(default='training_bp.overview_list')
 
     if training.trainingenrollments:
         flash(_('You cannot delete training <span class="fw-bold" style="white-space:nowrap;">%s</span>.<br> It still has students enrolled to it.' % training_name), "error")
         return redirect(url)
     
-    if form.validate_on_submit():        
-        db.session.delete(training)
-        db.session.commit()
-        flash(_('Successfully deleted training: %s' % training_name))
+    db.session.delete(training)
+    db.session.commit()
+    flash(_('Successfully deleted training: %s' % training_name))
     
     return redirect(url)
 
