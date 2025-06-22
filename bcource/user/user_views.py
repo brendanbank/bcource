@@ -26,7 +26,6 @@ user_bp = Blueprint(
 @user_bp.route('/practice', methods=['GET'])
 @auth_required()
 def set_practice():
-    print (session.get('practice_id'))
     url = request.args.get('url')
     practice_id = request.args.get('practice')
     try:
@@ -118,7 +117,6 @@ def messages():
 @auth_required()
 def message():
     form = UserMessages()
-    print (request.form)
     
     reply_message_id = request.args.get('reply')
     

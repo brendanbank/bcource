@@ -16,13 +16,20 @@
     {% block js_content %}{% endblock %}
 
   </head>
-  <body>
+  <body class="d-flex flex-column vh-100">
+     <header>
     {% include 'nav.html' %}
+    </header>
+    <main class="flex-shrink-0">
     <div class="container justify-content-center my-3">
     {% include 'alerts.html' %}
     {% block content %}{% endblock %}
 	</div>
-	
+	</main>
+     <footer class="mt-auto text-white bg-dark py-3">
+  {% include 'footer.html' %}
+     </footer>
+     
   <!--  Javascript -->  
     <script src="{{ url_for('static', filename='bootstrap.bundle.min.js')}}"></script>
     <script src="{{ url_for('static', filename='jquery-3.7.1.min.js')}}"></script>
@@ -58,6 +65,7 @@
      <script src="/static/local.js"></script>
 
   </body>
+  
 </html>
 
 	

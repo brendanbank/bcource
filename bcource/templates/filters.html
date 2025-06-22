@@ -7,7 +7,7 @@
 {% block content %}
 
 <div class="container border">
-<div class="row  p-3" >
+<div class="row  p-1" >
 <!-- block head_row -->
 {% block head_row %}{% endblock %}
 </div>
@@ -16,40 +16,50 @@
 <div class="col-lg-2 border-top border-end">
 
 <!-- menu --> 
-<div class="row ">
+<div class="row">
 <!-- block searchbox -->
 {% block searchbox %}{% endblock %}
 </div>
  
-<div class="row pt-3">
+<div class="row ">
           <form id="MyFilters" name="MyFilters" action="" method="get"
-               class="needs-validation row justify-content-md-center m-0" >
+               class="needs-validation row justify-content-md-center m-0 collapseExample" >
+           
+  <button class="btn btn-outline-dark btn-sm my-2 small" 
+          style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+          value="{% if filters.show %}noshow{%else%}show{%endif%}"
+          id="show_submit"
+          name="show_submit"
+          type="submit" >
+          Filters</button>
 
-               {% for name, text, items_list in filters %}
-               <div class="ps-0 pt-1">
-                    <small><strong>{{text}}</strong></small>
+          <div class="p-0 {% if filters.show %}collapse.show{%else%}collapse{%endif%}" id="collapseExample">
+               {% for filter in filters %}
+               <div class="ps-0 py-1">
+                    <small><strong>{{filter.name}}</strong></small>
                </div>
-                    {% for item in items_list %}
+                    {% for item in filter %}
                                         
                     <div class="form-check ">
                          <input
                               class="form-check-input"
                               type="checkbox"
-                              {% if item.id in filters_checked[name] %} checked{% endif %}
+                              {% if item.checked %} checked{% endif %}
                          value="{{item.id}}"
-                              name="{{name}}"
-                              id="{{name}}_{{item.id}}"
+                              name="{{filter.id}}"
+                              id="{{filter.id}}_{{item.id}}"
                               onclick="document.getElementById('MyFilters').submit()"
                               >
                           <label
                               class="form-check-label col-12"
-                              for="{{name}}_{{item.id}}"
-                         ><small>{{_(item.name)}} </small></label>
+                              for="{{filter.id}}_{{item.id}}"
+                         ><small>{{_(item.name)}}</small></label>
                     </div>
                
                     {% endfor -%}
                {% endfor -%}
-               <div class="p-0 pt-3 pb-2" >
+               <div class="px-0 pt-2 pb-2">
+               <div class="" >
                     <button
                          name="submit_id"
                          id="submit_id"
@@ -59,28 +69,38 @@
                          value="clear"
                     >{{_("Clear filters")}}</button>
                     </div>
+               </div>
+               </div>
+               <input id="hidden_show" name="show" type="hidden" value="{{filters.show}}"> 
+
                {% if return_url %}
                <input id="url" name="url" type="hidden" value="{{return_url}}">    
-               <div class="p-0 pt-1 mb-2">
+               
+               <div class="p-0 pb-2">
                     <button
                          name="submit_id"
                          id="submit_id"
-                         class="col-12 btn btn-outline-dark btn-sm mt-0"
+                         class="col-12 btn btn-outline-dark btn-sm"
                          style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
                          type="submit"
                          value="back"
                     >{{_("back")}}</button>
                     </div>
                 {% endif %}
-
           </form>
 
+
 </div>
+  
+
 </div>
 <style>
 .evendiv div{background-color: rgb(244, 244, 244);}
 .odddiv div{background-color: rgb(255, 255, 255);}
 .highlight:hover > * {background-color: rgb(230, 230, 230);}
+.div_red div{background-color: rgb(255, 125, 120);}
+
+
 </style>
 
  <div class="col-lg-10">
@@ -96,7 +116,8 @@
           {% block data_rows %}{% endblock %}
 
 </div>
-
+</div>
+</div>
 {% block modals %}{% endblock %}
 
           {% endblock %}
