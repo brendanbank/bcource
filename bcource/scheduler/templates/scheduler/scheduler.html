@@ -2,28 +2,24 @@
 
 {% block head_row %}
 
-    <div class="col-3 text-center">
-     </div>
-    <div class="col-6 text-center">
+    <div class="col-12 text-center">
         <h3 class="">{{page_name}} </h3>
      </div>
 
 {% endblock %}
 
 {% block searchbox %}
-<div class="row">
   <span class="col-lg-12 mt-2"><strong>{{_('Training Search')}}</strong></span>
   
      <div class="">
      <select  class="col-12" id="training_search" class="training_search"></select>
      </div>
-  </div>
 {% endblock %}
 
 {% block data_headers %}
-               <div class="col-2 fw-semibold">{{_('Name')}}</div>
-               <div class="col-2 fw-semibold ps-0"></div>
-               <div class="col-1 fw-semibold ps-0">{{_('Type')}}</div>
+               <div class="col-3 fw-semibold ps-0">{{_('Name')}}</div>
+               <div class="col-1 fw-semibold ps-0"></div>
+               <div class="col-2 fw-semibold ps-0">{{_('Type')}}</div>
                <div class="col-3 fw-semibold ps-0">{{_('Date')}}</div>
                <div class="col-1 fw-semibold ps-0">{{_('Spots')}} <i class="text-primary fs-6 bi bi-question" 
                                                             data-toggle="tooltip" 
@@ -33,88 +29,12 @@
 {% endblock %}
 
 {% block data_rows %}
-          {% for training in training -%}
-      <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}}">
-      
-              <div class="row highlight">
-               <span class="{{show_mobile}} border-top border-dark-subtle"></span>
-              <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center">
-                             <span class="{{show_mobile}} h1">{{ training.name }} <br></span>
-                             <span class="{{hide_mobile}}">{{ training.name }}</span>
-               </div>
-              <div class="col-lg-1 pt-1 ps-1 pe-0 align-self-center">
-               {% if training._user_status == 'enrolled' or training._user_status == 'waitlist' %}
-                    <a class="icon-link link-body-emphasis"
-                         href="{{url_for('scheduler_bp.deroll', id=training.id)}}"
-                    > <i class="mb-2 fs-5 bi-person-fill-dash text-danger" data-toggle="tooltip" 
-                         data-placement="top" 
-                         title="{{_('Remove yourself to this training.')}}"></i>
-                              <span class="{{show_mobile}} fw-semibold">{{ _(" Remove yourself to this training. ") }}</span>
-                    </a>
-               {%- else -%}
-                    {% if training._amount_enrolled >= training.max_participants %}
-                    <a class="icon-link link-body-emphasis"
-                         href="{{url_for('scheduler_bp.enroll', id=training.id)}}"
-                    > <i class="mb-2 fs-5 bi bi-person-fill-add text-warning" data-toggle="tooltip" 
-                         data-placement="top" 
-                         title="{{_('Add yourself to the wait list of this training.')}}"></i>
-                              <span class="{{show_mobile}} fw-semibold">{{ _(" Add yourself to the wait list of this training. ") }}</span>
-                    </a>
-                    {%- else -%}
-                    <a class="icon-link link-body-emphasis"
-                         href="{{url_for('scheduler_bp.enroll', id=training.id)}}"
-                    > <i class="mb-2 fs-5 bi bi-person-fill-add text-success" data-toggle="tooltip" 
-                         data-placement="top" 
-                         title="{{_('Add yourself to this training.')}}"></i>
-                              <span class="{{show_mobile}} fw-semibold">{{ _(" Add yourself to this training. ") }}</span>
-                    </a>
-                    {%- endif %}
-               {%- endif %}
-               </div>
-               <div class="col-lg-2 pt-1 ps-1 pe-0 align-self-center ">
-                              <span class="{{show_mobile}} fw-semibold">Training Type: </span>
-                              {{ training.traningtype.name }}<a class="icon-link" 
-                    data-bs-toggle="modal" data-bs-target="#modal_{{training.traningtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
-               <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center ">{% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
-               <div class="col-lg-1 pt-1 ps-1 pe-0 align-self-center {{hide_mobile}}">
-                                                  {{ training.max_participants }}&nbsp;/&nbsp;{{training._amount_enrolled }}&nbsp;/
-                                                  {%- if training._amount_enrolled >= training.max_participants %}
-                                                       <span class="text-warning">{{ training._amount_enrolled - training.max_participants}}</span>
-                                                   {% else %}
-                                                       <span class="text-success">0</span>
-                                                   {%- endif -%}
-                                                   
-                                                   </div>
-               <div class="col-lg-1 pt-1 ps-1 pe-0 align-self-center {{show_mobile}}">
-                                                  Maximum participants : {{ training.max_participants }}, 
-                                                  Amount enrolled: {{training._amount_enrolled }}, Wait list: 
-                                                  {%- if training._amount_enrolled >= training.max_participants %}
-                                                       <span class="text-danger fw-bold">{{ training._amount_enrolled - training.max_participants}}</span>
-                                                   {% else %}
-                                                       <span class="text-success">0</span>
-                                                   {%- endif -%}
-                                                   
-                                                   </div>
 
-               <div class="col-lg-2 pt-1 ps-1 pe-0 align-self-center">
-                                                  <span class="{{show_mobile}}">Training Status: </span>
+{% set who = "yourself" %}
+{% set deroll_view = "scheduler_bp.deroll" %}
+{% set enroll_view = "scheduler_bp.enroll" %}
 
-                                                        {% if training._user_status == 'enrolled' %}
-                                                            <span class="fw-bold text-success">{{_('You are enrolled') }}</span>
-                                                        {% elif training._user_status == 'waitlist' %}
-                                                            <span class="fw-bold text-danger">{{_('You are on the wait list') }}</span>
-                                                        {% elif training._amount_enrolled == training.max_participants %}
-                                                            <span class="fw-bold text-success">{{_('Max Capacity') }}</span>
-                                                        {% elif training._amount_enrolled > training.max_participants %}
-                                                            <span class="fw-bold text-warning">{{_('Training has a wait list') }}</span>
-                                                        {% else %}
-                                                            <span class="fw-bold text-success">{{_('Open for enrollment.') }}</span>
-                                                        {% endif %}
-                                                        </div>
-          </div>
-      </div>
-          {% endfor %}
-
+{% include 'scheduler/scheduler_loop.html' %}
 {% endblock %}
 
 {% block modals %}

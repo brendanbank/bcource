@@ -15,7 +15,7 @@ import json
 from datetime import datetime
 import pytz
 from sqlalchemy.orm import joinedload
-
+from bcource.filters import Filters
 
 # Blueprint Configuration
 training_bp = Blueprint(
@@ -222,80 +222,72 @@ class Filter():
         return self.name
 
 training_filter_obj = [Filter(1,"Past Trainings")]
+
+
 def make_filters():
-    filters = []
-    
+
+    filters = Filters("Training Filters")
+    past_training_filter = filters.new_filter("period", _("Period"))
+    past_training_filter.add_filter_item( 1, _("Past Trainings"))
+
     time_now = datetime.now(tz=pytz.timezone('UTC'))
+    training_type_filter = filters.new_filter("training_type", _("Training Types"))
+    for training_type in TrainingType().query.join(Training).join(TrainingEvent).join(Practice, Practice.id==Training.practice_id).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname,
+                        ~Training.trainingevents.any(TrainingEvent.start_time < time_now)
+                        )).all():
+        training_type_filter.add_filter_item( training_type.id, training_type.name)
 
-    traingingtypes = TrainingType().query.join(Training).join(TrainingEvent).join(Practice, 
-                                                                                  Practice.id==Training.practice_id).filter(and_(
-                    Practice.shortname==Practice.default_row().shortname,
-                    )).all()
 
-    filters.append(('training_filter', 'Training Filter', 
-                    training_filter_obj))
-    
-    filters.append(('trainingtype', 'Training Type', 
-                    traingingtypes))
-    
-    trainers = Practice.default_row().trainers
-        
-    filters.append(('trainers', 'Trainers', 
-                    trainers))
+
+    trainer_filter = filters.new_filter("trainers", _("Trainers"))
+    for trainer in Practice.default_row().trainers:
+        trainer_filter.add_filter_item( trainer.id, trainer)
 
     return(filters)
 
-def process_filters():
-    filters_checked = {}
-    
-    try:
-        filters_checked.update( {'training_filter': [int(i) for i in request.args.getlist('training_filter')]} )
-        filters_checked.update( {'trainingtype': [int(i) for i in request.args.getlist('trainingtype')]} )
-        filters_checked.update( {'trainers': [int(i) for i in request.args.getlist('trainers')]} )
+def training_query(filters, search_on_id=None):
 
-    except Exception as e:
-        print (f'process_filters: url args not integer {request.args}: error {e}')
-        
-    return(filters_checked)
-
-def training_query(search_on_id):
-    
-    if search_on_id:
-        q = Training().query.join(Practice).filter(and_(
-                        Practice.shortname==Practice.default_row().shortname,Training.id==search_on_id)).all()
-        return (q)
-
+    q = Training().query
     time_now = datetime.now(tz=pytz.timezone('UTC'))
-    selected_filters=process_filters()
+
+    if search_on_id:
+        q = Training().query.filter(Training.id==search_on_id)
+        
+        t = q.first()
+        
+        training_filter = filters.new_filter("selected_training", _("Training"))
+        training_filter.add_filter_item( search_on_id, t.name)
+        filters.show = True
+        filters.filers_checked = True
+        filters.get_filter("selected_training").get_item(search_on_id).checked = True
+        
     
-    if selected_filters.get('trainingtype'):
-        training_types =  TrainingType().query.filter(TrainingType.id.in_(selected_filters.get('trainingtype'))).subquery()
-    else:
-        training_types = TrainingType().query.subquery()
-        
-        
-    # # past trainings
-    if request.args.get('training_filter') == "1":
+    if  filters.get_items_checked('training_type'):
+
+        items_checked = filters.get_items_checked('training_type')
+        trainingtypes = TrainingType().query.join(Practice, Practice.id==TrainingType.practice_id).filter(Practice.shortname==Practice.default_row().shortname, 
+                                                                   TrainingType.id.in_(items_checked)).subquery()
+        q = q.join(trainingtypes)    
+          
+    if filters.get_item_is_checked("period","1"):
         future = TrainingEvent().query.filter(TrainingEvent.start_time < time_now
                         ).order_by(TrainingEvent.start_time).subquery()
     else:
         future = TrainingEvent().query.filter(TrainingEvent.start_time > time_now
-                        ).order_by(TrainingEvent.start_time).subquery()    
-
-    if selected_filters.get('trainers') :
-        q = Training().query.join(future).join(Training.trainers
-                                               ).join(Practice, Practice.id==Training.practice_id
-                                                      ).join(TrainingEvent).filter(and_(
-                            Practice.shortname==Practice.default_row().shortname,
-                            Trainer.id.in_(selected_filters.get('trainers')))
-                        ).order_by(TrainingEvent.start_time)
-    else:
-        q = Training().query.join(future).join(training_types).join(Practice, 
-                                                                    Practice.id==Training.practice_id).join(TrainingEvent).filter(and_(
-                            Practice.shortname==Practice.default_row().shortname,
-                        )
-                        ).order_by(TrainingEvent.start_time)
+                        ).order_by(TrainingEvent.start_time).subquery()
     
+    
+    q = q.join(future)
+    
+    if  filters.get_items_checked('trainers'):
+    
+        items_checked = filters.get_items_checked('trainers')
+    
+        q = q.join(Training.trainers).filter(Trainer.id.in_(items_checked))
+    
+    q = q.join(TrainingEvent).order_by(TrainingEvent.start_time)
+
     trainings = q.all()
     for t in trainings:
         t.fill_numbers(current_user)
@@ -337,24 +329,24 @@ training_admin.add_menu(_l('Training Overview'), 'training_bp.overview_list', ro
 def overview_list():
     clear = request.args.getlist('submit_id')
     if clear and clear[0]=='clear':
-        return redirect(url_for('training_bp.overview_list'))
+        return redirect(url_for('training_bp.overview_list', show=request.args.getlist('show')))
     
     
     
     search_on_id = request.args.get('id')
 
-    trainings = training_query(search_on_id)
     traingingtypes = TrainingType().query.join(Practice).filter(and_(
                         Practice.shortname==Practice.default_row().shortname)
                         ).all()
+    filters = make_filters().process_filters()
+    trainings = training_query(filters,search_on_id)
 
     delete_form = TrainingDeleteForm()
     
     return render_template("training/overview_list.html", trainings=trainings, 
                            delete_form=delete_form,
                            trainingtypes=traingingtypes ,
-                           filters=make_filters(), 
-                           filters_checked=process_filters(),
+                           filters=filters, 
                            page_name=_("Training Overview"))
 
 

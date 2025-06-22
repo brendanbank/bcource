@@ -1,0 +1,96 @@
+          {% for training in training -%}
+      <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}}">
+      
+              <div class="row highlight">
+               <span class="{{show_mobile}} border-top border-dark-subtle"></span>
+              <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center">
+                             <span class="{{show_mobile}} h1">{{ training.name }} <br></span>
+                             <span class="{{hide_mobile}}">{{ training.name }}</span>
+               </div>
+              <div class="col-lg-1 pt-1 ps-1 pe-0 lh-1 align-self-center">
+               {% if training._user_status == 'enrolled' or training._user_status == 'waitlist' %}
+                    {% if admin %}
+                         <a class="icon-link link-body-emphasis"
+                              href="{{url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url)}}"
+                              onclick="return safeConfirm('{{_("Are you sure you want to remove user %(email)s from this training?", email=user.email)}}');"
+                              > 
+                              <i class="fs-5 text-danger bi bi-person-fill-dash"
+                                   data-toggle="tooltip" data-placement="top" 
+                                                                 title="{{_('Deroll user from this training.') }}"></i>
+                         <span class="{{show_mobile}} fw-semibold">{{ _(" Remove %(who)s from this training. ", who=who) }}</span>
+                          </a>
+                          
+                    {% else %}
+                    <a class="icon-link link-body-emphasis"
+                         href="{{url_for('scheduler_bp.deroll', id=training.id)}}"
+                    > <i class="mb-2 fs-5 bi-person-fill-dash text-danger" data-toggle="tooltip" 
+                         data-placement="top" 
+                         title="{{_('Remove %(who)s from this training.', who=who)}}"></i>
+                              <span class="{{show_mobile}} fw-semibold">{{ _(" Remove %(who)s from this training. ", who=who) }}</span>
+                    </a>
+                    {% endif %}
+               {%- else -%}
+                    {% if not admin %}
+                         {% if training._amount_enrolled >= training.max_participants %}
+                         <a class="icon-link link-body-emphasis"
+                              href="{{url_for("scheduler_bp.enroll", id=training.id)}}"
+                         > <i class="mb-2 fs-5 bi bi-person-fill-add text-warning" data-toggle="tooltip" 
+                              data-placement="top" 
+                              title="{{_('Add %(who)s to the wait list of this training.', who=who)}}"></i>
+                                   <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to the wait list of this training. ", who=who) }}</span>
+                         </a>
+                         {%- else -%}
+                         <a class="icon-link link-body-emphasis"
+                              href="{{url_for("scheduler_bp.enroll", id=training.id)}}"
+                         > <i class="mb-2 fs-5 bi bi-person-fill-add text-success" data-toggle="tooltip" 
+                              data-placement="top" 
+                              title="{{_('Add %(who)s to this training.', who=who)}}"></i>
+                                   <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to this training. ", who=who) }}</span>
+                         </a>
+                         {%- endif %}   
+                    {% endif %}
+               {%- endif %}
+               </div>
+               <div class="col-lg-2 pt-1 ps-1 pe-0 align-self-center ">
+                              <span class="{{show_mobile}} fw-semibold">Training Type: </span>
+                              {{ training.traningtype.name }}<a class="icon-link" 
+                    data-bs-toggle="modal" data-bs-target="#modal_{{training.traningtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
+               <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center ">{% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
+               <div class="col-lg-1 pt-1 ps-1 pe-0 align-self-center {{hide_mobile}}">
+                                                  {{ training.max_participants }}&nbsp;/&nbsp;{{training._amount_enrolled }}&nbsp;/
+                                                  {%- if training._amount_enrolled >= training.max_participants %}
+                                                       <span class="text-warning">{{ training._amount_enrolled - training.max_participants}}</span>
+                                                   {% else %}
+                                                       <span class="text-success">0</span>
+                                                   {%- endif -%}
+                                                   
+                                                   </div>
+               <div class="col-lg-1 pt-1 ps-1 pe-0 align-self-center {{show_mobile}}">
+                                                  Maximum participants : {{ training.max_participants }}, 
+                                                  Amount enrolled: {{training._amount_enrolled }}, Wait list: 
+                                                  {%- if training._amount_enrolled >= training.max_participants %}
+                                                       <span class="text-danger fw-bold">{{ training._amount_enrolled - training.max_participants}}</span>
+                                                   {% else %}
+                                                       <span class="text-success">0</span>
+                                                   {%- endif -%}
+                                                   
+                                                   </div>
+
+               <div class="col-lg-2 pt-1 ps-1 pe-0 align-self-center">
+                                                  <span class="{{show_mobile}}">Training Status: </span>
+
+                                                        {% if training._user_status == 'enrolled' %}
+                                                            <span class="fw-bold text-success small">{{_('enrolled') }}</span>
+                                                        {% elif training._user_status == 'waitlist' %}
+                                                            <span class="fw-bold text-danger small">{{_('wait list') }}</span>
+                                                        {% elif training._amount_enrolled == training.max_participants %}
+                                                            <span class="fw-bold text-success small">{{_('Max Capacity') }}</span>
+                                                        {% elif training._amount_enrolled > training.max_participants %}
+                                                            <span class="fw-bold text-warning small">{{_('Training has a wait list') }}</span>
+                                                        {% else %}
+                                                            <span class="fw-bold text-success small">{{_('Open for enrollment.') }}</span>
+                                                        {% endif %}
+                                                        </div>
+          </div>
+      </div>
+          {% endfor %}

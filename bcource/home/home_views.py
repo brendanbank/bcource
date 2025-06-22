@@ -38,7 +38,6 @@ def home():
     validators = UserProfileChecks()
     if not validators.validate():
         for validator in validators:
-            print (validator.status)
             if not validator.status:
                 return render_template("user/profile-check.html", validator=validators)
     else:
@@ -69,7 +68,6 @@ def ckeditor():
 @auth_required()
 @fsd.permissions_required('user-write')
 def home2():
-    print (g.identity)
     return render_template("home/index.html")
 
 @home_bp.route('/favicon.ico')

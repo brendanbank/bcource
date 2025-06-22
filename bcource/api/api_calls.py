@@ -18,7 +18,6 @@ def validate_adress(query):
     else:
         return False
     
-    print (query)
     if not postcode or not huisnummer:
         return False
     

@@ -43,12 +43,12 @@
 {% block data_rows %}
           
           {% for training in trainings -%}
-      <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}}">
-               <div class="row highlight">
+               <div class="highlight {% if training.active %}{{ loop.cycle('evendiv', 'odddiv')}}{% else %}div_red{% endif %} p-0 m-0" >
+               <div class="row highlight" >
                
                <span class="{{show_mobile}} border-top border-dark-subtle"></span>
                
-               <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center" >
+               <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center " >
                
                     <span class="{{show_mobile}} h2">{{ training.name }}</span>
                     <span class="{{hide_mobile}}">{{ training.name }}</span></div>
@@ -87,7 +87,7 @@
                                                    {%- endif -%}
                                                    
                                                    </div>
-               <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center ">
+               <div class="col-lg-4 pt-1 ps-1 pe-0 align-self-center ">
                <span class="{{show_mobile}} fw-semibold">Trainers: </span>
                {% for trainer in training.trainers %}{{ trainer }}{% if not loop.last %}, {%endif%}{% endfor %}
                

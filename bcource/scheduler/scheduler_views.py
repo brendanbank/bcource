@@ -15,7 +15,7 @@ from sqlalchemy.orm import joinedload
 
 from datetime import datetime
 import pytz
-from alembic.command import current
+from bcource.filters import Filters
 
 # Blueprint Configuration
 scheduler_bp = Blueprint(
@@ -40,108 +40,78 @@ def has_student_role():
 
 scheduler_bp.before_request(has_student_role)
 
-class Filter():
-    def __init__(self, id, name):
-        self.name = name
-        self.id = id
+
+def make_filters(user=None):
+
+    filters = Filters("Training Filters")
+    past_training_filter = filters.new_filter("period", _("Period"))
+    past_training_filter.add_filter_item( 1, _("Past Trainings"))
     
-    def __str__(self):
-        return self.name
 
-training_filter_obj = [Filter(1,"Past Trainings")]
-
-
-def make_filters(my_trainings=None):
-
-    filters = []
-    
     time_now = datetime.now(tz=pytz.timezone('UTC'))
-    if my_trainings:
-        
-        traingingtypes = TrainingType().query.join(Training).join(TrainingEvent).join(Practice, Practice.id==Training.practice_id).filter(and_(
-                        Practice.shortname==Practice.default_row().shortname,
-                        TrainingEvent.start_time > time_now
-                        )).all()
-    else:
-        traingingtypes = TrainingType().query.join(Training).join(TrainingEvent).join(Practice, Practice.id==Training.practice_id).filter(and_(
+    training_type_filter = filters.new_filter("training_type", _("Training Types"))
+    for training_type in TrainingType().query.join(Training).join(TrainingEvent).join(Practice, Practice.id==Training.practice_id).filter(and_(
                         Practice.shortname==Practice.default_row().shortname,
                         ~Training.trainingevents.any(TrainingEvent.start_time < time_now)
-                        )).all()
-    filters.append(('training_filter', 'Training Filter', 
-                    training_filter_obj))
+                        )).all():
+        training_type_filter.add_filter_item( training_type.id, training_type.name)
 
-    filters.append(('trainingtype', 'Training Type', 
-                    traingingtypes))
-    
-    filters.append(('my_trainings', 'My Trainings', 
-                    [current_user]))
+    if user:
+        user_training_filter = filters.new_filter("my", _("User"))
+        user_training_filter.add_filter_item( user.id, user.fullname)
+        
 
     return(filters)
 
-def process_filters(my_trainings=None):
-    filters_checked = {}
+            
+
+def training_query(filters, search_on_id=None, user=None):
     
-    try:
-        filters_checked.update( {'trainingtype': [int(i) for i in request.args.getlist('trainingtype')]} )
-        filters_checked.update( {'training_filter': [int(i) for i in request.args.getlist('training_filter')]} )
-        if my_trainings:
-            filters_checked.update( {'my_trainings': [current_user.id]} )
-        else:
-            filters_checked.update( {'my_trainings': [int(i) for i in request.args.getlist('my_trainings')]} )
-
-    except Exception as e:
-        print (f'process_filters: url args not integer {request.args}: error {e}')
-                
-    return(filters_checked)
-
-
-def training_query(search_on_id=None, my_trainings=None):
-    selected_filters=process_filters()
-    
+        
     time_now = datetime.now(tz=pytz.timezone('UTC'))
 
+    q = Training().query
     
-    # # past trainings
-    if request.args.get('training_filter') == "1":
+    if search_on_id:
+        q = Training().query.filter(Training.id==search_on_id)
+        
+        t = q.first()
+        
+        training_filter = filters.new_filter("selected_training", _("Training"))
+        training_filter.add_filter_item( search_on_id, t.name)
+        filters.show = True
+        filters.filers_checked = True
+        filters.get_filter("selected_training").get_item(search_on_id).checked = True
+        
+    
+    if  filters.get_items_checked('training_type'):
+
+        items_checked = filters.get_items_checked('training_type')
+        trainingtypes = TrainingType().query.join(Practice, Practice.id==TrainingType.practice_id).filter(Practice.shortname==Practice.default_row().shortname, 
+                                                                   TrainingType.id.in_(items_checked)).subquery()
+        q = q.join(trainingtypes)    
+          
+    if filters.get_item_is_checked("period","1"):
         future = TrainingEvent().query.filter(TrainingEvent.start_time < time_now
                         ).order_by(TrainingEvent.start_time).subquery()
     else:
         future = TrainingEvent().query.filter(TrainingEvent.start_time > time_now
-                        ).order_by(TrainingEvent.start_time).subquery()    
-
-    if search_on_id:
-        q = Training().query.join(Practice).filter(and_(
-                        Practice.shortname==Practice.default_row().shortname,Training.id==search_on_id))
+                        ).order_by(TrainingEvent.start_time).subquery()
     
-    elif not selected_filters.get('trainingtype') and not selected_filters.get('my_trainings') and not my_trainings:
-        
-        q = Training().query.join(future).join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Practice).filter(and_(
+    
+    q = q.join(future)
+    
+    if user and filters.get_item_is_checked("my",user.id):
+        users = TrainingEnroll().query.join(Student).filter(TrainingEnroll.student_id == Student.id, Student.user_id == user.id).subquery()
+        q = q.join(users)
+
+    
+    q = q.join(Practice, Practice.id==Training.practice_id).filter(and_(
                         Practice.shortname==Practice.default_row().shortname, 
                         Training.active==True)
-                        ).order_by(TrainingEvent.start_time)
+                        )    
     
-    elif selected_filters.get('my_trainings') or my_trainings:
-        
-        if not selected_filters.get('trainingtype'):
-            q = Training().query.join(future).join(TrainingEnroll).join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Student).join(Practice, Practice.id==Training.practice_id).filter(
-                and_(Student.user_id == current_user.id))
-        else:
-            q = Training().query.join(future).join(TrainingEnroll).join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Student).join(Practice, Practice.id==Training.practice_id).filter(
-                and_(Student.user_id == current_user.id), or_( 
-            Training.traningtype_id.in_(selected_filters.get('trainingtype')), 
-            )).order_by(TrainingEvent.start_time)
-        
-
-    else:
-        q =  Training().query.join(future).join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Practice).filter(and_(
-                    Practice.shortname==Practice.default_row().shortname,
-                    ~Training.trainingevents.any(TrainingEvent.start_time < time_now),
-                    Training.active==True), or_( 
-            Training.traningtype_id.in_(selected_filters.get('trainingtype')), 
-            )).order_by(TrainingEvent.start_time)
-    
-    
-    trainings = q.all()
+    trainings = q.join(TrainingEvent).order_by(TrainingEvent.start_time.asc()).all()
     for t in trainings:
         t.fill_numbers(current_user)
         
@@ -159,25 +129,29 @@ def mytraining():
 
     clear = request.args.getlist('submit_id')
     if clear and clear[0]=='clear':
-        return redirect(url_for('scheduler_bp.mytraining'))
-
+        
+        return redirect(url_for('scheduler_bp.mytraining', show=request.args.getlist('show')))
+    
     deroll_form = TrainingDerollForm()
     deroll_form.url.data = get_url(deroll_form, 'scheduler_bp.index')
-
+    
     search_on_id = request.args.get('id')
     traingingtypes = TrainingType().query.join(Practice).filter(and_(
                         Practice.shortname==Practice.default_row().shortname)
                         ).all()
                         
-    return render_template("scheduler/scheduler.html", training=training_query(search_on_id,my_trainings=True), 
+    filters = make_filters(user=current_user).process_filters()
+    filters.get_filter("my").get_item(current_user.id).checked = True
+
+    return render_template("scheduler/scheduler.html", training=training_query(filters, search_on_id=search_on_id, user=current_user),  
+                           filters=filters, 
                            trainingtypes=traingingtypes, 
-                           filters=make_filters(my_trainings=True), 
-                           filters_checked=process_filters(my_trainings=True),
                            page_name=_l('My Training Schedule'),
                            deroll_form=deroll_form
-
                            )
 
+
+"""-----"""
 
 @scheduler_bp.route('/training', methods=['GET'])
 @auth_required()
@@ -185,7 +159,7 @@ def index():
 
     clear = request.args.getlist('submit_id')
     if clear and clear[0]=='clear':
-        return redirect(url_for('scheduler_bp.index'))
+        return redirect(url_for('scheduler_bp.index', show=request.args.getlist('show')))
     
     deroll_form = TrainingDerollForm()
     deroll_form.url.data = get_url(deroll_form, 'scheduler_bp.index')
@@ -194,16 +168,15 @@ def index():
     traingingtypes = TrainingType().query.join(Practice).filter(and_(
                         Practice.shortname==Practice.default_row().shortname)
                         ).all()
-    return render_template("scheduler/scheduler.html", training=training_query(search_on_id),  
-                           filters=make_filters(), 
+                        
+    filters = make_filters(user=current_user).process_filters()
+
+    return render_template("scheduler/scheduler.html", training=training_query(filters, search_on_id=search_on_id, user=current_user),  
+                           filters=filters, 
                            trainingtypes=traingingtypes, 
-                           filters_checked=process_filters(),
                            page_name=_l('Training Schedule'),
                            deroll_form=deroll_form
                            )
-
-
-
 
 @scheduler_bp.route('/training/deroll/<int:id>',methods=['GET', 'POST'])
 @auth_required()
@@ -227,7 +200,6 @@ def enroll(id):
     
     training = Training().query.get(id)
     
-    print (training.enrolled(current_user))
     
     form = SchedulerTrainingEnrollForm()    
     url = get_url(form)
