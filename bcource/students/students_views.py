@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, abort, redirect, url_for, flash, request, jsonify
-from flask_babel import _
 from flask_security import current_user, naive_utcnow
 from flask import current_app as app
 from bcource.helpers import admin_has_role
@@ -13,9 +12,12 @@ import bcource.messages as bmsg
 from datetime import datetime 
 import uuid, pytz
 from flask_babel import lazy_gettext as _l
+from flask_babel import _
+
 from sqlalchemy.orm import joinedload
 from bcource.students.common import deroll_common, enroll_common
 from bcource.training.training_forms import TrainingDerollForm, TrainingEnrollForm
+from bcource.filters import Filters
 
 # Blueprint Configuration
 students_bp = Blueprint(
@@ -35,58 +37,69 @@ main_menu.add_menu('User Administration', 'students_bp.index', role='trainer')
 
 
 def make_filters():
-    filters = []
-    filters.append(('studentstatus', 'User Status', 
-                    StudentStatus.get_all()))
     
-    filters.append(('studenttype', 'User Type', 
-                    StudentType.get_all()))
+    
+    filters = Filters("Student Filters")
+
+    
+    studentstatus_filter = filters.new_filter("studentstatus", _("Status"))
+    for status_type in StudentStatus.get_all():
+        studentstatus_filter.add_filter_item( status_type.id, status_type.name)
+
+    studenttype_filter = filters.new_filter("studenttype", _("Type"))
+    for student_type in StudentType.get_all():
+        studenttype_filter.add_filter_item( student_type.id, student_type.name)
+
     return(filters)
 
-def process_filters():
-    filters_checked = {}
-    
-    try:
-        filters_checked.update( {'studentstatus': [int(i) for i in request.args.getlist('studentstatus')]} )
-        filters_checked.update( {'studenttype': [int(i) for i in request.args.getlist('studenttype')]} )
 
-    except Exception as e:
-        print (f'process_filters: url args not integer {request.args}: error {e}')
-        
-    return(filters_checked)
-
-def students_query(search_on_id=None):
+def students_query(filters, search_on_id=None):
     orphan_users()
-
-    print (search_on_id)
-    selected_filters=process_filters()
 
 
     if search_on_id:
-        q = Student().query.join(Practice).filter(and_(
-                        Practice.shortname==Practice.default_row().shortname,Student.id==search_on_id))
+        q = Student().query.filter(Student.id == search_on_id)
         
-    elif not selected_filters:
-        q = Student().query.join(User).order_by(User.email)
-    
-    elif not selected_filters.get('studentstatus') and not selected_filters.get('studenttype'):
+        t = q.first()
         
-        q = Student().query.join(Practice).join(User).filter(
-                        Practice.shortname==Practice.default_row().shortname
-                        ).order_by(User.email)
-                                   
+        student_filter = filters.new_filter("id", _("Student"))
+        student_filter.add_filter_item( search_on_id, t.fullname)
+        filters.filers_checked = True
+        filters.show = True
+        filters.get_filter("id").get_item(search_on_id).checked = True
+        
+
     else:
-        q =  Student().query.join(User).join(Practice).filter(and_(
-                    Practice.shortname==Practice.default_row().shortname), or_( 
-            Student.studentstatus_id.in_(selected_filters.get('studentstatus')), 
-            Student.studenttype_id.in_(selected_filters.get('studenttype')))).order_by(User.email)
+        q = Student().query
+    
+    if filters.get_items_checked('studenttype'):
+        studenttype = StudentType().query.join(Practice, Practice.id==StudentType.practice_id).filter(
+                                    StudentType.id.in_(filters.get_items_checked('studenttype')
+                               )).subquery()
+        
+        q = q.join(studenttype)
+        
+    if filters.get_items_checked('studentstatus'):
+        studentstatus = StudentStatus().query.join(Practice, Practice.id==StudentStatus.practice_id).filter(
+                                    StudentStatus.id.in_(filters.get_items_checked('studentstatus')
+                               )).subquery()
+        
+        q = q.join(studentstatus)
+
+    q = q.join(User).join(Practice, Practice.id==Student.practice_id).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname)).order_by(User.first_name, User.last_name, User.email)
+    return (q.all())
+
+    if search_on_id:
+        q = Student().query.join(Practice, Practice.id==Student.practice_id).filter(and_(
+                        Practice.shortname==Practice.default_row().shortname,Student.id==search_on_id))
+    
         
     return q.all()
 
 # if there are any users that do not have a student record add them.
 def orphan_users():
     orphan_user_list = db.session.query(User).filter(~User.students.any()).all() #@UndefinedVariable
-    print (orphan_user_list)
     
     studenttype = StudentType.default_row() #@UndefinedVariable
     studentstatus = StudentStatus.default_row() #@UndefinedVariable
@@ -109,19 +122,22 @@ def orphan_users():
 
 @students_bp.route('/', methods=['GET'])
 def index():
-    clear = request.args.getlist('submit_id')
-    if clear and clear[0]=='clear':
-        return redirect(url_for('students_bp.index'))
     
+    clear = request.args.getlist('submit_id')
+    if clear and clear[0]=='back':
+        return redirect(get_url())
+
     delete_form = UserDeleteForm()
     search_on_id = request.args.get('id')
 
-    students = students_query(search_on_id)
-    
+    filters = make_filters().process_filters()
+    students = students_query(filters, search_on_id)
+
+    url = get_url(back_button=True)
+
     return render_template("students/students.html", 
                            students=students, 
-                           filters=make_filters(), 
-                           filters_checked=process_filters(),
+                           filters=filters, 
                            page_name=_("User Overview"),
                            delete_form=delete_form)
 
@@ -238,90 +254,6 @@ def edit_user(id=None):
     
     return render_template("students/student.html", form=form)
 
-def scheduler_process_filters(my_trainings=None):
-    filters_checked = {}
-    
-    try:
-        filters_checked.update( {'trainingtype': [int(i) for i in request.args.getlist('trainingtype')]} )
-        filters_checked.update( {'training_filter': [int(i) for i in request.args.getlist('training_filter')]} )
-
-    except Exception as e:
-        print (f'process_filters: url args not integer {request.args}: error {e}')
-                
-    return(filters_checked)
-
-class Filter():
-    def __init__(self, id, name):
-        self.name = name
-        self.id = id
-    
-    def __str__(self):
-        return self.name
-
-training_filter_obj = [Filter(1,"Past Trainings")]
-
-def scheduler_make_filters():
-
-    filters = []
-    
-    time_now = datetime.now(tz=pytz.timezone('UTC'))
-    traingingtypes = TrainingType().query.join(Training).join(TrainingEvent).join(Practice, Practice.id==Training.practice_id).filter(and_(
-                    Practice.shortname==Practice.default_row().shortname,
-                    )).all()
-    filters.append(('training_filter', 'Training Filter', 
-                    training_filter_obj))
-
-    filters.append(('trainingtype', 'Training Type', 
-                    traingingtypes))
-    
-
-    return(filters)
-
-def user_training_query(user,search_on_id=None):
-    selected_filters=scheduler_process_filters()
-    
-    time_now = datetime.now(tz=pytz.timezone('UTC'))
-
-    # # past trainings
-    if request.args.get('training_filter') == "1":
-        future = TrainingEvent().query.filter(TrainingEvent.start_time < time_now
-                        ).order_by(TrainingEvent.start_time).subquery()
-    else:
-        future = TrainingEvent().query.filter(TrainingEvent.start_time > time_now
-                        ).order_by(TrainingEvent.start_time).subquery()    
-
-    if search_on_id:
-        q = Training().query.join(Practice).filter(and_(
-                        Practice.shortname==Practice.default_row().shortname,
-                        Training.id==search_on_id,
-                        Student.user_id == user.id))
-    
-        
-    elif not selected_filters.get('trainingtype'):
-        q = Training().query.join(future).join(TrainingEnroll).join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Student).join(Practice, Practice.id==Training.practice_id).filter(
-            and_(Student.user_id == user.id)).order_by(TrainingEvent.start_time)
-        print ("here 3")
-    elif selected_filters.get('trainingtype'):
-        q = Training().query.join(future).join(TrainingEnroll).join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Student).join(Practice, Practice.id==Training.practice_id).filter(
-            and_(Student.user_id == user.id,
-                 Training.traningtype_id.in_(selected_filters.get('trainingtype')), 
-        )).order_by(TrainingEvent.start_time)
-        print ("here 2")
-    else:
-        q =  Training().query.join(future).join(TrainingEvent).options(joinedload(Training.trainingevents)).join(Practice).filter(and_(
-                    Practice.shortname==Practice.default_row().shortname,
-                    ~Training.trainingevents.any(TrainingEvent.start_time < time_now),
-                    Training.active==True), or_( 
-            Training.traningtype_id.in_(selected_filters.get('trainingtype')), 
-            )).order_by(TrainingEvent.start_time)
-        print ("here 1")
-    
-    
-    trainings = q.all()
-    for t in trainings:
-        t.fill_numbers(user)
-        
-    return trainings
 
 @students_bp.route('/student-trainings/deroll/<int:user_id>/<int:training_id>',methods=['GET', 'POST'])
 def deroll(user_id,training_id):
@@ -329,7 +261,6 @@ def deroll(user_id,training_id):
     training = Training().query.get(training_id)
     user = User().query.get(user_id)
     url = get_url()
-    print (url)
     deroll_common(training, user)
     return redirect(url)
 
@@ -355,38 +286,6 @@ def enroll(training_id):
     return redirect(url)
 
 
-@students_bp.route('/student-trainings/<int:id>', methods=['GET', 'POST'])
-def student_training(id):
-
-    clear = request.args.getlist('submit_id')
-    if clear and clear[0]=='clear':
-        return redirect(url_for('students_bp.student_training', id=id))
-
-    if clear and clear[0]=='back':
-        return redirect(get_url())
-
-    user = User().query.get(id)
-    
-    
-    deroll_form = TrainingDerollForm()
-    url = get_url(deroll_form, default='training_bp.overview_list', back_button=True)
-    if not deroll_form.first_url.data:
-        deroll_form.first_url.data = url
-    
-    traingingtypes = TrainingType().query.join(Practice).filter(and_(
-                        Practice.shortname==Practice.default_row().shortname)
-                        ).all()
-                        
-    return render_template("students/student-training.html", training=user_training_query(user), 
-                           trainingtypes=traingingtypes, 
-                           filters=scheduler_make_filters(), 
-                           filters_checked=scheduler_process_filters(my_trainings=True),
-                           page_name=_l('Training Schedule'),
-                           user=user,
-                           deroll_form=deroll_form,
-                           return_url=url
-                           )
-
 
 @students_bp.route('/student-edit/<int:id>',methods=['GET', 'POST'])
 def student(id):
@@ -407,7 +306,6 @@ def student(id):
     
     if  form.validate_on_submit():
         form.populate_obj(student)
-        print (db.session.is_modified(student))
 
         db.session.commit()
         flash(_('Student %s has been updated' % student.fullname))
