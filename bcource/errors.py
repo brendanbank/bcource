@@ -1,5 +1,6 @@
-from flask import current_app, make_response, render_template, redirect, flash, url_for, redirect, request
+from flask import current_app, make_response, render_template, redirect, flash, url_for, redirect, request, url_for
 from flask_security import current_user, url_for_security
+from bcource.home.home_views import home
 
 @current_app.errorhandler(403)
 def not_authorized(error):
@@ -15,8 +16,9 @@ def not_authorized(error):
     msg = 'Permission denied!'
     # resp = make_response(render_template('errors/403.html'), 403)
     flash(msg, 'error')
-    resp = make_response(render_template('errors/errors.html', e=msg), 403)
-    return resp
+    resp = make_response(home(), 200)
+    return (resp)
+    # return redirect (url_for('home_bp.home'))
 
 @current_app.errorhandler(404)
 def not_found(error):
@@ -25,3 +27,4 @@ def not_found(error):
     flash(msg, 'error')
     resp = make_response(render_template('errors/errors.html', e=msg), 404)
     return resp
+
