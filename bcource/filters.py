@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, g
 
 
 class Filters():
@@ -7,10 +7,14 @@ class Filters():
         self.filters = []
         self.filter_ids = 0
         self.filter_dict = {}
-        self.filters_checked = True
-        self.show = True
         
-        
+        if g.is_mobile == True:
+            self.filters_checked = False
+            self.show = False
+        else:
+            self.filters_checked = True
+            self.show = True
+
     def _add_filter(self, filter):
         self.filters.append(filter)
         self.filter_dict[filter.id] = filter
@@ -40,7 +44,6 @@ class Filters():
             for item in items:
                 
                 filter.item_check(item)
-
 
                 
         show_submit = request.args.get('show_submit', None)

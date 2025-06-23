@@ -13,14 +13,29 @@
 {% block pre_data_headers %}
 
 <div class="row border-top small">
-     <div class="col-lg-12 fw-semibold">{{_('Training Statistics:')}}</div>
-     <div class="col-lg-12">{{_('Max Participants:')}}<span> {{training.max_participants}}</span></div>
-     <div class="col-lg-12">{{_('Current enrolled:')}}<span> {{training.trainingenrollments  | length }}</span></div>
-     <div class="col-lg-12">{{_('Current Waitlist:')}}{%- if training.trainingenrollments  | length > training.max_participants -%}
-                    <span class="fw-bold text-danger"> {{training.trainingenrollments  | length - training.max_participants}}</span></div>
-                    {%- else -%}
-                         <span class="">0</span>
-                    {%- endif %}
+     <div class="col-lg-4">
+          <div class="col-lg-12 fw-semibold">{{_('Training Statistics:')}}</div>
+          <div class="col-lg-12">{{_('Max Participants:')}}<span> {{training.max_participants}}</span></div>
+          <div class="col-lg-12">{{_('Current enrolled:')}}<span> {{training.trainingenrollments  | length }}</span></div>
+          <div class="col-lg-12">{{_('Current Waitlist:')}}{%- if training.trainingenrollments  | length > training.max_participants -%}
+                         <span class="fw-bold text-danger"> {{training.trainingenrollments  | length - training.max_participants}}</span>
+                         {%- else -%}
+                              <span class="">0</span>
+                         {%- endif %}
+                         </div>
+                    
+     </div>
+     <div class="col-lg-4"> 
+               <div class="col-lg-12"><span>&nbsp;</span></div>
+               <div class="col-lg-12 pb-3">
+                         <a class="icon-link link-body-emphasis"
+                         href="{{url_for('training_bp.edit_training', id=training.id, first_url=return_url)}}"> 
+                         {{_('Edit Training') }}: <i class="bi bi-pencil-fill"
+                              data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Edit Training') }}"></i>
+                     </a>  
+             </div>
+     </div>
 <div class="border-top">
      <div class="col-lg-12 fw-semibold">{{_('Trainers:')}}</div>
      <div class="col-lg-12">
@@ -75,7 +90,7 @@
      <div class="row highlight 
      {% if "waitlist" in student_enrollment.status %} text-danger{% endif %}">
           <div class="{{show_mobile}} border-top border-dark-subtle"></div>
-          <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center">
+          <div class="col-lg-3 pt-1 ps-1 pe-0">
                    <span class="{{show_mobile}} h2">{{ loop.index }}. {{ student_enrollment.student.fullname }}<br></span>
                    <span class="{{hide_mobile}}">{{ loop.index }}. {{ student_enrollment.student.fullname }}</span>
                </div>
@@ -92,14 +107,45 @@
            </a>
 
           </div>
-          <div class="col-lg-3 pt-0 pb-0 align-self-center">
+          <div class="col-lg-3 pt-0 pb-0">
                  <span class="{{show_mobile}}">{{_('Email: ')}}</span>
                 {{ student_enrollment.student.email | format_email | safe }}</div>
-          <div class="col-lg-2 pt-0 pb-0 align-self-center">
+          <div class="col-lg-2 pt-0 pb-0 ">
                 <span class="{{show_mobile}}">{{_('Phone: ')}}</span>
                {{ student_enrollment.student.phone_number | format_phone_number | safe }}</div>
-          <div class="col-lg-3 pt-0 pb-0 align-self-center">
-                <span class="{{show_mobile}}">{{_('Enrollment Status: ')}}</span>{{ student_enrollment.status }}</div>
+          <div class="col-lg-3 pt-0 pb-0">
+                <span class="{{show_mobile}}">{{_('Enrollment Status: ')}}</span>{{ student_enrollment.status }} <span class="{{show_mobile}}"><br></span>
+
+
+
+                {% if student_enrollment.status == "waitlist-invited" %}
+                          <a class="icon-link link-body-emphasis align-self-center"
+               href="{{url_for('training_bp.deinvite', training_id=training.id, student_id=student_enrollment.student.id, first_url=return_url)}}"
+               onclick="return safeConfirm('{{_("Are you sure you want to  remove the invitation for  %(email)s?", email=student_enrollment.student.email)}}');"
+               > 
+               <i class="fs-5 bi bi-envelope-dash align-self-center" 
+                    data-toggle="tooltip" data-placement="top" 
+                                                  title="{{_('Remove invitation.') }}"></i>
+               
+               <span class="{{show_mobile}} small fw-semibold">{{_('Remove invitation')}}</span>
+           </a>
+               {% endif %}
+                           
+                {% if training.wait_list_spot_availabled(student_enrollment.student) %}
+                
+           
+                          <a class="icon-link link-body-emphasis align-self-center"
+               href="{{url_for('training_bp.invite', training_id=training.id, student_id=student_enrollment.student.id, first_url=return_url)}}"
+               onclick="return safeConfirm('{{_("Are you sure you invite %(email)s from this training?", email=student_enrollment.student.email)}}');"
+               > 
+               <i class="fs-5 bi bi-envelope-plus align-self-center" 
+                    data-toggle="tooltip" data-placement="top" 
+                                                  title="{{_('Invite user for this training.') }}"></i>
+               
+               <span class="{{show_mobile}} small fw-semibold">{{_('Invite user for this training')}}</span>
+           </a>
+           
+           {% endif %}</div>
 
      </div>
 
@@ -133,8 +179,6 @@ $('#student_search').select2({
      ajax : {
           url : '/students/search',
           dataType : 'json',
-          
-     // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
      }
 });
 
