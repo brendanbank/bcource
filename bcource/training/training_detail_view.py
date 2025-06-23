@@ -1,12 +1,14 @@
-from bcource.training.training_views import training_bp, request, redirect, url_for
+from bcource.training.training_views import training_bp, request, redirect, url_for, abort, flash
 from bcource.helpers import get_url
 from flask import render_template
 from flask_babel import _
 from flask_babel import lazy_gettext as _l
-from bcource.models import Training, TrainingType, TrainingEvent, TrainingEnroll
+from bcource.models import Training, TrainingType, TrainingEvent, TrainingEnroll, Student
 from datetime import datetime
 from bcource.training.training_forms import TrainingDerollForm
 from bcource.filters import Filters
+from bcource import db
+import bcource.messages as system_msg
 
 
 def make_filters():
@@ -27,6 +29,72 @@ def enrollement_query(training, filters):
                                                              TrainingEnroll.enrole_date).order_by(TrainingEnroll.enrole_date).all()
     else:
         return training.trainingenrollments_sorted
+
+
+@training_bp.route('/training-de-infite/<int:training_id>/<int:student_id>',methods=['GET', 'POST'])
+def deinvite(training_id,student_id):        
+    training=Training().query.get(training_id)
+    if not training:
+        flash(_('Training id: %s not found' % training_id), "error")
+        abort(404)
+        
+    student=Student().query.get(student_id)
+    if not training:
+        flash(_('Training id: %s not found' % training_id), "error")
+        abort(404)
+    
+    url = get_url()
+        
+    enrollment = TrainingEnroll().query.filter(TrainingEnroll.student == student, TrainingEnroll.training == training).first()
+    if enrollment: 
+        enrollment.status="waitlist"
+        db.session.commit()
+        
+        flash(_('Student %(fullname)s is de-invited for %(trainingname)s.', 
+                fullname=student.fullname, 
+                trainingname=training.name))
+    else:
+        flash(_('Cannot find invite for %(fullname)s for training %(trainingname)s.', 
+                fullname=student.fullname, 
+                trainingname=training.name), 'error')
+    
+    return redirect(url)
+
+@training_bp.route('/training-invite/<int:training_id>/<int:student_id>',methods=['GET', 'POST'])
+def invite(training_id,student_id):        
+    training=Training().query.get(training_id)
+    if not training:
+        flash(_('Training id: %s not found' % training_id), "error")
+        abort(404)
+        
+    student=Student().query.get(student_id)
+    if not training:
+        flash(_('Training id: %s not found' % training_id), "error")
+        abort(404)
+    
+    url = get_url()
+    
+    if not training.wait_list_spot_availabled(student):
+        flash(_('Student %(fullname)s cannot be invited for %(trainingname)s.', 
+                fullname=student.fullname, 
+                trainingname=training.name), "error")
+        
+        return redirect(url)
+    
+    enrollment = TrainingEnroll().query.filter(TrainingEnroll.student == student, TrainingEnroll.training == training).first()
+    enrollment.status="waitlist-invited"
+    
+    system_msg.EmailStudentEnrolledInTrainingInvited(envelop_to=enrollment.student.user, 
+                                                  enrollment=enrollment).send()
+
+    db.session.rollback()
+    
+    flash(_('Student %(fullname)s is invited for %(trainingname)s.', 
+            fullname=student.fullname, 
+            trainingname=training.name))
+    
+    return redirect(url)
+    
     
 @training_bp.route('/training-detail/<int:id>',methods=['GET', 'POST'])
 def training_detail(id):

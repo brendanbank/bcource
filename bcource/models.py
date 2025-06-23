@@ -13,6 +13,10 @@ from bcource.helpers import config_value as cv
 from bcource.helpers import genpwd
 from flask import current_app, session
 import pytz
+from sqlalchemy import or_
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy import orm
+
 from uuid import UUID, uuid4
 
 policy_association = Table(
@@ -194,6 +198,13 @@ class TrainingEnroll(db.Model):
     enrole_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), 
                                                                 nullable=True, 
                                                                 server_default=func.now())
+    
+    invite_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), 
+                                                                nullable=True)
+
+    ical_sequence: Mapped[int] = mapped_column(Integer(), nullable=True)
+
+
     __table_args__ = (db.UniqueConstraint("student_id", "training_id"),)
 
     status: Mapped[str] = mapped_column(String(256), nullable=False)
@@ -210,7 +221,17 @@ class TrainingEnroll(db.Model):
         server_default=func.now(),
         onupdate=func.now(),
     )
+    
+    @hybrid_property
+    def sequence_next(self):
+        if self.ical_sequence == None:
+            self.ical_sequence = 1
+        else:
+            self.ical_sequence += 1
+        return self.ical_sequence
  
+    def __repr__(self)->str:
+        return f'<{self.__class__.__name__} student = "{self.student}" training="{self.training} status="{self.status}">'
 
 class Training(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -230,15 +251,62 @@ class Training(db.Model):
     )
     
     trainingevents: Mapped[List["TrainingEvent"]] = relationship(backref="training", cascade="all, delete")
+
+    def __init__(self):
+        self._spots_enrolled = None
+        self._spots_waitlist = None
+
+    @orm.reconstructor
+    def init_on_load(self):
+        self._spots_enrolled = None
+        self._spots_waitlist = None
+        self.student_allowed = {}
+        self._amount_enrolled = 0
+        self._user_enrollment = None
+
+    def _cal_enrollments(self):
+        if self._spots_enrolled == None:
+            self._spots_enrolled = TrainingEnroll.query.join(Training).filter(
+                                TrainingEnroll.training_id==self.id, or_(TrainingEnroll.status == 'enrolled', 
+                                                                         TrainingEnroll.status == 'waitlist-invited')
+                                ).count()
+
+        if self._spots_waitlist == None:                   
+            self._spots_waitlist = TrainingEnroll.query.join(Training).join(Student).filter(
+                            TrainingEnroll.training_id==self.id, 
+                            TrainingEnroll.status.ilike('waitlist')
+                        ).order_by(TrainingEnroll.enrole_date).all()  
+                                                
+       
+        spots_avalablie = self.max_participants - self._spots_enrolled
+        
+        i=0
+        while i < spots_avalablie and i < len(self._spots_waitlist):
+            enrollment = self._spots_waitlist[i]
+            i += 1
+            self.student_allowed[enrollment.student.id]=enrollment
+            
+        print (f'_spots_enrolled: {self._spots_enrolled} _spots_waitlist: {self._spots_waitlist} _student_allowed: {self.student_allowed}'  )
+        
+        
+    def waitlist_enrollments_eligeble(self):
+        self._cal_enrollments()
+        return self.student_allowed.values()
     
-    _amount_enrolled = 0
-    _user_status = None
+    def wait_list_spot_availabled(self, student):
+        self._cal_enrollments()
+        
+        if student.id in self.student_allowed.keys():
+            return True
+        else:
+            return False
             
     def fill_numbers(self,user):
         self._amount_enrolled = len(self.trainingenrollments)
         e = self.enrolled(user)
         if e:
-            self._user_status = self.enrolled(user).status
+            self._user_enrollment = e
+            self._user_status = e.status
 
     def __str__(self):
         return self.name
@@ -701,6 +769,8 @@ class Content(db.Model):
             db.session.commit()
         if obj:
             return (content)
+        
+        print (tag)
         return(render_template_string(content.text, **kwargs))
     
     def update(self):

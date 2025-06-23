@@ -178,7 +178,11 @@ def delete(id):
     if user.trainers:
         flash(_('You cannot delete user <span class="fw-bold" style="white-space:nowrap;">%s</span>. First delete the trainer record.<br>' % user.email), "error")
         return redirect(url)
-    
+
+    if user.student_from_practice.trainingapplications:
+        flash(_('You cannot delete user <span class="fw-bold" style="white-space:nowrap;">%s</span>. The user is still enrolled in one or more trainings.<br>' % user.email), "error")
+        return redirect(url)
+
     for student in user.students:
         db.session.delete(student)
 

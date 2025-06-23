@@ -10,7 +10,7 @@ from bcource.helpers import admin_has_role, get_url
 from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent, TrainingEnroll
 from sqlalchemy import or_, and_
 import bcource.messages as system_msg
-from bcource.students.common import deroll_common, enroll_common
+from bcource.students.common import deroll_common, enroll_common, enroll_from_waitlist
 from sqlalchemy.orm import joinedload
 
 from datetime import datetime
@@ -35,8 +35,9 @@ def has_student_role():
                         
     if not q or not q.studentstatus or  q.studentstatus.name != "active":
         flash(_("Student does not have an active status!"), 'error')
-        flash(_("Please check with the Student Administrators to have your status changed to active."), 'error')
+        flash(_("Please wait for the the Student Administrators to set status changed to active."), 'error')
         abort(403)
+        
 
 scheduler_bp.before_request(has_student_role)
 
@@ -193,6 +194,39 @@ def deroll(id):
 
     return render_template("scheduler/deroll.html", training=training, form=form, return_url=url)
 
+@scheduler_bp.route('/training/accept-invite/<string:uuid>',methods=['GET', 'POST'])
+@auth_required()
+def accept_invite(uuid):
+    
+    enrollment = TrainingEnroll().query.filter(TrainingEnroll.uuid == uuid).first()
+    
+    url = get_url()
+    
+    if not (enrollment):
+        flash(_("Cannot find invitation!"), 'error')
+        return redirect(url)
+    
+    enroll_from_waitlist(enrollment)
+    
+    return redirect(url)
+
+@scheduler_bp.route('/training/decline-invite/<string:uuid>',methods=['GET', 'POST'])
+@auth_required()
+def decline_invite(uuid):
+    
+    enrollment = TrainingEnroll().query.filter(TrainingEnroll.uuid == uuid).first()
+    
+    url = get_url()
+    
+    if not (enrollment):
+        flash(_("Cannot find invitation!"), 'error')
+        return redirect(url)
+    
+    enrollment.status="waitlist-declined"
+    db.session.commit()
+    
+    flash(_("You have declined the invite for training %(trainingname)s!", trainingname=enrollment.training.name), 'error')
+    return redirect(url)
 
 @scheduler_bp.route('/training/enroll/<int:id>',methods=['GET', 'POST'])
 @auth_required()

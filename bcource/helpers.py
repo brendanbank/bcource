@@ -20,6 +20,7 @@ def add_url_argument(url, key, value):
     query_params[key] = [value] # parse_qs returns lists of values
 
     new_query_string = urlencode(query_params, doseq=True)
+
     new_url = urlunparse(parsed_url._replace(query=new_query_string))
     return new_url
 
@@ -48,7 +49,13 @@ def get_url (form=None,default=None, back_button=False):
                 url = first_url
             else:
                 url = request.referrer
-                url = add_url_argument(url, 'first_url', first_url)
+                if not url:
+                    url = request.args.get('first_url')
+                    if url:
+                        add_url_argument(url, 'first_url', first_url)
+                    
+                else:
+                    url = add_url_argument(url, 'first_url', first_url)
         else:
             url = request.args.get('url')
         

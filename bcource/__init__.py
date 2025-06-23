@@ -15,7 +15,7 @@ from flask_moment import Moment
 from bcource.menus import Menu
 from bcource.helpers import MyFsModels, admin_has_role, db_datetime, db_datetime_str, format_phone_number, format_email
 from bcource.helpers import config_value as cv
-
+from flask_mobility import Mobility
 class Base(DeclarativeBase):
     # __abstract__ = True
     def to_dict(self):
@@ -38,6 +38,7 @@ class Base(DeclarativeBase):
 menu_structure = Menu('root')
 
 moment = Moment()
+mobility = Mobility()
 
 db = SQLAlchemy(model_class=Base)
 
@@ -65,6 +66,8 @@ def create_app():
     db.app = app
     
     db.init_app(app)
+    
+    mobility.init_app(app)
 
     babel.init_app(app)
     csrf.init_app(app)

@@ -10,9 +10,29 @@ from flask_babel import _
 from bcource.helpers import add_url_argument
 
 
-def enroll_common(training, user):
+def enroll_from_waitlist(enrollment: TrainingEnroll):
+    if not enrollment:
+        flash(_("enroll: Cannot find invitation!"), 'error')
+        return False
+    
+    if enrollment.status != "waitlist-invited":
+        flash(_("enroll: Cannot find invitation!, status is not waitlist-invited"), 'error')
+        return False
+    
+    enrollment.status = "enrolled"
+    
+    system_msg.EmailStudentEnrolledInTrainingInviteAccepted(envelop_to=enrollment.student.user, 
+                                                  enrollment=enrollment).send()
+    db.session.commit()
         
-    if training.enrolled(user):
+    flash(_("You have successfully enrolled into training %(trainingname)s!", trainingname=enrollment.training.name))
+
+
+    print (enrollment)
+
+def enroll_common(training, user):
+    enrolled_user = training.enrolled(user)
+    if enrolled_user:
         flash(_("%(fullname)s has already enrolled for this training: %(trainingname)s", 
                 fullname=user.fullname,trainingname=training.name ),'error')
         return False
@@ -51,16 +71,16 @@ def enroll_common(training, user):
     db.session.add(enroll)
     db.session.commit()
 
-    if len(training.trainingenrollments) >= training.max_participants:
-        system_msg.EmailStudentEnrolledInTrainingWaitlist(envelop_to=user, training=training, user=user).send()
-        system_msg.EmailStudentEnrolledWaitlist(envelop_to=training.trainer_users, user=user, training=training).send()
+    if waitlist:
+        system_msg.EmailStudentEnrolledInTrainingWaitlist(envelop_to=user, enrollment=enroll).send()
+        system_msg.EmailStudentEnrolledWaitlist(envelop_to=training.trainer_users, enrollment=enroll).send()
 
     else:
         system_msg.EmailStudentEnrolledInTraining(envelop_to=user, 
-                                                  training=training, 
-                                                  user=user, 
-                                                  uuid=enroll.uuid).send()
-        system_msg.EmailStudentEnrolled(envelop_to=training.trainer_users, user=user, training=training).send()
+                                                  enrollment=enroll).send()
+        system_msg.EmailStudentEnrolled(envelop_to=training.trainer_users, enrollment=enroll).send()
+
+        db.session.commit()
 
     return True
     
@@ -84,13 +104,14 @@ def deroll_common(training, user):
                 fullname=user.fullname, trainingname=training.name), 'error')
         return False
     
+    system_msg.EmailStudentDerolled(envelop_to=training.trainer_users, enrollment=training_enroll).send()
+    system_msg.EmailStudentDerolledInTraining(envelop_to=user, enrollment=training_enroll).send()
+    flash(_("%(username)s successfully removed from the training: %(trainingname)s", username=user.fullname, 
+        trainingname=training.name))
+
     db.session.delete(training_enroll)        
     db.session.commit()
     
-    system_msg.EmailStudentDerolled(envelop_to=training.trainer_users, user=user, training=training).send()
-    system_msg.EmailStudentDerolledInTraining(envelop_to=user, training=training, user=user, uuid=training_enroll.uuid).send()
-    flash(_("%(username)s successfully removed from the training: %(trainingname)s", username=user.fullname, 
-        trainingname=training.name))
     
     return True
 

@@ -23,6 +23,7 @@ flask-moment = "*"
 icalendar = "*"
 beautifulsoup4 = "*"
 phonenumbers = "*"
+flask-mobility = "*"
 
 [dev-packages]
 

@@ -97,10 +97,7 @@ def delete(id):
     if not training:
         abort(404)
     training_name = training.name
-    
         
-
-    
     url = get_url(default='training_bp.overview_list')
 
     if training.trainingenrollments:
@@ -120,14 +117,13 @@ def edit_training(id=None):
     
     practice=Practice.default_row() #@UndefinedVariable
     
-    
     training = None
     
     if id != None:
         training=Training().query.join(Practice).filter(and_(
             Training.id==id, Practice.shortname==Practice.default_row().shortname)).first()
         if not training:
-            return(redirect(url_for('training_bp.overview_list')))
+            return(redirect(get_url()))
             
     
     form = TrainingForm(obj=training)
@@ -170,7 +166,7 @@ def edit_training(id=None):
         db.session.commit()
         flash(_('Training details are successfully saved!'))
         
-        return(redirect(url_for('training_bp.overview_list')))
+        return(redirect(url))
 
 
     return render_template("training/training.html", form=form, eventform=eventform, events=json.dumps(create_events(training)))
@@ -211,17 +207,6 @@ def index():
     training_headers = make_table_header([_('Name'), _('Training Type'), _('Trainers'), _('Date/Location')])
     return render_template("training/trainings.html", headers=training_headers, trainings=trainings, delete_form=delete_form)
 
-
-
-class Filter():
-    def __init__(self, id, name):
-        self.name = name
-        self.id = id
-    
-    def __str__(self):
-        return self.name
-
-training_filter_obj = [Filter(1,"Past Trainings")]
 
 
 def make_filters():
