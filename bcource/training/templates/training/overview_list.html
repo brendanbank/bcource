@@ -81,7 +81,7 @@
                                    <span class="{{show_mobile}} fw-semibold">Max/Enrolled/Wait list: </span>
                {{ training.max_participants }}&nbsp;/&nbsp;{{training._amount_enrolled }}&nbsp;/
                                                   {%- if training._amount_enrolled >= training.max_participants %}
-                                                       <span class="text-warning">{{ training._amount_enrolled - training.max_participants}}</span>
+                                                       <span class="text-danger fw-bold">{{ training._amount_enrolled - training.max_participants}}</span>
                                                    {% else %}
                                                        <span class="text-success">0</span>
                                                    {%- endif -%}

@@ -84,89 +84,125 @@ class EmailStudentCreated(SendEmail):
 
 
 class EmailStudentEnrolledInTrainingWaitlist(SendEmail):
-    pass
+    def process_attachment(self, msg):
+        if not 'enrollment' in self.kwargs:
+            raise Exception(f"'enrollment' not present into kwargs")
+
+        enrollment = self.kwargs['enrollment']
+        if not enrollment:
+            raise Exception(f"'enrollment' cannot be Null")
+        
+        user = enrollment.student.user
+        training = enrollment.training
+        
+
+        cal = Calendar()
+        cal.add("prodid", "-//Gnarst B.V.//Bcourse//EN")
+        cal.add("version", "2.0")
+        cal.add('summary', training.name)
+        cal.add('method', "REQUEST")
+
+
+        for db_event in training.trainingevents:
+
+            event = Event()
+            event.add('dtstart', db_datetime(db_event.start_time))
+            event.add('dtend', db_datetime(db_event.end_time))
+            event.add('dtstamp', dt.datetime.now(tz=zoneinfo.ZoneInfo('Europe/Amsterdam')))
+            event.add('uid', enrollment.uuid)
+            event.add('SEQUENCE', enrollment.sequence_next)
+            event.add('status', "TENTATIVE")
+            #event.add(f'ORGANIZER;CN="{self.envelop_from}"', f'mailto:noreply@bgwlan.nl')
+            event.add(f'ATTENDEE;ROLE=REQ-PARTICIPANT;CN="{user.fullname}"', f'mailto:{user.email}')
+            event.add('location', db_event.location.ical_adress)
+            event.add('summary', f'{training.name} (Waiting List)')
+            cal.add_component(event)
+            
+        cal.to_ical()
+        
+        msg.attach(f'{training.name}.ics', cal.to_ical(), 'text/calendar')
 
 class EmailStudentEnrolledWaitlist(SendEmail):
     pass
 
 class EmailStudentEnrolledInTraining(SendEmail):
     def process_attachment(self, msg):
-        if not 'training' in self.kwargs:
-            raise Exception(f"'training' not present into kwargs")
+        if not 'enrollment' in self.kwargs:
+            raise Exception(f"'enrollment' not present into kwargs")
 
-        if not 'user' in self.kwargs:
-            raise Exception(f"'user' not present into kwargs")
-
-        if not 'uuid' in self.kwargs:
-            raise Exception(f"'uuid' not present into kwargs")
+        enrollment = self.kwargs['enrollment']
+        if not enrollment:
+            raise Exception(f"'enrollment' cannot be Null")
         
-        user = self.kwargs['user']
+        user = enrollment.student.user
+        training = enrollment.training
+        
 
         cal = Calendar()
-        cal.add("prodid", "-//bcourse//bcource//EN")
+        cal.add("prodid", "-//Gnarst B.V.//Bcourse//EN")
         cal.add("version", "2.0")
-        cal.add('summary', self.kwargs['training'].name)
+        cal.add('summary', training.name)
+        cal.add('method', "REQUEST")
 
-        for db_event in self.kwargs['training'].trainingevents:
-            
-            uuid = self.kwargs['uuid']
+
+        for db_event in training.trainingevents:
 
             event = Event()
             event.add('dtstart', db_datetime(db_event.start_time))
             event.add('dtend', db_datetime(db_event.end_time))
             event.add('dtstamp', dt.datetime.now(tz=zoneinfo.ZoneInfo('Europe/Amsterdam')))
-            event.add('uid', uuid)
-            event.add('SEQUENCE', 0)
+            event.add('uid', enrollment.uuid)
+            event.add('SEQUENCE', enrollment.sequence_next)
             event.add('status', "CONFIRMED")
             #event.add(f'ORGANIZER;CN="{self.envelop_from}"', f'mailto:noreply@bgwlan.nl')
             event.add(f'ATTENDEE;ROLE=REQ-PARTICIPANT;CN="{user.fullname}"', f'mailto:{user.email}')
             event.add('location', db_event.location.ical_adress)
-            event.add('summary', self.kwargs['training'].name)
+            event.add('summary', training.name)
             cal.add_component(event)
             
         cal.to_ical()
         
-        msg.attach(f'{self.kwargs["training"].name}.ics', cal.to_ical(), 'text/calendar')
+        msg.attach(f'{training.name}.ics', cal.to_ical(), 'text/calendar')
         
 class EmailStudentDerolledInTraining(SendEmail):
     def process_attachment(self, msg):
-        if not 'training' in self.kwargs:
-            raise Exception(f"'training' not present into kwargs")
 
-        if not 'user' in self.kwargs:
-            raise Exception(f"'user' not present into kwargs")
+        if not 'enrollment' in self.kwargs:
+            raise Exception(f"'enrollment' not present into kwargs")
 
-        if not 'uuid' in self.kwargs:
-            raise Exception(f"'uuid' not present into kwargs")
-
-        user = self.kwargs['user']
+        enrollment = self.kwargs['enrollment']
+        if not enrollment:
+            raise Exception(f"'enrollment' cannot be Null")
+        
+        user = enrollment.student.user
+        training = enrollment.training
 
         cal = Calendar()
-        cal.add("prodid", "-//bcourse//bcource//EN")
+        cal.add("prodid", "-//Gnarst B.V.//Bcourse//EN")
         cal.add("version", "2.0")
-        cal.add('summary', self.kwargs['training'].name)
+        cal.add('summary', training.name)
         cal.add('method', "CANCEL")
         
-        for db_event in self.kwargs['training'].trainingevents:
+        for db_event in training.trainingevents:
             
-            uuid = self.kwargs['uuid']
+            uuid = enrollment.uuid
             
             event = Event()
             event.add('dtstart', db_datetime(db_event.start_time))
             event.add('dtend', db_datetime(db_event.end_time))
             event.add('dtstamp', dt.datetime.now(tz=zoneinfo.ZoneInfo('Europe/Amsterdam')))
             event.add('uid', uuid)
-            event.add('SEQUENCE', 1)
+            event.add('SEQUENCE', enrollment.sequence_next)
             event.add('status', "CANCELLED")
             #event.add(f'ORGANIZER;CN="{self.envelop_from}"', f'mailto:noreply@bgwlan.nl')
             event.add(f'ATTENDEE;ROLE=REQ-PARTICIPANT;CN="{user.fullname}"', f'mailto:{user.email}')
             event.add('location', db_event.location.ical_adress)
-            event.add('summary', f"CANCELLED: {self.kwargs['training'].name}")
+            event.add('summary', f"CANCELLED: {enrollment.training.name}")
             cal.add_component(event)
             
         cal.to_ical()
         
-        msg.attach(f'{self.kwargs["training"].name}.ics', cal.to_ical(), 'text/calendar')
+        msg.attach(f'{enrollment.training.name} canceled.ics', cal.to_ical(), 'text/calendar')
 
 class EmailStudentStatusActive(SendEmail):
     pass
@@ -177,3 +213,13 @@ class EmailStudentEnrolled(SystemMessage):
 # message to trainers to notify that the student has derolled
 class EmailStudentDerolled(SystemMessage):
     pass
+
+class EmailStudentEnrolledInTrainingInviteAccepted(EmailStudentEnrolledInTraining):
+    pass
+
+class EmailStudentEnrolledInTrainingInvited(SendEmail):
+    pass
+
+class EmailStudentEnrolledInTrainingDeInvited(SendEmail):
+    pass
+
