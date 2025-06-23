@@ -12,7 +12,7 @@
   	{% set kwargss = {'aria-describedby': field.name + '_feedback', 'class': 'form-control is-invalid' } %}
   	{{ field(**kwargss)|safe }}
   {% else %}
-  	{{ field(class_="form-control-input", **kwargs)|safe }}
+  	{{ field(class_="form-control", **kwargs)|safe }}
   {% endif %}
     {% if field.errors %}
 	    <div class="invalid-feedback" id="{{ field.name }}_feedback">
