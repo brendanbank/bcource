@@ -24,14 +24,14 @@
      
   <i onClick="window.location.href = '{{ url_for('user_bp.messages', m = message_selected.id, d=1) }}';" class="fs-4 bi bi-trash"
      data-toggle="tooltip" data-placement="top" title="Delete Message."></i>
-
+{#
 {% if message_selected.id %}
   <i onClick="window.location.href = '{{ url_for('user_bp.message', reply=message_selected.id) }}';" class="fs-4 bi bi-reply"
         data-toggle="tooltip" data-placement="top" title="Reply to message."></i>
 {% endif %}
   <i onClick="window.location.href = '{{ url_for('user_bp.message') }}';" 
        class="fs-4 bi bi-envelope-plus" data-toggle="tooltip" data-placement="top" title="New Message"></i>
-
+#}
   
   </span>
   </div>
@@ -40,7 +40,6 @@
 
   <div class="col-md-4 pt-2 pe-4">
     <hr class="mb-1 mt-1">
-  
   {% for assiociation in messages -%}
   <div class="row" onClick="window.location.href = '{{ url_for('user_bp.messages', m = assiociation.message.id) }}';" 
      {% if assiociation.message.id == message_selected.id %}style="background-color:#cccccc; border-radius: 5px;"{% endif %}>
