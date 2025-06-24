@@ -29,7 +29,7 @@
 
      <div class="p-2">
           <div class="row">
-          {{ get_tag('ENROLL_TO_TRAINING_WAITLIST') | bcourse_safe }}
+          {{ get_tag('ENROLL_TO_TRAINING_WAITLIST') | safe }}
           </div>
      </div>
 {% endif %}
@@ -63,7 +63,7 @@
 
       </div>
       <div class="modal-body">
-        {{ get_tag('Cancellation Policy') |bcourse_safe   }}
+        {{ get_tag('Cancellation Policy') |safe   }}
       </div>
       <div class="modal-footer">
           <button class="btn btn-primary" onclick="this.blur();" data-bs-target="#EnroleModal" data-bs-toggle="modal">Close</button>
@@ -79,7 +79,7 @@
         <h1 class="modal-title fs-5" id="TandCIDLabel">{{_('Terms and Conditions') }}</h1>
       </div>
       <div class="modal-body">
-        {{ get_tag('tandc') |bcourse_safe   }}
+        {{ get_tag('tandc') |safe   }}
       </div>
       <div class="modal-footer">
           <button class="btn btn-primary" onclick="this.blur();" data-bs-target="#EnroleModal" data-bs-toggle="modal">Close</button>
@@ -96,13 +96,14 @@
 <script>
 
 $(window).on('load', function() {
-    $('#EnroleModal').modal('show');
+    $('#EnroleModal').modal('show', {keyboard: false});
 
     const EnroleModal = document.getElementById('EnroleModal')
      EnroleModal.addEventListener('hidePrevented.bs.modal', event => {
-    	 console.log('{{ return_url }}');
     	 $('#EnroleModal').modal('hide');
-    	 setTimeout(function(){window.location.replace = "{{ return_url }}";},1000);
+    	 console.log("{{ return_url }}")
+
+     	 setTimeout(function(){window.location.href = "{{ return_url }}";},2);
 
     	 //window.location.href = '{{ return_url }}';
     })

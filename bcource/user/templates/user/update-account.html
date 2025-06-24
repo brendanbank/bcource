@@ -36,11 +36,12 @@
 //{% include 'postcode.js' %}
 
 $(window).on('load', function() {
+	
     $('#settingModel').modal('show');
 
     const settingModel = document.getElementById('settingModel')
     settingModel.addEventListener('hide.bs.modal', event => {
-    	window.location.href = document.getElementById('url').value
+    	setTimeout(function(){window.location.href = document.getElementById('url').value;},2);
     })
 });
 

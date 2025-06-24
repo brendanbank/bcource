@@ -70,7 +70,7 @@ def messages():
     q = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
                                                                 UserMessageAssociation.message_id==Message.id,
                                                                 UserMessageAssociation.message_deleted == None)).order_by(
-                                                                    Message.created_date)
+                                                                    Message.created_date.desc())
 
     messages = q.all()
                                                  
