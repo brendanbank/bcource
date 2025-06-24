@@ -10,7 +10,6 @@ class HTTPExceptionMustHaveTwoFactorEnabled(exceptions.HTTPException):
     code = 499
     description = _l('You must have two factor authentication enabled to use this feature!')
 
-
 def handle_no_2fa(e):
     flash(e.description,'error')
     return render_template('handle_no_2fa.html')
@@ -18,14 +17,20 @@ def handle_no_2fa(e):
 class HTTPExceptionStudentNotActive(exceptions.HTTPException):
     code = 499
     description = _l('Student is not active!')
-
-
-def student_not_actieve(e):
-    # flash(e.description,'error')
     
-    # return render_template('handle_student_not_active.html')
+def student_not_actieve(e):
     resp = make_response(home(error_msg='no_active_status'), 200)
     return resp
+
+class HTTPExceptionProfileInComplete(exceptions.HTTPException):
+    code = 499
+    description = _l('User profile incomplete!')
+
+def student_profile_incomplete(e):
+    resp = make_response(home(error_msg='no_profile_complete'), 200)
+    return resp
+
+
 
 
 @current_app.errorhandler(403)

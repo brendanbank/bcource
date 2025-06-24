@@ -659,7 +659,12 @@ class User(db.Model, sqla.FsUserMixin):
             Practice.shortname==Practice.default_row().shortname,
             Student.user==self)).first()
 
-    
+    @property
+    def trainer_from_practice(self):
+        return Trainer().query.join(User).join(Practice).filter(and_(
+            Practice.shortname==Practice.default_row().shortname,
+            Trainer.user==self)).first()
+
     @property
     def unread_messages(self):
         return len(UserMessageAssociation().query.join(User).filter(and_(UserMessageAssociation.user_id==self.id,

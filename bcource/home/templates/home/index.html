@@ -1,35 +1,47 @@
 {% extends 'base.html' %}
+
 {% block nav %}
     {% include 'nav.html' %}
 {% endblock %}
 
 {% block content %}
-    {% if not error_msg %}
+     <div class="row justify-content-md-center">
+          <div class="col-6 ">
+     
+     {% if current_user.is_anonymous %}
+              <div>{{ get_tag('home_anonymous') |safe    }}
+               </div>    
+     {% else %}
+          
+         {% if  current_user.student_from_practice.studentstatus.name == 'inactive' and not validator.validate() %}
+             <div><br><br>{{ get_tag('no_active_status_no_profile') | safe       }}
+         {% elif  current_user.student_from_practice.studentstatus.name == 'inactive' and validator.validate() %}
+             <div><br><br>{{ get_tag('no_active_status') | safe       }}
+         {% elif current_user.student_from_practice.studentstatus.name == 'active' and not validator.validate() %}
+             <div><br><br>{{ get_tag('no_profile_complete') | safe       }}
+         {% else %}
+             <div><br><br>{{ get_tag('home') | safe       }}
+         {% endif %}
+    {% endif %}
+     </div></div>
+</div>
 
-<div class="row justify-content-md-center">
-     <div class="col-5 ">
+{% if  not validator.validate() %}
+<div class="row">
+     <div class="col-12 justify-content-md-center">
 
-{% if current_user.is_anonymous %}
-    <div>{{ get_tag('home_anonymous') |safe    }}
-{% else %}
-    
-    <div>{{ get_tag('home') | safe       }}
-{% endif %}
-</div>    
-    </div>
-
-    </div>
-    </div>
-    {% else %}
-<div class="row justify-content-md-center">
-     <div class="col-5">
-
-        <span class="text-start">{{ get_tag(error_msg) | safe       }}</span>
-        
-
+          <br><h6 class="text-center">Click on the links below to edit you profile and settings.</h6>
      </div>
 </div>
+<div class="row mt-3">
+     <div class="col-md-4 justify-content-md-center"></div>
+     <div class="col-md-4 justify-content-md-center">
+          {%- for validation in validator -%}
+          <div class="row">
+               <li>{{ validation(link_href=url_for(validation.bp_url)) }}</li>
+          </div>
+          {%- endfor -%}
+     </div>
+     </div>
 {% endif %}
-
-
 {% endblock %}

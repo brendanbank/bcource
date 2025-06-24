@@ -16,6 +16,7 @@ from sqlalchemy.orm import joinedload
 from datetime import datetime
 import pytz
 from bcource.filters import Filters
+from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
 
 # Blueprint Configuration
 scheduler_bp = Blueprint(
@@ -34,12 +35,14 @@ def has_student_role():
                         ).first()
                         
     if not q or not q.studentstatus or  q.studentstatus.name != "active":
-        # flash(_("Student does not have an active status!"), 'error')
-        # flash(_("Please wait for the the Student Administrators to set status changed to active."), 'error')
-        # abort(403)
         from bcource.errors import HTTPExceptionStudentNotActive
-
         raise (HTTPExceptionStudentNotActive())
+    
+    if not UserProfileChecks().validate():
+        from bcource.errors import HTTPExceptionProfileInComplete
+        raise (HTTPExceptionProfileInComplete())
+
+    
         
 
 scheduler_bp.before_request(has_student_role)

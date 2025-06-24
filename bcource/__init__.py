@@ -132,11 +132,13 @@ def create_app():
              
         app.before_request(bcource.admin.authorize_user)
         
-        from bcource.errors import HTTPExceptionMustHaveTwoFactorEnabled, handle_no_2fa
-        from bcource.errors import HTTPExceptionStudentNotActive, student_not_actieve
+        from bcource.errors import ( HTTPExceptionMustHaveTwoFactorEnabled, handle_no_2fa, 
+                                     HTTPExceptionStudentNotActive, student_not_actieve,
+                                     HTTPExceptionProfileInComplete, student_profile_incomplete)
         
         app.register_error_handler(HTTPExceptionMustHaveTwoFactorEnabled, handle_no_2fa)
         app.register_error_handler(HTTPExceptionStudentNotActive, student_not_actieve)
+        app.register_error_handler(HTTPExceptionProfileInComplete, student_profile_incomplete)
         
         
         
