@@ -132,28 +132,44 @@ def message():
 
         if user_message_association:
             
-            form.envelop_tos.query_factory = lambda: User().query.filter(User.id == user_message_association.message.envelop_from.id).order_by(User.first_name, User.last_name).all()
-
             date = user_message_association.message.created_date
             date_tz = date.replace(tzinfo=pytz.timezone('UTC'))            
                         
             reply_message = f'On {date_tz.astimezone().strftime("%c %Z")}, {user_message_association.message.envelop_from} wrote: {user_message_association.message.body}'
             
             form.body.data = reply_message
-            form.envelop_tos.data = [user_message_association.message.envelop_from]
+            print (user_message_association.message.envelop_from)
+            form.envelop_tos.data = [f"{user_message_association.message.envelop_from.id}"]
+            form.envelop_tos.choices = [(user_message_association.message.envelop_from.id,user_message_association.message.envelop_from.fullname)]
+            
             form.subject.data = f'Re: {user_message_association.message.subject}'
     
+    if form.is_submitted():
+        if form.envelop_tos.data:
+            choices = []
+            envelop_tos = User().query.filter(User.id.in_(form.envelop_tos.data)).all()
+            for user in envelop_tos:
+                choices.append((user.id, user.fullname ))
+            
+            form.envelop_tos.choices = choices
+        else:
+            form.envelop_tos.choices = form.envelop_tos.data
 
-    
+        
+    print (form.envelop_tos.data)
     if form.validate_on_submit():
-        message = Message.create_db_message(db.session,
-                                         current_user,
-                                         form.envelop_tos.data,
-                                         form.subject.data,
-                                         form.body.data)
-
-        flash(_("Message sent!"))
-        return redirect(url_for('user_bp.messages'))
+        envelop_tos = User().query.filter(User.id.in_(form.envelop_tos.data)).all()
+        if not envelop_tos:
+            flash(_("Could not find user!"))
+        else:
+            message = Message.create_db_message(db.session,
+                                             current_user,
+                                             envelop_tos,
+                                             form.subject.data,
+                                             form.body.data)
+    
+            flash(_("Message sent!"))
+            return redirect(url_for('user_bp.messages'))
 
     return render_template("user/message.html", form=form)
     

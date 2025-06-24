@@ -5,7 +5,7 @@ from flask import Blueprint, abort
 from flask_security import permissions_required
 from bcource import db, menu_structure
 from flask_security import roles_required, current_user
-from bcource.helpers import admin_has_role, get_url
+from bcource.helpers import admin_has_role, get_url, has_trainer_role
 from bcource.training.helper import make_table_header
 from bcource.models import Training, Practice, TrainingEvent, TrainingType, Trainer
 from bcource.training.training_forms import TrainingForm, EventForm, TrainingDeleteForm
@@ -25,9 +25,6 @@ training_bp = Blueprint(
     static_folder='static',
     static_url_path='static'
 )
-
-def has_trainer_role():
-    admin_has_role(["trainer"])
 
 training_bp.before_request(has_trainer_role)
 

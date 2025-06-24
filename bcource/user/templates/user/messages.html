@@ -86,12 +86,12 @@
  {% if message_selected %}
   <span><h5 class="mb-0">From: {{ message_selected.envelop_from }}</h6></span>
   <span class="mb-0">Date: <small>{{ db_datetime_str(message_selected.created_date) }}</small></span>
-  <span class="mb-0">Subject: <small>{{ message_selected.subject | safe}}</small></span>
+  <span class="mb-0">Subject: <small>{{ message_selected.subject | bcourse_safe}}</small></span>
   <span class="mb-0">To: <small>{{ current_user }}</small></span>
   
   </div>
   <div class="row pt-3">
-    <span>{{ message_selected.body | safe }}</span>
+    <span>{{ message_selected.body | bcourse_safe }}</span>
   </div>
   {% endif %}
 

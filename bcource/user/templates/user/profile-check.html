@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="row">
 	<div class="col-12 justify-content-md-center">
 		<h4 class="text-center">Profile Check</h4>
@@ -20,7 +19,15 @@
 		</div>
 		{%- endfor -%}
 	</div>
-	<div class="col-4 justify-content-md-center"></div>
+     </div>
+<div class="row justify-content-md-center">
+	<div class="col-5 ">
+
+    {% if error_msg %}
+        <div><br><br>{{ get_tag('no_active_status_no_profile') | safe       }}
+        {% endif %}
+
+     </div></div>
 </div>
 
 {% endblock %}
