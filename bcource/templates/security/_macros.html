@@ -51,7 +51,7 @@
   <div class="row mb-3" {{ field_id(field, 'ctr') }}>{{ field(**kwargs)|safe }}</div>
 {% endmacro %}
 {% macro render_field_errors(field) %}
-  <div class="row mb-3" {{ field_id(field, 'ctr') }}>
+  <div class="row" {{ field_id(field, 'ctr') }}>
     {% if field and field.errors %}
       <ul>
         {% for error in field.errors %}<li class="fs-error-msg">{{ error }}</li>{% endfor %}
