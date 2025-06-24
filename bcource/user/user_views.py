@@ -138,7 +138,7 @@ def message():
             reply_message = f'On {date_tz.astimezone().strftime("%c %Z")}, {user_message_association.message.envelop_from} wrote: {user_message_association.message.body}'
             
             form.body.data = reply_message
-            print (user_message_association.message.envelop_from)
+
             form.envelop_tos.data = [f"{user_message_association.message.envelop_from.id}"]
             form.envelop_tos.choices = [(user_message_association.message.envelop_from.id,user_message_association.message.envelop_from.fullname)]
             
@@ -156,7 +156,6 @@ def message():
             form.envelop_tos.choices = form.envelop_tos.data
 
         
-    print (form.envelop_tos.data)
     if form.validate_on_submit():
         envelop_tos = User().query.filter(User.id.in_(form.envelop_tos.data)).all()
         if not envelop_tos:
