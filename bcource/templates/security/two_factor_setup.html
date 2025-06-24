@@ -24,17 +24,41 @@
  render_field_no_label, render_field_errors, render_form_errors, render_csrf, render_submit %}
 
 {% block content %}
+    <div class="row justify-content-md-center">
+     <div class="col-lg-6">
   {% include "security/_messages.html" %}
-  <h1>{{ _fsdomain("Two-Factor authentication adds an extra layer of security to your account") }}</h1>
-  <h3>{{ _fsdomain("In addition to your username and password, you'll need to use a code.") }}</h3>
+  <div class="h2 text-center">{{ _fsdomain("Add two-Factor authentication adds an extra layer of security to your account") }}</div>
+{% if primary_method != "none" %}
+  <span class="fw-bold col-lg-6 " >{{ _fsdomain("Two factor authentication is enabled on your account.") }}</span>
+  {% else %}
+  <div class="text-center">{{ _fsdomain("In addition to your username and password, you'll need to use a code which is send to your email address") }}</div>
+{% endif %}
+
+
   <form action="{{ url_for_security('two_factor_setup') }}" method="post" name="two_factor_setup_form">
     {{ two_factor_setup_form.hidden_tag() }}
     {{ render_form_errors(two_factor_setup_form) }}
+    {% if primary_method != "none" %}
     <div class="fs-div">{{ _fsdomain("Currently setup two-factor method: %(method)s", method=primary_method) }}</div>
     <hr class="fs-gap">
-    {% for subfield in two_factor_setup_form.setup %}
-      {% if subfield.data in choices %}{{ render_field_with_errors(subfield) }}{% endif %}
-    {% endfor %}
+    {% endif %}
+    {# {% for subfield in two_factor_setup_form.setup %} #}
+      {% if primary_method != "none" %}
+          {#{{ render_field_with_errors(subfield) }}#}
+               <div class="col-lg-12" id="setup-0-ctr">
+                    <input class="form-control-item" id="setup-0" name="setup" type="checkbox" checked value="disable">
+                 <label for="colFormLabel" class="col-form-label"><label for="setup-0">Disable two-factor authentication</label> </label>
+                 </div>
+      {% endif %}
+      {% if primary_method == "none" %}
+          {# {{ render_field_with_errors(subfield) }} #}
+                   <div class="text-center h6"><br>Enable email two factor authentication.</div>
+          <input class="form-control" id="setup-1" name="setup" type="hidden" value="email">
+      {% endif %}
+
+    {# {% endfor %} #}
+          
+    
     <div class="fs-div">
       {% if "sms" in choices %}
         {{ render_field_with_errors(two_factor_setup_form.phone) }}
@@ -43,7 +67,11 @@
     <div class="fs-gap">
       {{ render_field_errors(two_factor_setup_form.setup) }}
       {{ render_field_errors(two_factor_setup_form.csrf_token) }}
-      {{ render_submit(two_factor_setup_form.submit) }}
+      {% if not chosen_method %}
+      <div class="row">
+           {{ render_submit(two_factor_setup_form.submit) }}
+           </div>
+      {% endif %}
     </div>
     {% if chosen_method=="authenticator" %}
       <hr>
@@ -59,11 +87,12 @@
       </div>
     {% endif %}
   </form>
-  {% if chosen_method %}
+  {% if  chosen_method %}
     {# Hide this when first setting up #}
     {# This is the fill in code part #}
     <hr class="fs-gap">
-    <div class="fs-important">{{ _fsdomain("Enter code to complete setup") }}</div>
+    <div class="fs-important fw-bold text-center">{{ _fsdomain("An code was sent to your email address") }}</div>
+    <div class="fs-important fw-bold text-center">{{ _fsdomain("Enter this code to complete setup") }}</div><br>
     {% if changing %}
       {% set faction = url_for_security('two_factor_setup_validate', token=state_token) %}
     {% else %}
@@ -95,4 +124,6 @@
   {% endif %}
 
   {% include "security/_menu.html" %}
+  </div>
+  </div>
 {% endblock content %}

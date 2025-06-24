@@ -1,21 +1,35 @@
 {% extends 'base.html' %}
-
-
 {% block nav %}
     {% include 'nav.html' %}
 {% endblock %}
 
 {% block content %}
-    <div class="container">
+    {% if not error_msg %}
+
+<div class="row justify-content-md-center">
+     <div class="col-5 ">
+
 {% if current_user.is_anonymous %}
-    <div>{{ get_tag('home') |safe    }}
+    <div>{{ get_tag('home_anonymous') |safe    }}
 {% else %}
+    
     <div>{{ get_tag('home') | safe       }}
 {% endif %}
+</div>    
     </div>
 
     </div>
     </div>
+    {% else %}
+<div class="row justify-content-md-center">
+     <div class="col-5">
+
+        <span class="text-start">{{ get_tag(error_msg) | safe       }}</span>
+        
+
+     </div>
+</div>
+{% endif %}
 
 
 {% endblock %}
