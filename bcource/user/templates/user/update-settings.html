@@ -39,7 +39,7 @@ $(window).on('load', function() {
 
     const settingModel = document.getElementById('settingModel')
     settingModel.addEventListener('hide.bs.modal', event => {
-    	window.location.href = document.getElementById('url').value
+    	setTimeout(function(){window.location.href = document.getElementById('url').value;},2);
     })
 });
 </script>
