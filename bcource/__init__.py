@@ -144,7 +144,7 @@ def create_app():
         
         
         
-        main_menu = menu_structure.add_menu('Privacy')
+        main_menu = menu_structure.add_menu('Privacy & Terms and Conditions')
         main_menu.add_menu('Privacy Policy', 'home_bp.privacy')
         main_menu.add_menu('Terms and Conditions', 'home_bp.tandc')
 
