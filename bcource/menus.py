@@ -2,19 +2,20 @@ from collections import OrderedDict
 
 
 class Menu(object):
-    def __init__(self,name, url=None, role=None, parent=None):
+    def __init__(self,name, url=None, role=None, parent=None, css=""):
         
         self.sub_menus = OrderedDict()
         self.urls = {}
         self.name = name
         self.url = url
         self.role = role
+        self.css = css
         self._parent = parent
         
-    def add_menu(self, name, url=None, role=None):
+    def add_menu(self, name, url=None, role=None, css=""):
 
         if not self.sub_menus.get(name):
-            self.sub_menus[name] = Menu(name=name, url=url, role=role, parent=self)
+            self.sub_menus[name] = Menu(name=name, url=url, role=role, parent=self, css=css)
                     
             self.fill_parent_urls(url, self.sub_menus[name])
 
