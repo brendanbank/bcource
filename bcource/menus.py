@@ -58,20 +58,4 @@ class Menu(object):
         return f'<{self.__class__.__name__} name = "{self.name}" url = "{self.url}" role = "{self.role}" sub_menus = "{self.sub_menus}">'
 
 
-if __name__ == "__main__":
-    menu_structure = Menu('root')
-    main_menu = menu_structure.add_menu('t-admin', role='trainer')
-    main_menu.add_menu('Training Administration', 'training_bp.index', role='trainer')
-    main_menu = menu_structure.add_menu('t-admin', role='trainer')
-    main_menu.add_menu('Student Administration', 'student_bp.index', role='trainer')
-    
-    # print (menu_structure)
-    # print (main_menu)
-    # print (main_menu.sub_menus)
-    #
-    for i in menu_structure:
-        print (i.name)
-        for y in i:
-            print (y.name)
-    
     

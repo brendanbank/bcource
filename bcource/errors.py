@@ -40,7 +40,6 @@ def not_authorized(error):
         msg = 'Please sign in first!'
         # resp = make_response(render_template('errors/403.html'), 403)
         flash(msg, 'error')
-        print (vars(request))
         return redirect (url_for_security('login', next=request.url))
         
         

@@ -93,7 +93,6 @@ def training_query(filters, user,search_on_id=None):
 def student_training(id):
 
     clear = request.args.getlist('submit_id')
-    print (request.args)
 
     if clear and clear[0]=='clear':
         return redirect(url_for('students_bp.student_training', id=id, show=request.args.getlist('show'), url=get_url()))
@@ -119,7 +118,6 @@ def student_training(id):
                         Practice.shortname==Practice.default_row().shortname)
                         ).all()
                         
-    print (url)
     return render_template("students/student-training.html", training=training_query(filters,user,search_on_id), 
                            trainingtypes=traingingtypes, 
                            filters=filters, 
