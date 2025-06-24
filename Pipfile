@@ -24,6 +24,7 @@ icalendar = "*"
 beautifulsoup4 = "*"
 phonenumbers = "*"
 flask-mobility = "*"
+nh3 = "*"
 
 [dev-packages]
 
