@@ -37,9 +37,12 @@ def home(error_msg=None):
         
     validators = UserProfileChecks()
     if not validators.validate():
+        if not error_msg:
+            error_msg = 'no_profile_complete'
+            
         for validator in validators:
             if not validator.status:
-                return render_template("user/profile-check.html", error_msg=error_msg, validator=validators)
+                return render_template("home/index.html", error_msg=error_msg, validator=validators)
     else:
         if not current_user.usersettings.registration_complete:
             current_user.usersettings.registration_complete = datetime.now(timezone.utc)
@@ -56,7 +59,7 @@ def home(error_msg=None):
             msg = bmsg.EmailStudentApplicationToBeReviewed(envelop_to=current_user,
                                      user=current_user).send(),
 
-    return render_template("home/index.html", error_msg=error_msg)
+    return render_template("home/index.html", validator=validators, error_msg=error_msg)
 
 @home_bp.route('/ckeditor', methods=['GET'])
 @auth_required()
