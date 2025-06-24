@@ -13,9 +13,10 @@ from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemySessionUserDatastore, roles_required, current_user, hash_password
 from flask_moment import Moment
 from bcource.menus import Menu
-from bcource.helpers import MyFsModels, admin_has_role, db_datetime, db_datetime_str, format_phone_number, format_email
+from bcource.helpers import MyFsModels, admin_has_role, db_datetime, db_datetime_str, format_phone_number, format_email, nh3_save
 from bcource.helpers import config_value as cv
 from flask_mobility import Mobility
+
 class Base(DeclarativeBase):
     # __abstract__ = True
     def to_dict(self):
@@ -95,8 +96,10 @@ def create_app():
     
     app.jinja_env.filters.update(format_phone_number=format_phone_number)
     app.jinja_env.filters.update(format_email=format_email)
+    app.jinja_env.filters.update(bcourse_safe=nh3_save)
     
     
+
     
     
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
@@ -128,6 +131,16 @@ def create_app():
         app.register_blueprint(scheduler.scheduler_bp)   
              
         app.before_request(bcource.admin.authorize_user)
+        
+        from bcource.errors import HTTPExceptionMustHaveTwoFactorEnabled, handle_no_2fa
+        from bcource.errors import HTTPExceptionStudentNotActive, student_not_actieve
+        
+        app.register_error_handler(HTTPExceptionMustHaveTwoFactorEnabled, handle_no_2fa)
+        app.register_error_handler(HTTPExceptionStudentNotActive, student_not_actieve)
+        
+        
+        
+        
         
         main_menu = menu_structure.add_menu('Privacy')
         main_menu.add_menu('Privacy Policy', 'home_bp.privacy')

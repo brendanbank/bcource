@@ -16,6 +16,7 @@ import pytz
 from sqlalchemy import or_
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy import orm
+import nh3
 
 from uuid import UUID, uuid4
 
@@ -575,7 +576,8 @@ class Message(db.Model):
         
         message = cls(envelop_from_id=envelop_from.id,
                       subject=subject, 
-                      body=body)
+                      body=nh3.clean(body))
+                      # body=body)
         
         if in_reply_to:
             message.in_reply_to = in_reply_to

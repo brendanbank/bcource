@@ -1,6 +1,6 @@
 from flask_security.models.sqla import FsModels
 from sqlalchemy import ForeignKey, Table, Column
-from flask import current_app as app
+from flask import current_app as app, flash
 from flask_admin.contrib.sqla import ModelView
 from flask_security import current_user
 from flask import url_for, current_app, request, abort, redirect
@@ -11,6 +11,19 @@ import string
 import secrets
 import phonenumbers
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
+from flask_babel import _
+from flask_babel import lazy_gettext as _l
+import nh3
+from jinja2.filters import do_mark_safe
+
+def has_trainer_role():
+    admin_has_role(["trainer"])
+    if not current_user.tf_primary_method:
+        from bcource.errors import HTTPExceptionMustHaveTwoFactorEnabled
+        raise(HTTPExceptionMustHaveTwoFactorEnabled())
+    
+def nh3_save(txt):
+    return do_mark_safe(nh3.clean(txt))
 
 def add_url_argument(url, key, value):
     parsed_url = urlparse(url)

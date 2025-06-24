@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, abort, redirect, url_for, flash, request, jsonify
 from flask_security import current_user, naive_utcnow
 from flask import current_app as app
-from bcource.helpers import admin_has_role
+from bcource.helpers import admin_has_role, has_trainer_role
+
 from bcource import menu_structure, db
 from bcource.models import (Student, StudentStatus, StudentType, User, Practice, 
                             Role, Trainer, UserMessageAssociation, UserSettings, TrainingType, Training, TrainingEnroll, TrainingEvent)
@@ -11,13 +12,13 @@ from sqlalchemy import or_, and_, not_
 import bcource.messages as bmsg 
 from datetime import datetime 
 import uuid, pytz
-from flask_babel import lazy_gettext as _l
-from flask_babel import _
 
 from sqlalchemy.orm import joinedload
 from bcource.students.common import deroll_common, enroll_common
 from bcource.training.training_forms import TrainingDerollForm, TrainingEnrollForm
 from bcource.filters import Filters
+from flask_babel import lazy_gettext as _l
+from flask_babel import _
 
 # Blueprint Configuration
 students_bp = Blueprint(
@@ -27,8 +28,6 @@ students_bp = Blueprint(
     static_folder='static'
 )
 
-def has_trainer_role():
-    admin_has_role(["trainer"])
 
 students_bp.before_request(has_trainer_role)
 

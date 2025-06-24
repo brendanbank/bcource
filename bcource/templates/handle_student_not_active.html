@@ -1,5 +1,5 @@
-
 {% extends 'base.html' %}
+
 
 {% block nav %}
     {% include 'nav.html' %}
@@ -7,7 +7,9 @@
 
 {% block content %}
     <div class="container">
-    <div>{{ get_tag('Cancellation Policy') | safe   }}
+    <div>{{ get_tag('no_active_status') | safe }}
     </div>
+
     </div>
+
 {% endblock %}

@@ -13,7 +13,11 @@ def accessible_as_admin(role_name=current_app.config['BCOURSE_SUPER_USER_ROLE'])
         role = Role(name=role_name)
         db.session.add(role)
         db.session.commit()
-        
+
+    if not current_user.tf_primary_method:
+        from bcource.errors import HTTPExceptionMustHaveTwoFactorEnabled
+        raise(HTTPExceptionMustHaveTwoFactorEnabled())
+
     return (
         current_user.is_active
         and current_user.is_authenticated

@@ -29,7 +29,7 @@
 
      <div class="p-2">
           <div class="row">
-          {{ get_tag('ENROLL_TO_TRAINING_WAITLIST') | safe }}
+          {{ get_tag('ENROLL_TO_TRAINING_WAITLIST') | bcourse_safe }}
           </div>
      </div>
 {% endif %}
@@ -63,7 +63,7 @@
 
       </div>
       <div class="modal-body">
-        {{ get_tag('Cancellation Policy') |safe   }}
+        {{ get_tag('Cancellation Policy') |bcourse_safe   }}
       </div>
       <div class="modal-footer">
           <button class="btn btn-primary" onclick="this.blur();" data-bs-target="#EnroleModal" data-bs-toggle="modal">Close</button>
@@ -79,7 +79,7 @@
         <h1 class="modal-title fs-5" id="TandCIDLabel">{{_('Terms and Conditions') }}</h1>
       </div>
       <div class="modal-body">
-        {{ get_tag('tandc') |safe   }}
+        {{ get_tag('tandc') |bcourse_safe   }}
       </div>
       <div class="modal-footer">
           <button class="btn btn-primary" onclick="this.blur();" data-bs-target="#EnroleModal" data-bs-toggle="modal">Close</button>

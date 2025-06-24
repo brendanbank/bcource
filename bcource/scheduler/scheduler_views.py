@@ -34,9 +34,12 @@ def has_student_role():
                         ).first()
                         
     if not q or not q.studentstatus or  q.studentstatus.name != "active":
-        flash(_("Student does not have an active status!"), 'error')
-        flash(_("Please wait for the the Student Administrators to set status changed to active."), 'error')
-        abort(403)
+        # flash(_("Student does not have an active status!"), 'error')
+        # flash(_("Please wait for the the Student Administrators to set status changed to active."), 'error')
+        # abort(403)
+        from bcource.errors import HTTPExceptionStudentNotActive
+
+        raise (HTTPExceptionStudentNotActive())
         
 
 scheduler_bp.before_request(has_student_role)
