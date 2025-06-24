@@ -140,11 +140,7 @@ def create_app():
         app.register_error_handler(HTTPExceptionStudentNotActive, student_not_actieve)
         app.register_error_handler(HTTPExceptionProfileInComplete, student_profile_incomplete)
         
-        
-        
-        
-        
-        main_menu = menu_structure.add_menu('Privacy & Terms and Conditions')
+        main_menu = menu_structure.add_menu('Terms', css="d-lg-none")
         main_menu.add_menu('Privacy Policy', 'home_bp.privacy')
         main_menu.add_menu('Terms and Conditions', 'home_bp.tandc')
 
