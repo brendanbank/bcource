@@ -1,7 +1,21 @@
   <div class="container">
      <div class="row">
-      <div class="col small text-center">
+     <div class="{{hide_mobile}} col-4 small text-start"><a class="link-light link-offset-2 link-underline-opacity-0 link-underline-opacity-0-hover" href="{{url_for('home_bp.privacy')}}">Privacy</a></div>
+      <div class="{{hide_mobile}} col-4 small text-center">
         <p class="mb-0">&copy; 2025 Gnarst B.V. All rights reserved.</p>
       </div>
+      <div class="{{show_mobile}} col-12 small text-center">
+        <p class="mb-0">&copy; 2025 Gnarst B.V. All rights reserved.</p>
+      </div>
+     <div class="{{hide_mobile}} col-4 small text-end">
+     <a class="link-light link-offset-2 link-underline-opacity-0 link-underline-opacity-0-hover" href="{{url_for('home_bp.tandc')}}">Terms and Conditions</a></div>
     </div>
   </div>
+
+  
+  {#
+        main_menu = menu_structure.add_menu('Privacy & Terms and Conditions')
+        main_menu.add_menu('Privacy Policy', 'home_bp.privacy')
+        main_menu.add_menu('Terms and Conditions', 'home_bp.tandc')
+  
+  #}
