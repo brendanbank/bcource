@@ -777,7 +777,6 @@ class Content(db.Model):
         if obj:
             return (content)
         
-        print (tag)
         return(render_template_string(content.text, **kwargs))
     
     def update(self):

@@ -27,9 +27,6 @@ def enroll_from_waitlist(enrollment: TrainingEnroll):
         
     flash(_("You have successfully enrolled into training %(trainingname)s!", trainingname=enrollment.training.name))
 
-
-    print (enrollment)
-
 def enroll_common(training, user):
     enrolled_user = training.enrolled(user)
     if enrolled_user:

@@ -1,6 +1,5 @@
 <!doctype html>
-{% autoescape true %}
-
+{% autoescape true -%}
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -11,36 +10,37 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons.min.css')}}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css">
-    {% block css_content %}{% endblock %}
-    
+    <!-- css_content -->
+    {% block css_content %}{% endblock -%}
     <link rel="stylesheet" href="/static/local.css">
 	<link href="{{ url_for('static', filename='select2.min.css')}}" rel="stylesheet" />
-    {% block js_content %}{% endblock %}
-
+     <!-- js_content -->
+    {% block js_content %}{% endblock -%}
   </head>
   <body class="d-flex flex-column vh-100">
      <header>
-    {% include 'nav.html' %}
+     <!-- nav -->
+    {%- include 'nav.html' %}
     </header>
     <main class="flex-shrink-0">
     <div class="container justify-content-center my-3">
-    {% include 'alerts.html' %}
-    {% block content %}{% endblock %}
+    <!-- alerts -->
+    {% include 'alerts.html' -%}
+    <!-- content -->
+    {%- block content %}{% endblock -%}
 	</div>
 	</main>
      <footer class="mt-auto text-white bg-dark py-3">
-  {% include 'footer.html' %}
+  {% include 'footer.html' -%}
      </footer>
-     
   <!--  Javascript -->  
     <script src="{{ url_for('static', filename='bootstrap.bundle.min.js')}}"></script>
     <script src="{{ url_for('static', filename='jquery-3.7.1.min.js')}}"></script>
     <script src="{{ url_for('static', filename='select2.min.js')}}"></script>
-
-
-{% block js %}
-{% endblock %}
-
+  <!--  js -->  
+{% block js -%}
+{% endblock -%}
+{#
     <script>
     const practiceSelector = jQuery('#practice_selector')
     practiceSelector.on('change', function() {
@@ -65,10 +65,9 @@
     </script>
 
      <script src="/static/local.js"></script>
-
+-#}
   </body>
-{% endautoescape %}
-     
+{% endautoescape -%}
 </html>
 
 	

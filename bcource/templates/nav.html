@@ -10,30 +10,25 @@
 		</button>
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
 			<ul class="navbar-nav bg-dark me-auto mb-2 mb-lg-0" data-bs-theme="dark">
-<!--                <li class="nav-item"><a class="nav-link" aria-current="page"
-                         href="{{url_for('home_bp.home')}}">Home</a></li>
- -->               
-                {% for menu in menu_structure %}
+                {%- for menu in menu_structure -%}
                 {% if current_user.has_role(menu.role) or menu.role == None -%}
 				<li class="nav-item dropdown">
-				
 				<a class="nav-link dropdown-toggle {% if menu.active(request.endpoint) %} active{% endif %}" href="#" id="navbarDropdown"
 					role="button" data-bs-toggle="dropdown" aria-expanded="false">
 						{{ menu.name }} 
 				</a>
 					<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                         {% for sub_menu in menu %}
+                         {% for sub_menu in menu -%}
 						<li><a class="dropdown-item {% if sub_menu.active(request.endpoint) %} active bg-dark{% endif %}"
 							href="{{url_for(sub_menu.url)}}">{{ sub_menu.name }}</a></li>
-                         {% endfor %}
+                         {% endfor -%}
 					</ul>
 				</li>
-               {% endif %}
-               {% endfor %}
+               {% endif -%}
+               {% endfor -%}
                
                {% if not current_user.is_anonymous and current_user.accessible_by_permission('admin-interface') -%}
 				<li class="nav-item dropdown"> 
-				
 				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
 					role="button" data-bs-toggle="dropdown" aria-expanded="false">
 						Admin 
@@ -43,17 +38,14 @@
 							href="{{url_for('admin.index')}}">Database Admin</a></li>
 					</ul>
 				</li>
-               
-			{% else %}
+			{%- else -%}
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 				<li class="nav-item dropdown"></li>
 			</ul>
 			{% endif -%}
                </ul>
-               
-               {%- if _fs_is_user_authenticated(current_user) %}
-               
-      
+               {% if _fs_is_user_authenticated(current_user) -%}
+      {#
 <!-- <div id="practiceheader" class="pe-2">
 <span>{{_("Practice")}}:</span>
 <select id="practice_selector" class="practice_selector bg-dark form-control-sm w-70" name="practice_selector"
@@ -65,30 +57,25 @@
 </select>
 </div>
  -->
- 
-<a href="{{ url_for('user_bp.messages') }}" class="position-relative me-2">
-     <svg id="mailicon" class="ms-1" width="30" height="30" viewBox="-10 -10 90 70" xmlns="http://www.w3.org/2000/svg" 
-          fill="none" stroke="#9b9d9e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-
-       <!-- Envelope Body -->
-       <rect x="0" y="0" width="70" height="40" fill="none"/>
-       
-       <!-- Envelope Flap -->
-       <polyline points="0,0 35,25 70,0" fill="none"/>
-       
-     </svg>
-     {% if current_user.unread_messages %}
-     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 7pt;">
-                                   {{current_user.unread_messages}}
-         <span class="visually-hidden">unread messages</span>
-     </span>
-         {% endif %}
-</a>
+ #}
+               <a href="{{ url_for('user_bp.messages') }}" class="position-relative me-2">
+                    <svg id="mailicon" class="ms-1" width="30" height="30" viewBox="-10 -10 90 70" xmlns="http://www.w3.org/2000/svg" 
+                         fill="none" stroke="#9b9d9e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                      <!-- Envelope Body -->
+                      <rect x="0" y="0" width="70" height="40" fill="none"/>
+                      <!-- Envelope Flap -->
+                      <polyline points="0,0 35,25 70,0" fill="none"/>
+                    </svg>
+                    {%- if current_user.unread_messages %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 7pt;">
+                                                  {{current_user.unread_messages}}
+                        <span class="visually-hidden">unread messages</span>
+                    </span>
+                        {% endif -%}
+               </a>
                {% endif -%}
 
 			<ul class="navbar-nav">
-
-
 				<li class="nav-item dropdown"><a
 					class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
 					role="button" data-bs-toggle="dropdown" aria-expanded="false">
