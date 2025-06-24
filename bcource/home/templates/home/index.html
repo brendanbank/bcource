@@ -26,7 +26,7 @@
      </div></div>
 </div>
 
-{% if  not validator.validate() %}
+{% if not current_user.is_anonymous and not validator.validate() %}
 <div class="row">
      <div class="col-12 justify-content-md-center">
 
