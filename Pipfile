@@ -25,6 +25,7 @@ beautifulsoup4 = "*"
 phonenumbers = "*"
 flask-mobility = "*"
 nh3 = "*"
+flask-apscheduler = "*"
 
 [dev-packages]
 
