@@ -112,7 +112,7 @@ let editor = undefined;
 			width: "100%"
 		});
 	})
-
+	
 //	$('.select2-js').each(function( select_item ){
 //		select_item.select2({
 //	    templateResult: filterSelectedOptions
@@ -140,3 +140,4 @@ function safeConfirm(msg) {
 $(function () {
   $('[data-toggle="tooltip"]').tooltip()
 })
+
