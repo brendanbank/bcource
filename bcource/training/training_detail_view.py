@@ -102,7 +102,12 @@ def training_detail(id):
     
     if clear and clear[0]=='back':
         return redirect(get_url())
-    
+
+
+    if clear and clear[0]=='clear':
+        return redirect(url_for('training_bp.training_detail', id=id, show=request.args.getlist('show'), url=get_url()))
+
+
     
     deroll_form = TrainingDerollForm()
     training = Training().query.get(id)
