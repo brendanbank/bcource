@@ -122,8 +122,8 @@ def orphan_users():
 def index():
     
     clear = request.args.getlist('submit_id')
-    if clear and clear[0]=='back':
-        return redirect(get_url())
+    if clear and clear[0]=='clear':
+        return redirect(url_for('students_bp.index', show=request.args.getlist('show')))
 
     delete_form = UserDeleteForm()
     search_on_id = request.args.get('id')
