@@ -105,6 +105,9 @@ class Config:
     BCOURSE_SYSTEM_LASTNAME = environ.get("BCOURSE_SYSTEM_LASTNAME", 'Reservation System')
 
     SECURITY_AUTHORIZE_REQUEST = {'admin.index': [ BCOURSE_SUPER_USER_ROLE, 'cms-admin' ]}
+    
+    SCHEDULER_API_ENABLED: True
+    
 
 settings = Config
 

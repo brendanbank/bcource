@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f05bd9186a75dba23f8a1a939ab98d114ce2f3ff8f9b2e5b1a90a0effb585a25"
+            "sha256": "d2186979996c4f23a7ffdacc72987ddd7c529d19054dd2c69ab61d69af0b12d5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -24,6 +24,14 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==1.15.1"
+        },
+        "apscheduler": {
+            "hashes": [
+                "sha256:4c622d250b0955a65d5d0eb91c33e6d43fd879834bf541e0a18661ae60460133",
+                "sha256:fc134ca32e50f5eadcc4938e3a4545ab19131435e851abb40b34d63d5141c6da"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==3.11.0"
         },
         "argon2-cffi": {
             "hashes": [
@@ -395,6 +403,14 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==3.1.1"
+        },
+        "flask-apscheduler": {
+            "hashes": [
+                "sha256:b929846f026fb339b76360b0e4fc75da78b75c6d08625715bd0d37949bd607da"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==1.13.1"
         },
         "flask-babel": {
             "hashes": [
@@ -827,6 +843,14 @@
             ],
             "markers": "python_version >= '2'",
             "version": "==2025.2"
+        },
+        "tzlocal": {
+            "hashes": [
+                "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd",
+                "sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d"
+            ],
+            "markers": "python_version >= '3.9'",
+            "version": "==5.3.1"
         },
         "urllib3": {
             "hashes": [

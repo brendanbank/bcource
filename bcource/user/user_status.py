@@ -69,17 +69,17 @@ class UserProfileChecks(PolicyBase):
                                 bp_url='user_bp.update',
                                 link_class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover")
 
-    personal_details = HasData(_l("Personal Details missing"), variables=['gender', 'birthday'],
-                                data_obj = current_user,
-                                bp_url='user_bp.update',
-                                link_class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover")
+    # personal_details = HasData(_l("Personal Details missing"), variables=['gender', 'birthday'],
+    #                             data_obj = current_user,
+    #                             bp_url='user_bp.update',
+    #                             link_class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover")
 
-    emergency_contact = HasData(_l("Student has Emergency Contact"), variables=['usersettings.emergency_contact'],
-                                data_obj = current_user,
-                                bp_url='user_bp.settings',
-                                msg_fail=_l("Student has no Emergency Contact!"),
-    
-                                link_class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover")
+    # emergency_contact = HasData(_l("Student has Emergency Contact"), variables=['usersettings.emergency_contact'],
+    #                             data_obj = current_user,
+    #                             bp_url='user_bp.settings',
+    #                             msg_fail=_l("Student has no Emergency Contact!"),
+    #
+    #                             link_class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover")
     
 
     

@@ -75,10 +75,10 @@ class ContentModelView(CkModelView, AuthModelView):
     column_searchable_list = ['tag']
 
     def get_query(self):
-        return self.session.query(self.model).filter(not_(self.model.tag.regexp_match('\_\d+$')))
+        return self.session.query(self.model).filter(not_(self.model.tag.regexp_match(r'\_\d+$')))
     
     def get_count_query(self):
-        return self.session.query(func.count('*')).filter(not_(self.model.tag.regexp_match('\_\d+$')))   
+        return self.session.query(func.count('*')).filter(not_(self.model.tag.regexp_match(r'\_\d+$')))   
 
 table_admin.add_view(ContentModelView(Content, db.session, ckfields=["text"])) #@UndefinedVariable
 

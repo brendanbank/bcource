@@ -16,6 +16,7 @@ from bcource.menus import Menu
 from bcource.helpers import MyFsModels, admin_has_role, db_datetime, db_datetime_str, format_phone_number, format_email, nh3_save
 from bcource.helpers import config_value as cv
 from flask_mobility import Mobility
+from flask_apscheduler import APScheduler
 
 class Base(DeclarativeBase):
     # __abstract__ = True
@@ -40,6 +41,7 @@ menu_structure = Menu('root')
 
 moment = Moment()
 mobility = Mobility()
+app_scheduler = APScheduler()
 
 db = SQLAlchemy(model_class=Base)
 
@@ -67,12 +69,10 @@ def create_app():
     db.app = app
     
     db.init_app(app)
-    
     mobility.init_app(app)
-
+    app_scheduler.init_app(app)
     babel.init_app(app)
     csrf.init_app(app)
-
     table_admin.init_app(app)
     
     if app.config.get('ENVIRONMENT') == "DEVELOPMENT":
@@ -145,7 +145,10 @@ def create_app():
         main_menu.add_menu('Terms and Conditions', 'home_bp.tandc')
 
         # db.create_all()  # Create sql tables for our data models
-
+        
+        import bcource.app_scheduler_tasks
+        app_scheduler.start()
+        
         def get_locale():
             return request.accept_languages.best_match(cv('LANGUAGES'))
         
