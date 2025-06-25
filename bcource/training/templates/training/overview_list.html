@@ -43,9 +43,9 @@
 {% block data_rows %}
           
           {% for training in trainings -%}
-               <div class="{% if training.active %}highlight{% endif %} {% if training.active %}{{ loop.cycle('evendiv', 'odddiv')}}{% else %}div_red{% endif %} p-0 m-0" 
+               <div class="{% if training.active %}highlight{%else%}highlight_red{% endif %} {% if training.active %}{{ loop.cycle('evendiv', 'odddiv')}}{% else %}div_red{% endif %} p-0 m-0" 
                     >
-               <div class="row {% if  training.active %}highlight{% endif %}" {% if not training.active %}
+               <div class="row {% if training.active %}highlight{%else%}highlight_red{% endif %}" {% if not training.active %}
                     data-toggle="tooltip" data-bs-placement="top" title="{{_('This training is inactive and cannot be booked.') }}"
                                                             {% endif %}>
                
