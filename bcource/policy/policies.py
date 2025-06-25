@@ -1,5 +1,4 @@
 from bcource.policy.base import PolicyBase
-from bcource.models import Practice
 
 class PolicyRepo():
     def __init__(self, *args, **kwargs):

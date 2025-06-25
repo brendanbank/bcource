@@ -48,6 +48,7 @@ db = SQLAlchemy(model_class=Base)
 MyFsModels.set_db_info(base_model=Base)
 
 table_admin = Admin(name=__name__, template_mode='bootstrap4', base_template='admin/mybase.html')
+
 security = Security() 
 
 mail = Mail()
