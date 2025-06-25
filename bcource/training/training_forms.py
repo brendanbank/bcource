@@ -81,7 +81,7 @@ class TrainingForm(FlaskForm):
 
     
     active = MyBooleanField(
-        _l('Open for Signup'),
+        _l('Open for bookings.'),
         divclass = "col-md-4 mt-2 pt-4 ",
         render_kw={"class": "form-check-input"})
 
