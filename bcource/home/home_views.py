@@ -7,6 +7,7 @@ import flask_security.decorators as fsd
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
 from bcource import db, menu_structure, security
 from datetime import datetime, timezone
+from bcource.models import UserSettings
 
 import bcource.messages as bmsg 
 # Blueprint Configuration
@@ -44,6 +45,11 @@ def home(error_msg=None):
             if not validator.status:
                 return render_template("home/index.html", error_msg=error_msg, validator=validators)
     else:
+        if not current_user.usersettings:
+            user_setting = UserSettings()
+            current_user.usersettings = user_setting
+            db.session.commit()
+        
         if not current_user.usersettings.registration_complete:
             current_user.usersettings.registration_complete = datetime.now(timezone.utc)
             db.session.commit()
