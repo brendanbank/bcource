@@ -27,11 +27,11 @@
     <div class="row justify-content-md-center">
      <div class="col-lg-6">
   {% include "security/_messages.html" %}
-  <div class="h2 text-center">{{ _fsdomain("Add two-Factor authentication adds an extra layer of security to your account") }}</div>
+  <div class="h2 text-center">{{ _fsdomain("Adding two-Factor authentication adds an extra layer of security to your account") }}</div>
 {% if primary_method != "none" %}
   <span class="fw-bold col-lg-6 " >{{ _fsdomain("Two factor authentication is enabled on your account.") }}</span>
   {% else %}
-  <div class="text-center">{{ _fsdomain("In addition to your username and password, you'll need to use a code which is send to your email address") }}</div>
+  <div class="text-center">{{ _fsdomain("In addition to your email and password, you'll need to use a code which is sent to your email address") }}</div>
 {% endif %}
 
 
@@ -52,7 +52,7 @@
       {% endif %}
       {% if primary_method == "none" %}
           {# {{ render_field_with_errors(subfield) }} #}
-                   <div class="text-center h6"><br>Enable email two factor authentication.</div>
+                   <div class="text-center h6"><br>Enable two factor authentication.</div>
           <input class="form-control" id="setup-1" name="setup" type="hidden" value="email">
       {% endif %}
 
