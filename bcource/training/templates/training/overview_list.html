@@ -43,8 +43,11 @@
 {% block data_rows %}
           
           {% for training in trainings -%}
-               <div class="highlight {% if training.active %}{{ loop.cycle('evendiv', 'odddiv')}}{% else %}div_red{% endif %} p-0 m-0" >
-               <div class="row highlight" >
+               <div class="{% if training.active %}highlight{% endif %} {% if training.active %}{{ loop.cycle('evendiv', 'odddiv')}}{% else %}div_red{% endif %} p-0 m-0" 
+                    >
+               <div class="row {% if  training.active %}highlight{% endif %}" {% if not training.active %}
+                    data-toggle="tooltip" data-bs-placement="top" title="{{_('This training is inactive and cannot be booked.') }}"
+                                                            {% endif %}>
                
                <span class="{{show_mobile}} border-top border-dark-subtle"></span>
                
@@ -68,7 +71,9 @@
                                                             title="{{_('Edit Training') }}"></i>
                          <span class="mt-1 {{show_mobile}} fw-semibold small"> {{_("Edit Training") }} </span>
                      </a>
-                   <a class="icon-link link-body-emphasis" href="{{url_for('training_bp.delete', id=training.id)}}">
+                   <a class="icon-link link-body-emphasis" href="{{url_for('training_bp.delete', id=training.id)}}" 
+                                  data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Delete this Training') }}">
                                 <i class=" bi bi-trash-fill" 
                  onclick="return safeConfirm('{{_("Are you sure you want to delete this record?")}}');" title="Delete record"></i>
                          <span class="mt-1 {{show_mobile}} fw-semibold small"> {{_("Delete Training") }} </span>
@@ -95,7 +100,8 @@
           </div>
       </div>
           {% endfor %}
-          
+
+
 {% endblock %}
 
 {% block modals %}
