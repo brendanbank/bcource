@@ -28,7 +28,6 @@ students_bp = Blueprint(
     static_folder='static'
 )
 
-
 students_bp.before_request(has_trainer_role)
 
 main_menu = menu_structure.add_menu('Training Administration', role='trainer')
