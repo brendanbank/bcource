@@ -5,7 +5,7 @@
 		{%- for category, message in messages %}{% if category == "error" %}
 		{% set category = "danger" %}{% endif -%}
 		{%- if category == "message" %}{% set category = "success" %}{% endif -%}
-    <div id="alert_{{loop.index0}}" class="alert alert-{{ category }} alert-dismissible floating-alert-close show fade z-1" timeout="3000" role="alert">
+    <div id="alert_{{loop.index0}}" class="alert alert-{{ category }} alert-dismissible floating-alert-close show fade z-1" timeout="5000" role="alert">
         <div class="justify-content-md-center">{{ message | safe}}</div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
