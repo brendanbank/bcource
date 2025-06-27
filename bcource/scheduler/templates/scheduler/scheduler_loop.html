@@ -59,7 +59,7 @@
                                         <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to this training. ", who=who) }}</span>
                               </a>
                               {% else %}
-                              <span class="{{show_mobile}}">can_book_dict[training.id].message}
+                              <span class="{{show_mobile}}">{{can_book_dict[training.id].message}}
                                    <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
                                    data-placement="top" 
                                    data-bs-html="true"
