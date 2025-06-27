@@ -140,6 +140,7 @@ class TrainingEvent(db.Model):
     training_id: Mapped[int] = mapped_column(ForeignKey("training.id"), nullable=True)
 
     location_id: Mapped[int] = mapped_column(ForeignKey("location.id"))
+    
     location: Mapped["Location"] = relationship(backref="locations")
 
 
@@ -211,7 +212,7 @@ class TrainingEnroll(db.Model):
     status: Mapped[str] = mapped_column(String(256), nullable=False)
 
     student_id: Mapped[int] = mapped_column(ForeignKey("student.id"), primary_key=True)
-    student: Mapped["Student"] = relationship(backref=backref("trainingapplications"))
+    student: Mapped["Student"] = relationship(backref=backref("studentenrollments"))
 
     training_id: Mapped[int] = mapped_column(ForeignKey("training.id"), primary_key=True)
     training: Mapped["Training"] = relationship(backref=backref("trainingenrollments"))
@@ -251,11 +252,16 @@ class Training(db.Model):
         secondary=training_trainers_association, back_populates="trainings", 
     )
     
-    trainingevents: Mapped[List["TrainingEvent"]] = relationship(backref="training", cascade="all, delete")
+    trainingevents: Mapped[List["TrainingEvent"]] = relationship(backref="training", cascade="all, delete", order_by='TrainingEvent.start_time.asc()')
 
     def __init__(self):
         self._spots_enrolled = None
         self._spots_waitlist = None
+        self._spots_waitlist = None
+        self.student_allowed = {}
+        self._amount_enrolled = 0
+        self._user_enrollment = None
+        self.in_policy = []
 
     @orm.reconstructor
     def init_on_load(self):
@@ -264,6 +270,9 @@ class Training(db.Model):
         self.student_allowed = {}
         self._amount_enrolled = 0
         self._user_enrollment = None
+        self.in_policy = []
+        
+    
 
     def _cal_enrollments(self):
         if self._spots_enrolled == None:
@@ -308,6 +317,8 @@ class Training(db.Model):
         if e:
             self._user_enrollment = e
             self._user_status = e.status
+            
+        
 
     def __str__(self):
         return self.name
