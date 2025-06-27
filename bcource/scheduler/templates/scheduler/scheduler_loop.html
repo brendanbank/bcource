@@ -1,5 +1,5 @@
           {% for training in training -%}
-          {% if can_book_dict[training.id].can_book or admin%}
+          {% if training.in_policy.status or admin%}
                <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}} p-0 m-0">
 
            {%else%}
@@ -7,10 +7,10 @@
                      data-toggle="tooltip" 
                                    data-placement="top" 
                                    data-bs-html="true"
-                                   title='{{can_book_dict[training.id].message}}<br>'>
+                                   title='{{training.in_policy}}<br>'>
                 {% endif %}
      
-              <div class="row {% if can_book_dict[training.id].can_book or admin %}highlight{%else%}highlight_red{% endif %}">
+              <div class="row {% if training.in_policy.status or admin %}highlight{%else%}highlight_red{% endif %}">
                <span class="{{show_mobile}} border-top border-dark-subtle"></span>
               <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center">
                              <span class="{{show_mobile}} h1">{{ training.name }} <br></span>
@@ -50,7 +50,7 @@
                                    <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to the wait list of this training. ", who=who) }}</span>
                          </a>
                          {%- else -%}
-                              {% if can_book_dict[training.id].can_book %}
+                              {% if training.in_policy.status %}
                               <a class="icon-link link-body-emphasis"
                                    href="{{url_for("scheduler_bp.enroll", id=training.id)}}"
                               > <i class="mb-2 fs-5 bi bi-person-fill-add text-success" data-toggle="tooltip" 
@@ -59,7 +59,7 @@
                                         <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to this training. ", who=who) }}</span>
                               </a>
                               {% else %}
-                              <span class="{{show_mobile}}">{{can_book_dict[training.id].message}}
+                              <span class="{{show_mobile}}">{{training.in_policy}}
                                    <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
                                    data-placement="top" 
                                    data-bs-html="true"
@@ -133,7 +133,7 @@
                                                                     
                                                         {% elif training._user_status == 'waitlist' %}
                                                             <span class="fw-bold text-danger small">{{_('wait list') }}</span>
-                                                        {% elif not can_book_dict[training.id].can_book %}
+                                                        {% elif not training.in_policy.status %}
                                                             <span class="">
                                                                  <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
                                                                  data-placement="top" 
