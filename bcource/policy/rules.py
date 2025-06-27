@@ -70,7 +70,6 @@ class ValidationRule(object):
         
         self._validator = kwargs.get('_validator', None)
                 
-        self.init_variables()
         
     def __new__(cls, *args, **kwargs):
         if "_from_base" in kwargs:
@@ -102,7 +101,7 @@ class ValidationRule(object):
             msg = self.msg_fail or self.name
             icon = self._icon(icon_class=self.fail_icon)
                     
-        msg = escape(msg)
+        #msg = escape(msg)
         
         if not self.status:
             if kwargs.get('link_href'):
@@ -111,7 +110,7 @@ class ValidationRule(object):
             if kwargs.get('link_href'):
                 icon = self._url(icon, **kwargs)
             
-        return Markup(f'{self._span(msg, icon , **kwargs)}')
+        return Markup(f'{self._span(icon, msg , **kwargs)}')
 
     def _icon(self, **kwargs):
         return f'<i {html_params(**self.get_render_kw(kwargs,"icon_"))}></i>'
@@ -153,21 +152,8 @@ class ValidationRule(object):
         
     def __repr__(self):
         return f"<{self.__class__.__name__}, {self.args}, {self.kwargs})>"
-        
-    def init_variables(self):
-        self.variables = list()
-        
-        _variables = self.kwargs.get("variables")
-        if not _variables:
-            raise ValueError(f'variables is missing from {self.__class__.__name__} for {self.name}')
-        
-        if type(_variables) == list:
-            self.variables = _variables
-        elif type(_variables) == str:
-            self.variables.append(str)
-            
+                    
     def validate(self):
-        
         raise NotImplementedError("validate should be implemented by subclass!")
     
     def _get_value(self, obj, variable=None):
@@ -217,11 +203,24 @@ class FriendlyNameRule(ValidationRule):
             self.msg_fail = self.friendly_name
         if not self.msg_pass:
             self.msg_pass =  self.friendly_name
-    
-        
 
+        self.init_variables()
+
+    def init_variables(self):
+        self.variables = list()
+        
+        _variables = self.kwargs.get("variables")
+        if not _variables:
+            raise ValueError(f'variables is missing from {self.__class__.__name__} for {self.name}')
+        
+        if type(_variables) == list:
+            self.variables = _variables
+        elif type(_variables) == str:
+            self.variables.append(str)
+    
     def __repr__(self):
         return f"<{self.__class__.__name__}, friendly_name: '{self.friendly_name}' msg_fail: '{self.msg_fail} msg_pass: '{self.msg_pass} variables: '{self.variables} {self.args}, {self.kwargs}')>"
+
 
 class HasData(FriendlyNameRule):
     

@@ -14,9 +14,10 @@ from bcource.students.common import deroll_common, enroll_common, enroll_from_wa
 from sqlalchemy.orm import joinedload
 
 from datetime import datetime
-import pytz
+import pytz, time
 from bcource.filters import Filters
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
+from bcource.students.student_policies import TrainingBookingPolicy, can_student_book_trainings
 
 # Blueprint Configuration
 scheduler_bp = Blueprint(
@@ -42,8 +43,6 @@ def has_student_role():
         from bcource.errors import HTTPExceptionProfileInComplete
         raise (HTTPExceptionProfileInComplete())
 
-    
-        
 
 scheduler_bp.before_request(has_student_role)
 
@@ -119,10 +118,26 @@ def training_query(filters, search_on_id=None, user=None):
                         )    
     
     trainings = q.join(TrainingEvent).order_by(TrainingEvent.start_time.asc()).all()
+    time_start = time.time()
+    training_types = []
     for t in trainings:
         t.fill_numbers(current_user)
-        
-    return trainings
+        # t.in_policy = TrainingBookingPolicy(training=t,user=current_user)
+        # t.in_policy.validate()
+        if not t.traningtype in training_types:
+            training_types.append(t.traningtype)
+
+    print (time.time() - time_start)
+    
+    time_start = time.time()
+    
+    can_book_dict = {}
+    for traningtype in training_types:
+        can_book_dict.update(can_student_book_trainings(current_user.student_from_practice, trainings, traningtype))
+    print (time.time() - time_start)
+    
+    
+    return trainings, can_book_dict
 
 
 @scheduler_bp.route('/training/cancelation-policy', methods=['GET'])
@@ -150,9 +165,11 @@ def mytraining():
     filters = make_filters(user=current_user).process_filters()
     filters.get_filter("my").get_item(current_user.id).checked = True
 
-    return render_template("scheduler/scheduler.html", training=training_query(filters, search_on_id=search_on_id, user=current_user),  
+    trainings, can_book_dict = training_query(filters, search_on_id=search_on_id, user=current_user)
+    return render_template("scheduler/scheduler.html", training=trainings,  
                            filters=filters, 
                            trainingtypes=traingingtypes, 
+                           can_book_dict=can_book_dict,
                            page_name=_l('My Training Schedule'),
                            deroll_form=deroll_form
                            )
@@ -177,9 +194,11 @@ def index():
                         ).all()
                         
     filters = make_filters(user=current_user).process_filters()
-
-    return render_template("scheduler/scheduler.html", training=training_query(filters, search_on_id=search_on_id, user=current_user),  
+    trainings, can_book_dict = training_query(filters, search_on_id=search_on_id, user=current_user)
+    
+    return render_template("scheduler/scheduler.html", training=trainings,  
                            filters=filters, 
+                           can_book_dict=can_book_dict,
                            trainingtypes=traingingtypes, 
                            page_name=_l('Training Schedule'),
                            deroll_form=deroll_form
@@ -243,6 +262,16 @@ def enroll(id):
     
     form = SchedulerTrainingEnrollForm()    
     url = get_url(form)
+    
+    policies = TrainingBookingPolicy(training=training,user=current_user)
+    
+    if not policies.validate():
+        for policy in policies:
+            if not policy:
+                flash (policy, "error")
+            return redirect(url)
+            
+        
     
     if form.validate_on_submit():
         redirect_url = enroll_common(training, current_user)  
