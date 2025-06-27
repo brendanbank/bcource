@@ -150,26 +150,30 @@ def can_student_book_trainings(student, trainings, training_type, time_window_du
             Training.id.in_(ids),
         # TrainingEvent.start_time > datetime.utcnow(), # only future trainings
         ).all()
-            
+
+    potential_trainings = Training().query.with_entities(Training.id, Training.name, TrainingEvent.start_time).join(TrainingEvent).join(TrainingType).filter(
+        Training.traningtype_id == training_type.id,
+            Training.id.in_(ids),
+        # TrainingEvent.start_time > datetime.utcnow(), # only future trainings
+        ).all()
+
+    
     results = {}
 
     for training in potential_trainings:
     #     # Assuming training object has a 'date' attribute or 'date' key
-    
+        
+        policy_obj = TrainingBookingPolicy(student.user, training)
+        
+        
         potential_date_obj = training.start_time
 
         # no bookings yet this training is already booked.
         if not existing_bookings_dates or potential_date_obj in existing_bookings_dates:
-            
-
-            results[training.id] = {
-                "can_book": True,
-                "message": f"This booking can be made without violating the limit."
-            }
+            policy_obj.book_window.status = policy_obj.status = True
+            policy_obj.book_window.msg_fail = ''
+            results[training.id] = policy_obj
             continue
-
-        
-        training_identifier = training.id # Or any unique identifier
                     
         # Create a mutable copy of existing bookings for modification
         temp_all_dates = list(existing_bookings_dates)
@@ -186,25 +190,26 @@ def can_student_book_trainings(student, trainings, training_type, time_window_du
         #
         # Store the result
         if not would_not_exceed:
-            results[training_identifier] = {
-                "can_book": False,
-                "message": _l(BOOK_WINDOW_VIOLATION_TXT, 
+            policy_obj.book_window.status = policy_obj.status = False
+            policy_obj.book_window.msg_fail = _l(BOOK_WINDOW_VIOLATION_TXT, 
                           time_window_duration=round(time_window_duration.total_seconds() / 3600 / 24),
                           trainingname=training.name ,
                           trainingtype=training_type.name)
-            }
+            
+            results[training.id] = policy_obj
+
         else:
-            results[training_identifier] = {
-                "can_book": True,
-                "message": f"This booking can be made without violating the limit. {training.id}"
-            }
+            policy_obj.book_window.status = policy_obj.status = True
+            policy_obj.book_window.msg_fail = ''
+            results[training.id] = policy_obj
 
         
         # IMPORTANT: Remove the temporarily added date before the next iteration
         # This restores existing_bookings_dates for the next check without re-fetching
         temp_all_dates.pop(insert_idx)
+        
+    return (results)
 
-    return results
 
 def _check_violation_around_index(sorted_dates, check_idx, max_bookings, time_window_days):
     """

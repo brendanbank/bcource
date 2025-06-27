@@ -261,7 +261,7 @@ class Training(db.Model):
         self.student_allowed = {}
         self._amount_enrolled = 0
         self._user_enrollment = None
-        self.in_policy = []
+        self.in_policy = None
 
     @orm.reconstructor
     def init_on_load(self):
@@ -270,7 +270,7 @@ class Training(db.Model):
         self.student_allowed = {}
         self._amount_enrolled = 0
         self._user_enrollment = None
-        self.in_policy = []
+        self.in_policy = None
         
     
 
