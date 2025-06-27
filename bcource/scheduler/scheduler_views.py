@@ -131,13 +131,16 @@ def training_query(filters, search_on_id=None, user=None):
     
     time_start = time.time()
     
-    can_book_dict = {}
     for traningtype in training_types:
-        can_book_dict.update(can_student_book_trainings(current_user.student_from_practice, trainings, traningtype))
+        results = can_student_book_trainings(current_user.student_from_practice, trainings, traningtype)
+        for training in trainings:
+            if training.id in results.keys():
+                training.in_policy = results[training.id]
+                
     print (time.time() - time_start)
     
     
-    return trainings, can_book_dict
+    return trainings
 
 
 @scheduler_bp.route('/training/cancelation-policy', methods=['GET'])
@@ -165,11 +168,10 @@ def mytraining():
     filters = make_filters(user=current_user).process_filters()
     filters.get_filter("my").get_item(current_user.id).checked = True
 
-    trainings, can_book_dict = training_query(filters, search_on_id=search_on_id, user=current_user)
+    trainings = training_query(filters, search_on_id=search_on_id, user=current_user)
     return render_template("scheduler/scheduler.html", training=trainings,  
                            filters=filters, 
                            trainingtypes=traingingtypes, 
-                           can_book_dict=can_book_dict,
                            page_name=_l('My Training Schedule'),
                            deroll_form=deroll_form
                            )
@@ -194,11 +196,10 @@ def index():
                         ).all()
                         
     filters = make_filters(user=current_user).process_filters()
-    trainings, can_book_dict = training_query(filters, search_on_id=search_on_id, user=current_user)
+    trainings = training_query(filters, search_on_id=search_on_id, user=current_user)
     
     return render_template("scheduler/scheduler.html", training=trainings,  
                            filters=filters, 
-                           can_book_dict=can_book_dict,
                            trainingtypes=traingingtypes, 
                            page_name=_l('Training Schedule'),
                            deroll_form=deroll_form

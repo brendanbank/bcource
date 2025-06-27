@@ -207,11 +207,11 @@ class EmailStudentDerolledInTraining(SendEmail):
 class EmailStudentStatusActive(SendEmail):
     pass
 
-class EmailStudentEnrolled(SendEmail):
+class EmailStudentEnrolled(SystemMessage):
     pass
 
 # message to trainers to notify that the student has derolled
-class EmailStudentDerolled(SendEmail):
+class EmailStudentDerolled(SystemMessage):
     pass
 
 class EmailStudentEnrolledInTrainingInviteAccepted(EmailStudentEnrolledInTraining):
