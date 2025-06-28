@@ -36,7 +36,7 @@
 
 {% block data_rows %}
 
-      {% for student in students -%}
+      {% for student in students_pagination.items -%}
       <div class=" {{ loop.cycle('evendiv', 'odddiv')}}">
               <div class="row highlight d-flex align-items-stretch">
               <span class="{{show_mobile}} border-top border-dark-subtle"></span>
@@ -113,6 +113,8 @@
           </div>
       </div>
           {% endfor %}
+          
+
 {% endblock %}
 
 {% block js %}
