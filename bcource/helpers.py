@@ -86,6 +86,8 @@ def get_url (form=None,default=None, back_button=False):
             form.url.data = url
         else:
             form.url.data=url_for(default)
+    if url == None:
+        url = url_for(default)
         
     return(url)
 

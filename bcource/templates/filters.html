@@ -72,6 +72,7 @@
                </div>
                </div>
                <input id="hidden_show" name="show" type="hidden" value="{{filters.show}}"> 
+               <input id="page" name="page" type="hidden" value="{{page}}"> 
 
                {% if return_url %}
                <input id="url" name="url" type="hidden" value="{{return_url}}">    
@@ -111,15 +112,37 @@
      <!-- block data_headers -->
           <div class="row border-bottom border-top pb-1" >
           {% block data_headers %}{% endblock %}
+          
+          
           </div>
      </div>
      <!-- block data_rows -->
           {% block data_rows %}{% endblock %}
 
+
+
 </div>
 </div>
 </div>
-{% block modals %}{% endblock %}
+{% if next_url or prev_url %}
+     <div class="row">
+     <div class="col-xl-12 text-xl-end small">{{ students_pagination.first }} - {{ students_pagination.last }} of {{ students_pagination.total }}
+
+          {% if prev_url %}
+               <a class="icon-link link-dark link-offset-2 link-underline-opacity-0" href="{{prev_url}}">
+                    
+                         <span><i class="bi bi-caret-left"></i>{{_("Previous")}}</span>
+               </a>
+
+               {% endif %} 
+          {% if next_url %}
+               <a class="icon-link link-dark link-offset-2 link-underline-opacity-0" href="{{next_url}}"><span></i>{{_("Next")}} <i class="bi bi-caret-right"></i></span></a>
+          {% endif %}
+      </div>
+      </div>
+{% endif %}
+{% block modals %}
+{% endblock %}
 
           {% endblock %}
 
