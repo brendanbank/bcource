@@ -1,13 +1,12 @@
 from flask import Blueprint, render_template, abort, redirect, url_for, flash, request, jsonify
 from flask_security import current_user, naive_utcnow
 from flask import current_app as app
-from bcource.helpers import admin_has_role, has_trainer_role
+from bcource.helpers import admin_has_role, has_trainer_role, get_url, add_url_argument
 
 from bcource import menu_structure, db
 from bcource.models import (Student, StudentStatus, StudentType, User, Practice, 
                             Role, Trainer, UserMessageAssociation, UserSettings, TrainingType, Training, TrainingEnroll, TrainingEvent)
 from bcource.students.student_forms import StudentForm, UserStudentForm, UserDeleteForm, UserDerollForm, UserBackForm
-from bcource.helpers import get_url
 from sqlalchemy import or_, and_, not_
 import bcource.messages as bmsg 
 from datetime import datetime 
@@ -86,14 +85,7 @@ def students_query(filters, search_on_id=None):
 
     q = q.join(User).join(Practice, Practice.id==Student.practice_id).filter(and_(
                         Practice.shortname==Practice.default_row().shortname)).order_by(User.first_name, User.last_name, User.email)
-    return (q.all())
-
-    if search_on_id:
-        q = Student().query.join(Practice, Practice.id==Student.practice_id).filter(and_(
-                        Practice.shortname==Practice.default_row().shortname,Student.id==search_on_id))
-    
-        
-    return q.all()
+    return q
 
 # if there are any users that do not have a student record add them.
 def orphan_users():
@@ -129,15 +121,34 @@ def index():
     search_on_id = request.args.get('id')
 
     filters = make_filters().process_filters()
-    students = students_query(filters, search_on_id)
+    students_select = students_query(filters, search_on_id)
 
-    url = get_url(back_button=True)
-
+    url = get_url(default='students_bp.index')
+    
+    page = request.args.get('page', 1, type=int)
+    
+    students_pagination = db.paginate(students_select, page=page,per_page=15, error_out=False)
+    
+    while students_pagination.last == 0:
+        page -= 1
+        students_pagination = db.paginate(students_select, page=page,per_page=15, error_out=False)
+    
+    next_url = add_url_argument(request.url,"page", students_pagination.next_num ) if students_pagination.has_next else None
+    prev_url = add_url_argument(request.url,"page", students_pagination.prev_num ) if students_pagination.has_prev else None
+        
+    print (next_url)
+    print (prev_url)
+    
     return render_template("students/students.html", 
-                           students=students, 
+                           students=students_pagination.items, 
                            filters=filters, 
                            page_name=_("User Overview"),
-                           delete_form=delete_form)
+                           page=page,
+                           next_url=next_url,
+                           prev_url=prev_url,
+                           students_pagination=students_pagination,
+                           delete_form=delete_form,
+                           )
 
 
 @students_bp.route('/search',methods=['GET'])
