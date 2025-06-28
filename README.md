@@ -21,3 +21,6 @@ To load the NL postalcode database
 		longitude DOUBLE NOT NULL, 
 		PRIMARY KEY (postcode, huisnummer)
 	)
+
+# issues
+- Pagination
