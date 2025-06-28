@@ -20,3 +20,6 @@ CREATE TABLE postalcodes (
 	longitude DOUBLE NOT NULL, 
 	PRIMARY KEY (postcode, huisnummer)
 )
+
+# issues
+- Pagination
