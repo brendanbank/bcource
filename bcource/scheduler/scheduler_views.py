@@ -1,4 +1,4 @@
-from flask import (Blueprint, render_template, jsonify, abort, send_from_directory, g, 
+from flask import (current_app, Blueprint, render_template, jsonify, abort, send_from_directory, g, 
                    flash, url_for, redirect, render_template_string, request)
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
@@ -12,12 +12,12 @@ from sqlalchemy import or_, and_
 import bcource.messages as system_msg
 from bcource.students.common import deroll_common, enroll_common, enroll_from_waitlist
 from sqlalchemy.orm import joinedload
-
 from datetime import datetime
 import pytz, time
 from bcource.filters import Filters
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
 from bcource.students.student_policies import TrainingBookingPolicy, can_student_book_trainings
+from bcource.helper_app_context import b_pagination
 
 # Blueprint Configuration
 scheduler_bp = Blueprint(
@@ -117,8 +117,14 @@ def training_query(filters, search_on_id=None, user=None):
                         Training.active==True)
                         )    
     
-    trainings = q.join(TrainingEvent).order_by(TrainingEvent.start_time.asc()).all()
-    time_start = time.time()
+    q = q.join(TrainingEvent).order_by(TrainingEvent.start_time.asc())
+
+    return q
+
+
+def fill_trainings(select_query, per_page=current_app.config['POSTS_PER_PAGE']):
+    
+    trainings=b_pagination(select_query, per_page=per_page)
     training_types = []
     for t in trainings:
         t.fill_numbers(current_user)
@@ -127,18 +133,13 @@ def training_query(filters, search_on_id=None, user=None):
         if not t.traningtype in training_types:
             training_types.append(t.traningtype)
 
-    print (time.time() - time_start)
-    
-    time_start = time.time()
     
     for traningtype in training_types:
         results = can_student_book_trainings(current_user.student_from_practice, trainings, traningtype)
         for training in trainings:
             if training.id in results.keys():
                 training.in_policy = results[training.id]
-                
-    print (time.time() - time_start)
-    
+
     
     return trainings
 
@@ -168,8 +169,10 @@ def mytraining():
     filters = make_filters(user=current_user).process_filters()
     filters.get_filter("my").get_item(current_user.id).checked = True
 
-    trainings = training_query(filters, search_on_id=search_on_id, user=current_user)
-    return render_template("scheduler/scheduler.html", training=trainings,  
+    trainings_select = training_query(filters, search_on_id=search_on_id, user=current_user)
+    trainings = fill_trainings(trainings_select)
+    
+    return render_template("scheduler/scheduler.html", pagination=trainings,  
                            filters=filters, 
                            trainingtypes=traingingtypes, 
                            page_name=_l('My Training Schedule'),
@@ -196,9 +199,10 @@ def index():
                         ).all()
                         
     filters = make_filters(user=current_user).process_filters()
-    trainings = training_query(filters, search_on_id=search_on_id, user=current_user)
-    
-    return render_template("scheduler/scheduler.html", training=trainings,  
+    trainings_select = training_query(filters, search_on_id=search_on_id, user=current_user)
+    trainings = fill_trainings(trainings_select)
+
+    return render_template("scheduler/scheduler.html", pagination=trainings,  
                            filters=filters, 
                            trainingtypes=traingingtypes, 
                            page_name=_l('Training Schedule'),

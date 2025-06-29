@@ -1,4 +1,4 @@
-          {% for training in training -%}
+          {% for training in pagination -%}
           {% if training.in_policy.status or admin%}
                <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}} p-0 m-0">
 
