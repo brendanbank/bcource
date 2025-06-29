@@ -354,3 +354,9 @@ select#practice_selector:hover {
 	
 	
 }
+
+.rotated-180 {
+      display: inline-block; /* Crucial for transform to work reliably on <i> */
+      transform: rotate(180deg);
+      transition: transform 0.3s ease-in-out; /* Optional: for smooth animation */
+  }
