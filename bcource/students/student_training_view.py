@@ -10,7 +10,8 @@ from bcource.helpers import get_url
 from bcource.training.training_forms import TrainingDerollForm, TrainingEnrollForm
 from sqlalchemy.orm import joinedload
 from bcource.filters import Filters
-
+from bcource import db
+from bcource.helper_app_context import b_pagination
 
 def scheduler_process_filters(my_trainings=None):
     filters_checked = {}
@@ -80,13 +81,9 @@ def training_query(filters, user,search_on_id=None):
 
 
     q = q.join(future)
-    
     q = q.join(TrainingEvent).order_by(TrainingEvent.start_time)
-    trainings = q.all()
-    for t in trainings:
-        t.fill_numbers(user)
-        
-    return trainings
+    
+    return q
 
 
 @students_bp.route('/student-trainings/<int:id>', methods=['GET', 'POST'])
@@ -117,8 +114,16 @@ def student_training(id):
     traingingtypes = TrainingType().query.join(Practice).filter(and_(
                         Practice.shortname==Practice.default_row().shortname)
                         ).all()
+
+    training_select = training_query(filters,user,search_on_id)
+    training_pagination = b_pagination(training_select)
+    
+    for t in training_pagination:
+        t.fill_numbers(user)
+        
+
                         
-    return render_template("students/student-training.html", training=training_query(filters,user,search_on_id), 
+    return render_template("students/student-training.html", pagination=training_pagination, 
                            trainingtypes=traingingtypes, 
                            filters=filters, 
                            page_name=_l('Training Schedule'),

@@ -22,6 +22,8 @@ class Config:
     ENVIRONMENT = environ.get("ENVIRONMENT")
     DEVELOPMENT_EMAIL = environ.get("DEVELOPMENT_TO_EMAIL")
     DEVELOPMENT_PHONE = environ.get("DEVELOPMENT_TO_PHONE")
+    
+    POSTS_PER_PAGE = 18
 
     # Flask Config
     SECRET_KEY = environ.get("SECRET_KEY")

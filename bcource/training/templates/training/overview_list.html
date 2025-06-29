@@ -42,7 +42,7 @@
                
 {% block data_rows %}
           
-          {% for training in trainings -%}
+          {% for training in pagination -%}
                <div class="{% if training.active %}highlight{%else%}highlight_red{% endif %}
                     {% if training.active %}
                          {{ loop.cycle('evendiv', 'odddiv')}}

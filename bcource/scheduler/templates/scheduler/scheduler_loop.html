@@ -1,4 +1,4 @@
-          {% for training in training -%}
+          {% for training in pagination -%}
           {% if training.in_policy.status or admin%}
                <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}} p-0 m-0">
 
@@ -7,7 +7,7 @@
                      data-toggle="tooltip" 
                                    data-placement="top" 
                                    data-bs-html="true"
-                                   title='{{training.in_policy}}<br>'>
+                                   title='{% for error in training.in_policy %}{{error}}{% endfor %}<br>'>
                 {% endif %}
      
               <div class="row {% if training.in_policy.status or admin %}highlight{%else%}highlight_red{% endif %}">
@@ -59,7 +59,7 @@
                                         <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to this training. ", who=who) }}</span>
                               </a>
                               {% else %}
-                              <span class="{{show_mobile}}">{{training.in_policy}}
+                              <span class="{{show_mobile}}">{% for error in training.in_policy %}{{error}}{% endfor %}
                                    <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
                                    data-placement="top" 
                                    data-bs-html="true"

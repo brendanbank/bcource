@@ -16,6 +16,8 @@ from flask_babel import lazy_gettext as _l
 import nh3
 from jinja2.filters import do_mark_safe
 
+
+
 def has_trainer_role():
     admin_has_role(["trainer"])
     if not current_user.tf_primary_method:

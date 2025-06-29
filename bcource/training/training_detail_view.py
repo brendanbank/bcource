@@ -119,7 +119,8 @@ def training_detail(id):
     
     return render_template("training/training_detail.html", 
                            return_url=url,
-                           page_name=_("Training Overview for %(training_name)s", training_name=training.name),
+                           page_name=_("Training Overview for %(training_name)s",training_name=training.name),
                            filters=filters, 
+                           pagination=None,
                            enrolled=enrolled,
                            training=training)
