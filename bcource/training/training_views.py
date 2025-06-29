@@ -16,6 +16,7 @@ from datetime import datetime
 import pytz
 from sqlalchemy.orm import joinedload
 from bcource.filters import Filters
+from bcource.helper_app_context import b_pagination
 
 # Blueprint Configuration
 training_bp = Blueprint(
@@ -270,11 +271,7 @@ def training_query(filters, search_on_id=None):
     
     q = q.join(TrainingEvent).order_by(TrainingEvent.start_time)
 
-    trainings = q.all()
-    for t in trainings:
-        t.fill_numbers(current_user)
-        
-    return trainings
+    return q
 
 @training_bp.route('/search',methods=['GET'])
 def search():
@@ -321,11 +318,19 @@ def overview_list():
                         Practice.shortname==Practice.default_row().shortname)
                         ).all()
     filters = make_filters().process_filters()
-    trainings = training_query(filters,search_on_id)
+    
+    trainings_select = training_query(filters,search_on_id)
+    
+    trainings = b_pagination(trainings_select)
+    trainings
+    for t in trainings:
+        t.fill_numbers(current_user)
+        
+
 
     delete_form = TrainingDeleteForm()
     
-    return render_template("training/overview_list.html", trainings=trainings, 
+    return render_template("training/overview_list.html", pagination=trainings, 
                            delete_form=delete_form,
                            trainingtypes=traingingtypes ,
                            filters=filters, 
