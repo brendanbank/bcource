@@ -18,6 +18,7 @@ from bcource.training.training_forms import TrainingDerollForm, TrainingEnrollFo
 from bcource.filters import Filters
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
+from bcource.helper_app_context import b_pagination
 
 # Blueprint Configuration
 students_bp = Blueprint(
@@ -125,28 +126,15 @@ def index():
 
     url = get_url(default='students_bp.index')
     
-    page = request.args.get('page', 1, type=int)
     
-    students_pagination = db.paginate(students_select, page=page,per_page=15, error_out=False)
-    
-    while students_pagination.last == 0:
-        page -= 1
-        students_pagination = db.paginate(students_select, page=page,per_page=15, error_out=False)
-    
-    next_url = add_url_argument(request.url,"page", students_pagination.next_num ) if students_pagination.has_next else None
-    prev_url = add_url_argument(request.url,"page", students_pagination.prev_num ) if students_pagination.has_prev else None
+    students_pagination = b_pagination(students_select)
+
         
-    print (next_url)
-    print (prev_url)
-    
     return render_template("students/students.html", 
                            students=students_pagination.items, 
                            filters=filters, 
                            page_name=_("User Overview"),
-                           page=page,
-                           next_url=next_url,
-                           prev_url=prev_url,
-                           students_pagination=students_pagination,
+                           pagination=students_pagination,
                            delete_form=delete_form,
                            )
 
