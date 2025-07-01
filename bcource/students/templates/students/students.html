@@ -37,8 +37,8 @@
 {% block data_rows %}
 
       {% for student in pagination.items -%}
-      <div class=" {{ loop.cycle('evendiv', 'odddiv')}}">
-              <div class="row highlight d-flex align-items-stretch">
+      <div class=" ">
+              <div class="row highlight d-flex align-items-stretch {{ loop.cycle('evendiv', 'odddiv')}} m-0">
               <span class="{{show_mobile}} border-top border-dark-subtle"></span>
                <div class="col-lg-3 pt-1 pb-1"><span class="align-middle">
                <span class="{{show_mobile}} h2">{{ student.user.fullname }}</span>
