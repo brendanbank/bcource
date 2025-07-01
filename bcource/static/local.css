@@ -360,3 +360,68 @@ select#practice_selector:hover {
       transform: rotate(180deg);
       transition: transform 0.3s ease-in-out; /* Optional: for smooth animation */
   }
+
+
+ 
+
+.base-row {
+      position: relative; /* Or use Bootstrap class */
+    }
+    
+.hover-container {
+  display: inline-block; /* Or block, flex, grid, depending on how you want the target/message laid out initially */
+  /* Set its dimensions or let it be determined by its content */
+}
+
+.hover-container:has(.hover-message:hover) {
+	background-color: red;
+/* 	background-color: rgb(230, 230, 230);
+ */}	
+
+ 
+
+.hover-container:has(.hover-message:hover) a.icon-link {
+        color: blue; /* Replace with your desired text color */
+    }
+.hover-message {
+  position: absolute; /* Position relative to .hover-container */
+  top: 0;
+  left: 0;
+  width: 100%; /* Fill the .hover-container */
+  height: 100%; /* Fill the .hover-container */
+  z-index: 20; /* Above the hover-target */
+  display: none; /* Hidden by default */
+  left: auto; /* Release the left anchor */
+  right: 0; /* Anchor to the right edge of the parent */
+  /* Style the content inside the message */
+  
+}
+
+.hover-container:hover .hover-message {
+ 	display: block; /* Show on hover of the container */
+	background-color: rgb(230, 230, 230);
+}
+
+
+/* Or if you only want hover on the target to trigger it */
+/*
+.hover-target:hover + .hover-message {
+    display: inline-block;
+}
+*/
+/* Note: This adjacent sibling selector works if hover-message immediately follows hover-target */
+/* And they are both direct children of .hover-container */
+
+
+.evendiv {background-color: rgb(244, 244, 244);}
+.odddiv {background-color: rgb(255, 255, 255);}
+.highlight:hover > * {background-color: rgb(230, 230, 230);}
+
+.even_red {background-color: rgb(255, 206, 205);}
+.odd_red {background-color: rgb(255, 228, 228);}
+.highlight_red:hover > * {background-color: rgb(255, 125, 120);}
+
+
+.main_div {
+      padding-top: 50px; /* Adjust value */
+}
