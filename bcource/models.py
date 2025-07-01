@@ -657,7 +657,7 @@ class User(db.Model, sqla.FsUserMixin):
             has_role = role in (role.name for role in self.roles)
         else:
             has_role = role in self.roles
-            
+        
         return (has_role)
         
     def practices (self):
