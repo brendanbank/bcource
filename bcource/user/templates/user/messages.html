@@ -32,6 +32,9 @@
                     {{- message_action(0, "read_selected", "bi-envelope","Mark as read", class="icon-link link-body-emphasis fs-5") }}
                     {{- message_action(0, "unread_selected", "bi-envelope-open","Mark as unread", class="icon-link link-body-emphasis fs-5") }}
                     {{- message_action(0, "delete_selected", "bi-trash","Delete selected", class="icon-link link-body-emphasis fs-5") }}
+                    {{- message_action(0, "undelete_selected", "bi-envelope-x","Undelete selected", class="icon-link link-body-emphasis fs-5") }}
+                    
+                    
 </span>
 </div>
 <div class="col-lg-8 d-flex pe-1">
@@ -70,6 +73,7 @@
                     {{- message_action(0, "read_selected", "bi-envelope","Mark read", mobile=True, class="icon-link link-body-emphasis") }}
                     {{- message_action(0, "unread_selected", "bi-envelope-open","Mark unread", mobile=True, class="icon-link link-body-emphasis") }}
                     {{- message_action(0, "delete_selected", "bi-trash","Delete", mobile=True, class="icon-link link-body-emphasis") }}
+
 </span>
 </div>
 
@@ -293,6 +297,9 @@ function call_action (message_ids,action){
  		action_req = "unread"
  		action = action_req
  		MsgModal.hide()
+ 	} else if (action == "undelete_selected") {
+ 		message_ids = action_find_selected()
+ 		action_req = "undelete"
  	} else if (action == "read_selected") {
  		message_ids = action_find_selected()
  		action_req = "read"
@@ -325,7 +332,7 @@ function call_action (message_ids,action){
          	},
          type : 'POST',
      	 success: function (data) {
-             
+            console.log(data)
 			switch (action) {
 			case "delete_selected":
 				location.reload();
@@ -337,6 +344,9 @@ function call_action (message_ids,action){
 			case "unread_selected":
 				action_read_toggle(data.messages,0)
 				action_update_nav_unread(data.unread_messages)
+				break;
+			case "undelete_selected":
+				location.reload();
 				break;
 			case "read_selected":
 				action_read_toggle(data.messages,1)
