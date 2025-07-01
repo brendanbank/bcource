@@ -1,3 +1,4 @@
+{% from "macros.html" import render_pagination %}
 {% extends 'base.html' %}
 
 {% block nav %}
@@ -7,12 +8,22 @@
 {% block content %}
 
 <div class="container border">
-<div class="row  p-1" >
-<!-- block head_row -->
-{% block head_row %}{% endblock %}
+<div class="row" >
+     <div class="col-lg-1"></div>
+     <div class="col-lg-7">
+     <!-- block head_row -->
+          <div class="row text-nowrap">
+               {% block head_row %}{% endblock %}
+          </div>
+     </div>
+     <div class="col-lg-4 text-end text-nowrap {% if not g.is_mobile %}small{% endif %} align-self-end">
+     {%- if pagination.has_next or pagination.has_prev %}
+     {{ render_pagination(pagination) }}
+     {%- endif %}
+     </div>
 </div>
-<div class="row ">
 
+<div class="row ">
 <div class="col-lg-2 border-top border-end">
 
 <!-- menu --> 
@@ -95,23 +106,18 @@
   
 
 </div>
-<style>
-.evendiv div{background-color: rgb(244, 244, 244);}
-.odddiv div{background-color: rgb(255, 255, 255);}
-.highlight:hover > * {background-color: rgb(230, 230, 230);}
-.even_red div{background-color: rgb(255, 206, 205);}
-.odd_red div{background-color: rgb(255, 228, 228);}
-.highlight_red:hover > * {background-color: rgb(255, 125, 120)
 
-</style>
+ <div class="col-lg-10 p-0 m-0">
 
- <div class="col-lg-10">
      {% block pre_data_headers %}{% endblock %}
 
      <div class="d-none d-lg-block d-xl-block d-xxl-block">
      <!-- block data_headers -->
-          <div class="row border-bottom border-top pb-1" >
+          <div class="row border-bottom border-top m-0 pb-1" >
           {% block data_headers %}{% endblock %}
+          {% if pagination.has_next or pagination.has_prev %}
+{% endif %}
+          
           
           
           </div>
@@ -124,31 +130,16 @@
 </div>
 </div>
 </div>
+
 {% if pagination.has_next or pagination.has_prev %}
      <div class="row">
-     <div class="col-xl-12 text-lg-end pe-4">{{ pagination.first }} - {{ pagination.last }} of {{ pagination.total }}
-
-          {% if pagination.has_prev %}
-          
-          <a class="icon-link link-dark link-offset-2 link-underline-opacity-0" 
-                              href="{{ add_url_argument(request.url, 'page', '1') }}">
-               <i class="bi bi-rewind"></i></a><a class="icon-link link-dark link-offset-2 link-underline-opacity-10" 
-                    href="{{ add_url_argument(request.url, 'page', pagination.prev_num) }}">
-                         <span class=""><i class="rotated-180 bi bi-play"></i>{{_("Previous")}}</span>
-               </a>
-               {% endif %} 
-          {% if pagination.has_next %}
-               <a class="icon-link link-dark link-offset-2 link-underline-opacity-10" 
-                    href="{{ add_url_argument(request.url, 'page', pagination.next_num) }}">
-               <span></i>{{_("Next")}}<i class="bi bi-play"></i>
-               </span></a><a class="icon-link link-dark link-offset-2 link-underline-opacity-0" 
-                    href="{{ add_url_argument(request.url, 'page', pagination.pages) }}">
-                    <i class="bi bi-fast-forward"></i></a>
-          {% endif %}
+     <div class="col-xl-12 border-top text-end pe-4 {% if not g.is_mobile %}small{% endif %}">
+     {{ render_pagination(pagination) }}
       </div>
       </div>
-      
 {% endif %}
+
+
 {% block modals %}
 {% endblock %}
 

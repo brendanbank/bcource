@@ -1,5 +1,5 @@
 
-<nav class="navbar bg-dark navbar-expand-lg" data-bs-theme="dark">
+<nav class="navbar bg-dark fixed-top navbar-expand-lg " data-bs-theme="dark">
 	<div class="container">
 		<a class="navbar-brand" href="/"><img width="auto" height="30" src="{{url_for('static', filename='bcourcelogo_small.png')}}"></a>
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -68,9 +68,8 @@
                       <polyline points="0,0 35,25 70,0" fill="none"/>
                     </svg>
                     {%- if current_user.unread_messages %}
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 7pt;">
-                                                  {{current_user.unread_messages}}
-                        <span class="visually-hidden">unread messages</span>
+                    <span id="nav_unread_messages" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                              style="font-size: 7pt;">{{current_user.unread_messages}}<span class="visually-hidden">unread messages</span>
                     </span>
                         {% endif -%}
                </a>

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+    {% include 'nav.html' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+     <div class="col-2"></div>
+     <div class="col-8 pb-5">
+          <h1>Messages</h1>
+     </div>
+</div>
+
+<div class="row">
+<div class="col-md-4 pt-2 pe-4">
+<h2>Inbox</h2>
+</div>
+ <div class="col-md-8 pt-2 ">
+  <span>
+  <i onClick="window.location.href = '{{ url_for("user_bp.messages", m = message_selected.id, u=1) }}';" 
+     class="fs-4 bi bi-envelope-check" data-toggle="tooltip" data-placement="top" title="Mark message as unread."></i>
+     
+  <i onClick="window.location.href = '{{ url_for("user_bp.messages", m = message_selected.id, d=1) }}';" class="fs-4 bi bi-trash"
+     data-toggle="tooltip" data-placement="top" title="Delete Message."></i>
+{#
+{% if message_selected.id %}
+  <i onClick="window.location.href = '{{ url_for('user_bp.message', reply=message_selected.id) }}';" class="fs-4 bi bi-reply"
+        data-toggle="tooltip" data-placement="top" title="Reply to message."></i>
+{% endif %}
+  <i onClick="window.location.href = '{{ url_for('user_bp.message') }}';" 
+       class="fs-4 bi bi-envelope-plus" data-toggle="tooltip" data-placement="top" title="New Message"></i>
+#}
+  
+  </span>
+  </div>
+</div>
+<div class="row">
+
+  <div class="col-md-4 pt-2 pe-4">
+    <hr class="mb-1 mt-1">
+  {% for assiociation in messages -%}
+  <div class="row" onClick="window.location.href = '{{ url_for('user_bp.messages', m = assiociation.message.id) }}';" 
+     {% if assiociation.message.id == message_selected.id %}style="background-color:#cccccc; border-radius: 5px;"{% endif %}>
+     
+  <div class="col-md-2">
+  <div class="row">
+  <div class="col-md-12">
+  <svg id="mailicoan" class="" width="30" height="30" viewBox="-15 -15 100 70" xmlns="http://www.w3.org/2000/svg" fill="none" 
+          stroke="black" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+       <!-- Envelope Body -->
+       <rect x="0" y="0" width="70" height="40" {% if assiociation.message_read %}fill="none"{% else %}fill="green"{% endif %}></rect>
+       <!-- Envelope Flap -->
+       <polyline points="0,0 35,25 70,0" fill="none"></polyline> 
+     </svg>
+     </div>
+     </div>
+  <div class="row">
+  <div class="col-md-12">
+  *
+  </div>
+  </div>     
+  </div>
+  <div class="col-md-10">
+       <div class="row"> 
+          <div class="row">
+               <h6 class="mb-0">{{ assiociation.message.envelop_from }}</h6>
+          </div>
+          <div class="row">
+
+               <small class="text-secondary">Date: {{ db_datetime_str(assiociation.message.created_date) }}</small>
+               </div>
+          <div class="row">
+               <small class="text-secondary mb-0">Subject: {{ assiociation.message.shorten(assiociation.message.subject) }}</small>
+          </div>
+       </div>
+     </div>
+  </div>
+  <hr class="mb-1 mt-1">
+      {% endfor %}
+  </div>
+  <div class="col-md-8 pt-2 border-start border-top">
+  <div class="row">
+ {% if message_selected %}
+  <span><h5 class="mb-0">From: {{ message_selected.envelop_from }}</h6></span>
+  <span class="mb-0">Date: <small>{{ db_datetime_str(message_selected.created_date) }}</small></span>
+  <span class="mb-0">Subject: <small>{{ message_selected.subject | bcourse_safe}}</small></span>
+  <span class="mb-0">To: <small>{{ current_user }}</small></span>
+  
+  </div>
+  <div class="row pt-3">
+    <span>{{ message_selected.body | bcourse_safe }}</span>
+  </div>
+  {% endif %}
+
+</div>
+</div>
+
+
+          {% endblock %}
+
