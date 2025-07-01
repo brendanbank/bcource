@@ -14,7 +14,7 @@ from flask_security import Security, SQLAlchemySessionUserDatastore, roles_requi
 from flask_moment import Moment
 from bcource.menus import Menu
 from bcource.helpers import (MyFsModels, admin_has_role, db_datetime, db_datetime_str, 
-                             format_phone_number, format_email, nh3_save, add_url_argument)
+                             format_phone_number, format_email, nh3_save, add_url_argument, message_date)
 from bcource.helpers import config_value as cv
 from flask_mobility import Mobility
 from flask_apscheduler import APScheduler
@@ -65,6 +65,7 @@ def create_app():
     """Create Flask application."""
     app = Flask(__name__, instance_relative_config=False)
 
+
     app.config.from_object('config.Config')
     from . import models
     
@@ -102,6 +103,8 @@ def create_app():
     app.jinja_env.filters.update(format_phone_number=format_phone_number)
     app.jinja_env.filters.update(format_email=format_email)
     app.jinja_env.filters.update(bcourse_safe=nh3_save)
+    app.jinja_env.filters.update(message_date=message_date)
+    
     
     
 

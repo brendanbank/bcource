@@ -15,6 +15,7 @@ from flask_babel import _
 from flask_babel import lazy_gettext as _l
 import nh3
 from jinja2.filters import do_mark_safe
+from datetime import timedelta, datetime
 
 
 
@@ -26,6 +27,19 @@ def has_trainer_role():
     
 def nh3_save(txt):
     return do_mark_safe(nh3.clean(txt))
+
+def message_date(db_datetime_notz, mobile_date=False):
+    dt = db_datetime(db_datetime_notz)
+    TZ_NAME = app.config.get('BCOURCE_TZ', 'Europe/Amsterdam')
+    TZ = pytz.timezone(TZ_NAME)
+    if mobile_date:
+         return dt.astimezone(TZ).strftime("%a, %b %d %Y, %H:%M %p %Z")
+    elif (datetime.utcnow().astimezone(TZ) - dt.astimezone()) < timedelta(hours=22):
+        return dt.astimezone(TZ).strftime("%H:%M")
+    else:
+        return dt.astimezone(TZ).strftime("%-m/%d")
+    
+    
 
 def add_url_argument(url, key, value):
     parsed_url = urlparse(url)

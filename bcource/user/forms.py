@@ -2,14 +2,17 @@ from flask_wtf import FlaskForm, RecaptchaField
 
 from ..myformfields import (MyStringField, MySubmitField, MyPasswordField, MyHiddenField, 
                             MyEmailField, MyTelField, MyDateField, MySelectField, MyBooleanField, MyTextAreaField, 
-                            MyQuerySelectMultipleField, MyQuerySelectField, MySelectMultipleField)
+                            MyQuerySelectMultipleField, MyQuerySelectField, MySelectMultipleField, MyHiddenIdField)
 
 import wtforms.validators as validators
 from flask_babel import lazy_gettext as _l
 import bcource.models as models
 
 
-    
+class MessageActionform(FlaskForm):
+    id = MyHiddenIdField("id")
+    url = MyHiddenField("url")
+    action = MyHiddenField("action")
 
 class UserMessages(FlaskForm):
     form_description = _l("Send Message")

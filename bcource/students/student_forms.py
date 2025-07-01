@@ -15,6 +15,8 @@ from bcource.models import Practice, Role
 
 
 
+
+
 class StudentDeleteForm(FlaskForm):
     id = MyHiddenIdField("id")
     url = MyHiddenField("url")
