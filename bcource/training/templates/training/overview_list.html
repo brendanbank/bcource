@@ -30,14 +30,14 @@
 {% endblock %}
 
 {% block data_headers %}
-               <div class="col-3 fw-semibold">{{_('Name')}}</div>
-                    <div class="col-1 fw-semibold"></div>
-               <div class="col-3 fw-semibold ps-0">{{_('Date')}}</div>
-               <div class="col-1 fw-semibold ps-0">{{_('Spots')}} <i class="text-primary fs-6 bi bi-question" 
+               <div class="col-3 fw-semibold pt-1 ps-1 pe-0">{{_('Name')}}</div>
+               <div class="col-1 fw-semibold pt-1 ps-1 pe-0"></div>
+               <div class="col-3 fw-semibold pt-1 ps-1 pe-0">{{_('Date')}}</div>
+               <div class="col-1 fw-semibold pt-1 ps-1 pe-0">{{_('Spots')}} <i class="text-primary fs-6 bi bi-question" 
                                                             data-toggle="tooltip" 
                                                             data-placement="top" 
                                                             title="{{_('participants max/current/wait list') }}"></i></div>
-               <div class="col-4 fw-semibold ps-0">{{_('Trainers')}}</div>
+               <div class="col-4 fw-semibold pt-1 ps-1 pe-0">{{_('Trainers')}}</div>
 {% endblock %}
                
 {% block data_rows %}
@@ -50,7 +50,7 @@
                               {{ loop.cycle('even_red', 'odd_red')}}
                     {% endif %} p-0 m-0" 
                     >
-               <div class="row {% if training.active %}highlight{%else%}highlight_red{% endif %}" {% if not training.active %}
+               <div class="row {% if training.active %}highlight{%else%}highlight_red{% endif %} m-0" {% if not training.active %}
                     data-toggle="tooltip" data-bs-placement="top" title="{{_('This training is inactive and cannot be booked.') }}"
                                                             {% endif %}>
                

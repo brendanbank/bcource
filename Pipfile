@@ -26,6 +26,7 @@ phonenumbers = "*"
 flask-mobility = "*"
 nh3 = "*"
 flask-apscheduler = "*"
+jsonschema = "*"
 
 [dev-packages]
 

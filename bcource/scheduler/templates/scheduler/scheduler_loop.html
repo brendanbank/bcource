@@ -3,21 +3,21 @@
                <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}} p-0 m-0">
 
            {%else%}
-                <div class="highlight_red  even_red p-0 m-0" 
+                <div class="highlight_red  {{ loop.cycle('evendiv', 'odddiv')}} even_red py-0 m-0 " 
                      data-toggle="tooltip" 
                                    data-placement="top" 
                                    data-bs-html="true"
                                    title='{% for error in training.in_policy %}{{error}}{% endfor %}<br>'>
                 {% endif %}
      
-              <div class="row {% if training.in_policy.status or admin %}highlight{%else%}highlight_red{% endif %}">
-               <span class="{{show_mobile}} border-top border-dark-subtle"></span>
-              <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center">
+              <div class="row {% if training.in_policy.status or admin %}highlight{%else%}highlight_red{% endif %} m-0 p-0 ">
+               <span class="{{show_mobile}} border-top border-dark-subtle {% if g.is_mobile %}py-1 {%endif%}"></span>
+              <div class="col-lg-3  align-self-center">
                              <span class="{{show_mobile}} h1">{{ training.name }} <br></span>
                              <span class="{{hide_mobile}}">{{ training.name }}</span>
                </div>
                
-              <div class="col-lg-1 pt-1 ps-1 pe-0 lh-1 align-self-center">
+              <div class="col-lg-1 {% if g.is_mobile %}py-3 {%endif%}lh-1 align-self-center">
                {% if training._user_status == 'enrolled' or training._user_status == 'waitlist' or training._user_status == 'waitlist-invited'%}
                     {% if admin %}
                          <a class="icon-link link-body-emphasis"
@@ -74,12 +74,12 @@
                     {% endif %}
                {%- endif %}
                </div>
-               <div class="col-lg-1 pt-1 ps-0 pe-0 align-self-center text-nowrap">
+               <div class="col-lg-1  align-self-center text-nowrap">
                               <span class="{{show_mobile}} fw-semibold">Training Type: </span>
                               {{ training.traningtype.name }}<a class="icon-link" 
                     data-bs-toggle="modal" data-bs-target="#modal_{{training.traningtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
-               <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center ">{% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
-               <div class="col-lg-1 pt-1 ps-1 pe-0 align-self-center {{hide_mobile}}">
+               <div class="col-lg-3  align-self-center ">{% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
+               <div class="col-lg-1  align-self-center {{hide_mobile}}">
                                                   {{ training.max_participants }}&nbsp;/&nbsp;{{training._amount_enrolled }}&nbsp;/
                                                   {%- if training._amount_enrolled >= training.max_participants %}
                                                        <span class="text-warning">{{ training._amount_enrolled - training.max_participants}}</span>
@@ -88,7 +88,7 @@
                                                    {%- endif -%}
                                                    
                                                    </div>
-               <div class="col-lg-1 pt-1 ps-1 pe-0 align-self-center {{show_mobile}}">
+               <div class="col-lg-1  align-self-center {{show_mobile}}">
                                                   Maximum participants : {{ training.max_participants }}, 
                                                   Amount enrolled: {{training._amount_enrolled }}, Wait list: 
                                                   {%- if training._amount_enrolled >= training.max_participants %}
@@ -99,11 +99,11 @@
                                                    
                                                    </div>
 
-               <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center">
+               <div class="col-lg-3  align-self-center {% if g.is_mobile %}pb-3 {%endif%}">
                                                   <span class="{{show_mobile}}">{{ _('Enroll Status: ')}}</span>
 
                                                         {% if training._user_status == 'enrolled' %}
-                                                            <span class="fw-bold text-success small">{{_('enrolled') }}</span>
+                                                            <span class="fw-bold text-success small">{{_('Enrolled') }}</span>
                                                         {% elif training._user_status == 'waitlist-invited' %}
                                                         
                                                             <span class="fw-bold text-success small">
