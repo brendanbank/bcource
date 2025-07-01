@@ -106,6 +106,9 @@ def action():
                                                                        UserMessageAssociation.message_id.in_(data['message_ids'])).all()
     for message in messages:
         match data['action']:
+            case "undelete":
+                message.message_deleted = None
+                results["messages"].append(message.message_id)
             case "unread":
                 message.message_read = None
                 results["messages"].append(message.message_id)
