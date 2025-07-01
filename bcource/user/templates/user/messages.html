@@ -1,102 +1,366 @@
-{% extends 'base.html' %}
+{% from "macros.html" import render_pagination %}
 
-{% block nav %}
-    {% include 'nav.html' %}
+
+
+{% macro message_action(message_id, action, icon,tooltip, mobile=False, toggle=True, class="") %}
+     <a href="javascript:void(0);" class="{{class}}  {% if not mobile %}pe-2 pt-1 {%endif%}" 
+          {% if toggle %} onClick="this.blur(); call_action([{{message_id}}], '{{action}}');"{% endif %}>
+     {%- if mobile %}<span class="">{{tooltip}}</span>{%- endif -%}<i id="icon_{{action}}_{{message_id}}" class=" bi {{icon}}"
+          data-toggle="tooltip" data-placement="top" title="{{tooltip}}"></i>        
+          </a>   
+{%- endmacro %}
+
+{% macro msg_checkbox(id) %}
+<input id="checkbox_message_{{id}}" 
+                         class="ms-1 form-check-input all_messages_check" message-id={{id}}
+                              name="checkbox_message_{{id}}" type="checkbox" 
+                              value="y">
+{%- endmacro %}
+
+{% extends 'filters.html' %}
+
+{% block pre_data_headers %}
+
+{% if not g.is_mobile %}
+<div class="row lh-1 p-2 ps-1 border-top m-0">
+<div class="col-lg-12 p-0">
+     <input class="form-check-input" onClick="all_messages_enable(this);" id="select_all" name="select_all" type="checkbox" value="y">
+<span id="when_active" name="when_active" class="d-none ps-2">
+                    {{- message_action(0, "read_selected", "bi-envelope","Mark as read", class="icon-link link-body-emphasis") }}
+                    {{- message_action(0, "unread_selected", "bi-envelope-open","Mark as unread", class="icon-link link-body-emphasis") }}
+                    {{- message_action(0, "delete_selected", "bi-trash","Delete selected", class="icon-link link-body-emphasis") }}
+</span>
+</div>
+</div>
+
+{% else %}
+<div class="row lh-1 px-0 py-2 border-top m-0">
+
+<div class="col-lg-12 ps-1 ms-0">
+     <input class="form-check-input" onClick="all_messages_enable(this);" id="select_all" name="select_all" type="checkbox" value="y">
+<span id="when_active" name="when_active" class="d-none ps-2">
+                    {{- message_action(0, "read_selected", "bi-envelope","Mark read", mobile=True, class="icon-link link-body-emphasis") }}
+                    {{- message_action(0, "unread_selected", "bi-envelope-open","Mark unread", mobile=True, class="icon-link link-body-emphasis") }}
+                    {{- message_action(0, "delete_selected", "bi-trash","Delete", mobile=True, class="icon-link link-body-emphasis") }}
+</span>
+</div>
+</div>
+{% endif %}
+
+
 {% endblock %}
 
-{% block content %}
 
-<div class="row">
-     <div class="col-2"></div>
-     <div class="col-8 pb-5">
-          <h1>Messages</h1>
+{% block head_row %}
+    <div class="col-12 text-center">
+        <h3 class="">{{page_name}}</h3>
      </div>
-</div>
+{% endblock %}
 
-<div class="row">
-<div class="col-md-4 pt-2 pe-4">
-<h2>Inbox</h2>
+{% block searchbox %}
+<!-- <l class="col-lg-12 mt-2"><strong>{{_('User Search')}}</strong></l>
+     <div class="">
+     <select  class="col-12" id="student_search" class="student_search"></select>
 </div>
- <div class="col-md-8 pt-2 ">
-  <span>
-  <i onClick="window.location.href = '{{ url_for('user_bp.messages', m = message_selected.id, u=1) }}';" 
-     class="fs-4 bi bi-envelope-check" data-toggle="tooltip" data-placement="top" title="Mark message as unread."></i>
-     
-  <i onClick="window.location.href = '{{ url_for('user_bp.messages', m = message_selected.id, d=1) }}';" class="fs-4 bi bi-trash"
-     data-toggle="tooltip" data-placement="top" title="Delete Message."></i>
-{#
-{% if message_selected.id %}
-  <i onClick="window.location.href = '{{ url_for('user_bp.message', reply=message_selected.id) }}';" class="fs-4 bi bi-reply"
-        data-toggle="tooltip" data-placement="top" title="Reply to message."></i>
-{% endif %}
-  <i onClick="window.location.href = '{{ url_for('user_bp.message') }}';" 
-       class="fs-4 bi bi-envelope-plus" data-toggle="tooltip" data-placement="top" title="New Message"></i>
-#}
-  
-  </span>
-  </div>
-</div>
-<div class="row">
+ -->{% endblock %}
 
-  <div class="col-md-4 pt-2 pe-4">
-    <hr class="mb-1 mt-1">
-  {% for assiociation in messages -%}
-  <div class="row" onClick="window.location.href = '{{ url_for('user_bp.messages', m = assiociation.message.id) }}';" 
-     {% if assiociation.message.id == message_selected.id %}style="background-color:#cccccc; border-radius: 5px;"{% endif %}>
-     
-  <div class="col-md-2">
-  <div class="row">
-  <div class="col-md-12">
-  <svg id="mailicoan" class="" width="30" height="30" viewBox="-15 -15 100 70" xmlns="http://www.w3.org/2000/svg" fill="none" 
-          stroke="black" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-       <!-- Envelope Body -->
-       <rect x="0" y="0" width="70" height="40" {% if assiociation.message_read %}fill="none"{% else %}fill="green"{% endif %}></rect>
-       <!-- Envelope Flap -->
-       <polyline points="0,0 35,25 70,0" fill="none"></polyline> 
-     </svg>
-     </div>
-     </div>
-  <div class="row">
-  <div class="col-md-12">
-  *
-  </div>
-  </div>     
-  </div>
-  <div class="col-md-10">
-       <div class="row"> 
-          <div class="row">
-               <h6 class="mb-0">{{ assiociation.message.envelop_from }}</h6>
-          </div>
-          <div class="row">
+{% block data_headers %}
+{% endblock %}
 
-               <small class="text-secondary">Date: {{ db_datetime_str(assiociation.message.created_date) }}</small>
+{% block data_rows %}
+
+
+      {% for user_envelop in pagination -%}
+      <div class="row base-row position-relative {{ loop.cycle('evendiv', 'odddiv')}} m-0 {% if g.is_mobile %}py-3 {%endif%}" >
+          <div id="m_{{user_envelop.message.id}}" message-id={{user_envelop.message.id}} 
+               message-bcourse-read-status="{{1 if user_envelop.message_read else 0}}" 
+                    class="highlight hover-container  px-0 {% if user_envelop.message_read == None%}fw-bold{%endif%} "> 
+              <div  class=" d-lg-flex hover-target" 
+              onClick="user_show_model(this);" message-id={{user_envelop.message.id}}
+              style="cursor: pointer;">
+              
+                    <div class="test-overflow col-lg-8 py-0 text-truncate order-lg-1">
+                    {% if g.is_mobile %}{{ msg_checkbox(user_envelop.message.id) }}{%endif%}
+                                   <span class="test-overflow  ps-1 {{ show_mobile }}">Subject: </span>{{ user_envelop.message.subject }}</div>
+                    <div class="me-3 col-lg-3 text-truncate pb-1 ">
+                    {% if not g.is_mobile %}{{ msg_checkbox(user_envelop.message.id) }}{%endif%}
+
+                              <span class="ps-1 {{ show_mobile }}">From:</span>
+                    <span class="ps-1 ">{{ user_envelop.message.envelop_from }}</span>
+                    </div>
+                    <div class="col-lg-1  order-lg-3">
+                                   <span class="pe-2 test-overflow {{ hide_mobile }} ">{{ user_envelop.message.created_date | message_date}}</span>
+                                   <span class="test-overflow {{ show_mobile }} py-0 px-1">Date: {{ user_envelop.message.created_date | message_date(mobile_date=True)}}</span>
+                    </div>
                </div>
-          <div class="row">
-               <small class="text-secondary mb-0">Subject: {{ assiociation.message.shorten(assiociation.message.subject) }}</small>
-          </div>
-       </div>
+               <div  class="{{hide_mobile}}">
+               <div class="highlighttext-lg-end hover-message py-0 px-1" style="width: fit-content;">
+
+               {% if user_envelop.message_read == None %}
+                    {{- message_action(user_envelop.message.id, "toggle", "bi-envelope-open","Toggle read", class="icon-link link-body-emphasis") }}
+               {% else %}
+                    {{- message_action(user_envelop.message.id, "toggle", "bi-envelope","Toggle read", class="icon-link link-body-emphasis") }}
+               {% endif %}
+               {{ message_action(user_envelop.message.id, "delete", "bi-trash","Delete", class="icon-link link-body-emphasis") }}
+               </div>
+               </div>
+               <div class="{{show_mobile}} ps-1 pt-0 pb-2">
+               
+               {% if user_envelop.message_read == None %}
+                    {{- message_action(user_envelop.message.id, "toggle_mobile", "bi-envelope-open","Toggle read", True, class="icon-link link-body-emphasis") }}
+               {% else %}
+                    {{- message_action(user_envelop.message.id, "toggle_mobile", "bi-envelope","Toggle read", True, class="icon-link link-body-emphasis") }}
+               {% endif %}
+               {{ message_action(user_envelop.message.id, "delete", "bi-trash","Delete", True, class="icon-link link-body-emphasis") }}
+               </div>
+               
+         </div>
      </div>
+
+          {% endfor %}
+    
+{% endblock %}
+
+{% block modals %}
+
+<!-- Modal -->
+<div class="modal fade" id="modal_message" message-id="" tabindex="-1" aria-labelledby="label_modal_message" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+      <div class="row">
+      <div class="col-lg-12">
+        <span class="fw-semibold">From:&nbsp;</span><span class="modal-title " id="message_from"></span>
+        </div>
+      <div class="col-lg-12">
+        <span class="fw-semibold">Subject:&nbsp;</span><span class="modal-title " id="message_subject"></span>
+        </div>
+      <div class="col-lg-12">
+        <span class="fw-semibold">Date:&nbsp;</span><span class="modal-title " id="message_date"></span>
+        </div>
+
+          </div>
+          <div class="align-self-start">
+                  <button type="button" class="btn-close me-2" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+      </div>
+      <div class="modal-body">
+        <div id="message_body"></div>
+      </div>
+      <div class="modal-footer">
+               <span class="fs-3">{{- message_action(0, "unread_msg_modal", "bi-envelope mb-2","Mark Unread ", mobile=True, class="btn btn-outline-dark") }}</span>&nbsp;
+               <span class="fs-3">{{- message_action(0, "reply", "bi-reply mb-2","Reply", mobile=True, class="btn btn-outline-dark") }}</span>&nbsp;
+               <span class="fs-3">{{- message_action(0, "delete_msg_modal", "bi-trash mb-2","Delete", mobile=True, class="btn btn-outline-dark") }}</span>&nbsp;
+      </div>
+    </div>
   </div>
-  <hr class="mb-1 mt-1">
-      {% endfor %}
-  </div>
-  <div class="col-md-8 pt-2 border-start border-top">
-  <div class="row">
- {% if message_selected %}
-  <span><h5 class="mb-0">From: {{ message_selected.envelop_from }}</h6></span>
-  <span class="mb-0">Date: <small>{{ db_datetime_str(message_selected.created_date) }}</small></span>
-  <span class="mb-0">Subject: <small>{{ message_selected.subject | bcourse_safe}}</small></span>
-  <span class="mb-0">To: <small>{{ current_user }}</small></span>
+</div>
+
+{% endblock %}
+
+
+
+{% block js %}
+
+<script>
+
+const icon_open = 'bi-envelope-open';
+const icon_close = 'bi-envelope';
+const MsgModal =  new bootstrap.Modal('#modal_message')
+
+
+
+function user_show_model(item){
+	const msg_id = item.getAttribute("message-id")
+	$('#modal_message').attr('message-id', msg_id)
+	
+	
+	$.getJSON(`/account/messages/api/get/${msg_id}`, function(data) {
+	    $('#message_body').html(data.body);
+	    $('#message_subject').html(data.subject);
+	    $('#message_date').html(data.created_date);
+	    $('#message_from').html(data.from )
+	    action_read_toggle([msg_id], 1)
+	});
+	MsgModal.show()
+}
+
+function action_read_toggle(message_ids, is_read){
+	var message_id
+	var message
+	
+	console.log("start action_read_toggle message_ids: " + message_ids + " is_read: " + is_read)
+	
+     $.each(message_ids, function (){
+    	  message_id = this;
+          
+    	  if (is_read == 0){
+    		  
+              $("#m_" + message_id).addClass("fw-bold")
+              $("#icon_toggle_" + message_id).removeClass("bi-envelope")
+              $("#icon_toggle_mobile_" + message_id).removeClass("bi-envelope")
+
+              $("#icon_toggle_" + message_id).addClass("bi-envelope-open")
+              $("#icon_toggle_mobile_" + message_id).addClass("bi-envelope-open")
+              
+              
+    	  } else {
+
+              $("#m_" + message_id).removeClass("fw-bold")
+              $("#icon_toggle_" + message_id).removeClass("bi-envelope-open")
+              $("#icon_toggle_mobile_" + message_id).removeClass("bi-envelope-open")
+
+              $("#icon_toggle_" + message_id).addClass("bi-envelope")
+              $("#icon_toggle_mobile_" + message_id).addClass("bi-envelope")
+    		  
+    	  }
+          $("#m_" + message_id).attr('message-bcourse-read-status',is_read)
+               
+     })
+};
+
+function action_update_nav_unread(unread){
+	$('#nav_unread_messages').text(unread)
+}
+
+function action_find_selected(){
+	const messages = []
+	$.each($('.all_messages_check'), function (item, value) {
+
+		if (value.checked){
+			messages.push(parseInt($('#' + value.id).attr('message-id')))
+		}
+	})
+	return (messages)
+}
+
+function call_action (message_ids,action){
+
+	
+ 	if (action == "toggle" || action == "toggle_mobile"){
+		$.each(message_ids, function() {
+			const is_read = $("#m_" + this).attr('message-bcourse-read-status')			
+	 		if (is_read == 0){
+	 			action_req = "read"
+		 		action = "read"
+			} else {
+				action_req = "unread"
+			 	action = "unread"
+
+			}
+		})
+		
+ 	} else if (action == "delete_msg_modal") {
+ 		message_ids = [parseInt($('#modal_message').attr('message-id'))]
+ 		action_req = "delete"
+ 		action = action_req
+ 	} else if (action == "unread_msg_modal") {
+ 		message_ids = [parseInt($('#modal_message').attr('message-id'))]
+ 		action_req = "unread"
+ 		action = action_req
+ 		MsgModal.hide()
+ 	} else if (action == "read_selected") {
+ 		message_ids = action_find_selected()
+ 		action_req = "read"
+ 	} else if (action == "unread_selected") {
+ 		message_ids = action_find_selected()
+ 		action_req = "unread"
+ 			
+ 	} else if (action == "delete_selected") {
+ 		message_ids = action_find_selected()
+ 		action_req = "delete"
+ 	}	else {
+ 		action_req = action
+	} 	
+
+     const actionObj = {};
+     actionObj.message_ids = message_ids;
+     actionObj.action = action_req;
+     const url = "{{url_for('user_bp.action')}}";
+     
+     if (message_ids.length == 0){
+    	 return (false)
+     }
+
+     $.ajax(url, {
+         data : JSON.stringify(actionObj),
+         contentType : 'application/json',
+         headers: {
+         	'Accept': 'application/json',
+         	'X-CSRF-TOKEN': '{{csrf_token()}}'              
+         	},
+         type : 'POST',
+     	 success: function (data) {
+             
+			switch (action) {
+			case "delete_selected":
+				location.reload();
+				break;
+			case "delete":
+				action_update_nav_unread(data.unread_messages)
+				location.reload();
+				break;
+			case "unread_selected":
+				action_read_toggle(data.messages,0)
+				action_update_nav_unread(data.unread_messages)
+				break;
+			case "read_selected":
+				action_read_toggle(data.messages,1)
+				action_update_nav_unread(data.unread_messages)
+				break;
+			case "unread":
+				action_read_toggle(data.messages,0)
+				action_update_nav_unread(data.unread_messages)
+				break;
+			case "read":
+				action_read_toggle(data.messages,1)
+				action_update_nav_unread(data.unread_messages)
+				break;
+             }
+        },
+        statusCode: {
+            400: function() {
+         	   location.reload();
+            }
+        },
+         });
+}
+
+function all_messages_enable(checkbox){
+	$('.all_messages_check').prop('checked', checkbox.checked);
+	if (checkbox.checked){
+		$('#when_active').removeClass("d-none")
+	}else {
+		$('#when_active').addClass("d-none")
+	}
+
+     }
+     $('.no_click').bind('click', (event) => {
+     	  event.stopPropagation(); // Stop the click event from bubbling up
+     });
+
+
+  $('.all_messages_check').bind('click', (event) => {
+	  event.stopPropagation(); // Stop the click event from bubbling up
+	  var checked = false
+	  $.each($('.all_messages_check'), function (){
+		  if (this.checked){
+			  checked = true
+		  }
+	  });
+		if (checked){
+			$('#when_active').removeClass("d-none")
+		}else {
+			$('#when_active').addClass("d-none")
+		}
+
+  });
+
+
   
-  </div>
-  <div class="row pt-3">
-    <span>{{ message_selected.body | bcourse_safe }}</span>
-  </div>
-  {% endif %}
+  </script>
 
-</div>
-</div>
+{% endblock %}
 
 
-          {% endblock %}
-
+          
