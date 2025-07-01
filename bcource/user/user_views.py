@@ -293,7 +293,7 @@ def search():
     query_term = request.args.get('q')
     
     q = User().query
-    if current_user.has_role('trainer'):
+    if not current_user.has_role('trainer'):
         q = q.join(User.roles).filter(Role.name == "trainer")
 
     if query_term:
