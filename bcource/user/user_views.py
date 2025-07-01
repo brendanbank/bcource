@@ -4,9 +4,9 @@ from flask_security import current_user
 from bcource.models import UserSettings, Message, User, UserMessageAssociation
 from flask import current_app as app
 from flask_security import auth_required
-from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages
+from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform
 from werkzeug.security import generate_password_hash, check_password_hash
-from bcource.helpers import get_url
+from bcource.helpers import get_url, message_date
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
 from bcource import db, menu_structure
 from setuptools._vendor.jaraco.functools import except_
@@ -14,6 +14,8 @@ from sqlalchemy import and_, or_
 from datetime import datetime, timezone
 import pytz
 from flask_babel import lazy_gettext as _l
+from bcource.helper_app_context import b_pagination
+from jsonschema import validate, ValidationError
 
 # Blueprint Configuration
 user_bp = Blueprint(
@@ -64,6 +66,96 @@ def update():
     return render_template("user/update-account.html", form=form)
 
 
+ACTION_JSON = {
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string"
+    },
+    "message_ids": {  
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    }
+  },
+  "required": ["action", "message_ids"] 
+}
+
+
+@user_bp.route('/messages/api/action', methods=['GET', 'POST'])
+@auth_required()
+def action():
+    
+    results= {"results": False,
+              "errors": [],
+              "messages": []}
+    if not request.json:
+        return jsonify(results)
+    data = request.json
+
+    try:
+        validate(data,schema=ACTION_JSON)
+    except ValidationError as e:
+        results['errors'].append(e.message)
+        return jsonify(results)
+            
+    results["echo"] = data
+        
+    messages = UserMessageAssociation().query.join(Message).filter(UserMessageAssociation.user==current_user,
+                                                                       UserMessageAssociation.message_id.in_(data['message_ids'])).all()
+    for message in messages:
+        match data['action']:
+            case "unread":
+                message.message_read = None
+                results["messages"].append(message.message_id)
+            case "read":
+                message.message_read = datetime.now(timezone.utc)
+                results["messages"].append(message.message_id)
+            case "delete":
+                message.message_deleted = datetime.now(timezone.utc)
+                results["messages"].append(message.message_id)
+            case _:
+                results['errors'].append(f"unkonwn action {data['action']}")
+                return jsonify(results)
+
+    db.session.commit()
+    results["results"] = True
+    results["action"] = data['action']
+    results["unread_messages"] = current_user.unread_messages
+    
+    return jsonify(results)
+
+@user_bp.route('/messages/api/get/<int:id>', methods=['GET', 'POST'])
+@auth_required()
+def get_messages(id):
+    envelop = UserMessageAssociation().query.join(Message, 
+                                                  Message.id ==UserMessageAssociation.message_id).filter(
+                                                      Message.id == id, 
+                                                      UserMessageAssociation.user==current_user).first()
+    results= {"results": False}
+    if envelop:
+        if envelop.message_read == None:
+            envelop.message_read = datetime.now(timezone.utc)
+            db.session.commit()
+            
+        results = {
+            "results": True,
+            "id": envelop.message.id, 
+            "subject": envelop.message.subject,
+            "created_date": envelop.message.created_date,
+            "body": envelop.message.body,
+            
+            "from": f'{envelop.message.envelop_from}',
+            # "to": [ f'{envelop.user}' for envelop in envelop.message.envelop_to ],
+            "to": f'{envelop.user}',
+            "deleted": f'{message_date(envelop.message_deleted, mobile_date=True)}' if envelop.message_deleted != None else None,
+            "read": f'{message_date(envelop.message_read, mobile_date=True)}' if envelop.message_read != None else None,
+            }
+        
+    return jsonify(results)
+
+
 @user_bp.route('/messages', methods=['GET', 'POST'])
 @auth_required()
 def messages():
@@ -72,46 +164,78 @@ def messages():
                                                                 UserMessageAssociation.message_deleted == None)).order_by(
                                                                     Message.created_date.desc())
 
-    messages = q.all()
+    messages = b_pagination(q, per_page=23)
                                                  
-    message_selected_id = request.args.get('m')
-    message_selected=None
-    if message_selected_id == None and messages:
-        message_selected_id = messages[0].message.id
+    message_selected_id = request.args.get('m', 0, int)
+    message = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
+                                                                UserMessageAssociation.message_id==message_selected_id)).first()
+
     
-    try:
-        message_selected_id = int(message_selected_id)
-    except:
-        message_selected_id = None
-    
-    # mark message as read
-    if message_selected_id:
-        user_association = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
-                                                                UserMessageAssociation.message_id==message_selected_id))
-        a = user_association.first()
-        mark_unread = request.args.get('u')
-        msg_delete = request.args.get('d')
+    if message:
+        m_mark_unread = request.args.get('u', 0, int)
+        m_mark_read = request.args.get('r', 0, int)
+        m_delete = request.args.get('d', 0, int)
         
-        if a and mark_unread != "1" and msg_delete != "1" :
-            a.message_read = datetime.now(timezone.utc)
-            db.session.commit()
-            message_selected = a.message
-        elif(a and mark_unread == "1"):
-            a.message_read = None
-            db.session.commit()
-            message_selected = a.message
-        elif(a and  msg_delete == "1" ):
-            a.message_deleted = datetime.now(timezone.utc)
-            db.session.commit()
-            messages = q.all()
-            if messages:
-                message_selected = messages[0].message
-            else:
-                message_selected = None
+        if m_mark_unread == 1:
+            print ("m_mark_unread" )
+            message.message_read = None
+        elif m_mark_read == 1:
+            message.message_read = datetime.now(timezone.utc)
+        elif m_delete == 1:
+            message.message_deleted = datetime.now(timezone.utc)            
+        db.session.commit()
+
+       
+        
+    q = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
+                                                                UserMessageAssociation.message_id==Message.id,
+                                                                UserMessageAssociation.message_deleted == None)).order_by(
+                                                                    Message.created_date.desc())
+
+    messages = b_pagination(q, per_page=22)
+    
+    
+    
+    # if message_selected_id == None and messages:
+    #     message_selected_id = messages[0].message.id
+    #
+    # try:
+    #     message_selected_id = int(message_selected_id)
+    # except:
+    #     message_selected_id = None
+    #
+    # # mark message as read
+    # if message_selected_id:
+    #     user_association = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
+    #                                                             UserMessageAssociation.message_id==message_selected_id))
+    #     a = user_association.first()
+    #     mark_unread = request.args.get('u')
+    #     msg_delete = request.args.get('d')
+    #
+    #     if a and mark_unread != "1" and msg_delete != "1" :
+    #         a.message_read = datetime.now(timezone.utc)
+    #         db.session.commit()
+    #         message_selected = a.message
+    #     elif(a and mark_unread == "1"):
+    #         a.message_read = None
+    #         db.session.commit()
+    #         message_selected = a.message
+    #     elif(a and  msg_delete == "1" ):
+    #         a.message_deleted = datetime.now(timezone.utc)
+    #         db.session.commit()
+    #         messages = q.all()
+    #         if messages:
+    #             message_selected = messages[0].message
+    #         else:
+    #             message_selected = None
 
 
 
-    return render_template("user/messages.html",messages=q.all(), message_selected=message_selected)
+    return render_template("user/messages.html",
+                           filters={},
+                           form=MessageActionform(),
+                           page_name=_l("Messages"),
+                           pagination=messages)
 
 # @user_bp.route('/message', methods=['GET', 'POST'])
 # @auth_required()
@@ -174,6 +298,7 @@ def messages():
     
 
 @user_bp.route('/search',methods=['GET'])
+@auth_required()
 def search():
     results = {}
     results.update({"results": []})
