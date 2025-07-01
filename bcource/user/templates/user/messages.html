@@ -1,7 +1,6 @@
 {% from "macros.html" import render_pagination %}
 
 
-
 {% macro message_action(message_id, action, icon,tooltip, mobile=False, toggle=True, class="") %}
      <a href="javascript:void(0);" class="{{class}}  {% if not mobile %}pe-2 pt-1 {%endif%}" 
           {% if toggle %} onClick="this.blur(); call_action([{{message_id}}], '{{action}}');"{% endif %}>
@@ -22,22 +21,37 @@
 {% block pre_data_headers %}
 
 {% if not g.is_mobile %}
-<div class="row lh-1 p-2 ps-1 border-top m-0">
-<div class="col-lg-12 p-0">
+<div class="row lh-1 lh-1 pt-1 ps-1 border-top m-0">
+<div class="col-lg-4 p-0 ">
      <input class="form-check-input" onClick="all_messages_enable(this);" id="select_all" name="select_all" type="checkbox" value="y">
-<span id="when_active" name="when_active" class="d-none ps-2">
-                    {{- message_action(0, "read_selected", "bi-envelope","Mark as read", class="icon-link link-body-emphasis") }}
-                    {{- message_action(0, "unread_selected", "bi-envelope-open","Mark as unread", class="icon-link link-body-emphasis") }}
-                    {{- message_action(0, "delete_selected", "bi-trash","Delete selected", class="icon-link link-body-emphasis") }}
+
+                    {{- message_action(0, "new_message", "bi-envelope-plus","New Message", class="icon-link link-body-emphasis", class="ps-2 icon-link link-body-emphasis fs-5") }}
+
+
+<span id="when_active" name="when_active" class="d-none ">
+                    {{- message_action(0, "read_selected", "bi-envelope","Mark as read", class="icon-link link-body-emphasis fs-5") }}
+                    {{- message_action(0, "unread_selected", "bi-envelope-open","Mark as unread", class="icon-link link-body-emphasis fs-5") }}
+                    {{- message_action(0, "delete_selected", "bi-trash","Delete selected", class="icon-link link-body-emphasis fs-5") }}
 </span>
 </div>
+<div class="col-lg-8 d-flex pe-1">
+  <div class="col-lg-8 small text-end">
+    <label for="free_text_search" class="col-form-label ">Search:&nbsp;</label>
+  </div>
+  <div class="col-lg-4 ">
+    <input type="text" id="free_text_search" name="free_text_search" class="form-control form-control-sm small text-end " aria-describedby="free_text_search">
+  </div>
+</div>
+
 </div>
 
 {% else %}
 <div class="row lh-1 px-0 py-2 border-top m-0">
 
-<div class="col-lg-12 ps-1 ms-0">
+<div class="col-lg-6 ps-1 ms-0">
      <input class="form-check-input" onClick="all_messages_enable(this);" id="select_all" name="select_all" type="checkbox" value="y">
+{{- message_action(0, "new_message", "bi-envelope-plus","New", class="icon-link link-body-emphasis", class="ps-2 icon-link link-body-emphasis", mobile=True) }}
+
 <span id="when_active" name="when_active" class="d-none ps-2">
                     {{- message_action(0, "read_selected", "bi-envelope","Mark read", mobile=True, class="icon-link link-body-emphasis") }}
                     {{- message_action(0, "unread_selected", "bi-envelope-open","Mark unread", mobile=True, class="icon-link link-body-emphasis") }}
@@ -54,6 +68,7 @@
 {% block head_row %}
     <div class="col-12 text-center">
         <h3 class="">{{page_name}}</h3>
+
      </div>
 {% endblock %}
 
@@ -94,7 +109,7 @@
                     </div>
                </div>
                <div  class="{{hide_mobile}}">
-               <div class="highlighttext-lg-end hover-message py-0 px-1" style="width: fit-content;">
+               <div class="highlighttext-lg-end hover-message lh-1 ps-5" style="width: fit-content;">
 
                {% if user_envelop.message_read == None %}
                     {{- message_action(user_envelop.message.id, "toggle", "bi-envelope-open","Toggle read", class="icon-link link-body-emphasis") }}
@@ -249,7 +264,9 @@ function call_action (message_ids,action){
 
 			}
 		})
-		
+ 	} else if (action == "new_message") {
+ 		window.location.href = '{{ url_for("user_bp.message") }}';
+ 		return(false)
  	} else if (action == "delete_msg_modal") {
  		message_ids = [parseInt($('#modal_message').attr('message-id'))]
  		action_req = "delete"
@@ -356,8 +373,22 @@ function all_messages_enable(checkbox){
 
   });
 
-
+function addOrReplaceUrlParam(url, paramName, paramValue) {
+    const urlObj = new URL(url);
+    urlObj.searchParams.set(paramName, paramValue);
+    return urlObj.toString();
+}
   
+const $searchInput = $('#free_text_search');
+
+$searchInput.on('keydown', async (event) => {
+	if (event.key === 'Enter') {
+		const q = $searchInput.val().trim()
+		const currentUrl = window.location.href;
+		const updatedUrl = addOrReplaceUrlParam(currentUrl, "q", q);
+		window.location.href = updatedUrl;
+	}
+});
   </script>
 
 {% endblock %}

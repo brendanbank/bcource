@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for, jsonify
 from flask_babel import _
 from flask_security import current_user
-from bcource.models import UserSettings, Message, User, UserMessageAssociation
+from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role
 from flask import current_app as app
 from flask_security import auth_required
 from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform
@@ -16,7 +16,7 @@ import pytz
 from flask_babel import lazy_gettext as _l
 from bcource.helper_app_context import b_pagination
 from jsonschema import validate, ValidationError
-
+from bcource.filters import Filters
 # Blueprint Configuration
 user_bp = Blueprint(
     'user_bp', __name__,
@@ -156,145 +156,132 @@ def get_messages(id):
     return jsonify(results)
 
 
+def make_filters():
+
+    filters = Filters("Training Filters")
+    past_training_filter = filters.new_filter("read", _("Read status"))
+    past_training_filter.add_filter_item( 1, _("Read"))
+    past_training_filter.add_filter_item( 2, _("Unread"))
+    past_training_filter.add_filter_item( 3, _("Deleted"))
+
+
+    return(filters)
+
+def make_message_select(filters):
+    
+    
+    q = UserMessageAssociation().query
+    
+    q = q.filter(UserMessageAssociation.user==current_user)
+             
+    if filters.get_item_is_checked("read","1") and filters.get_item_is_checked("read","2"):
+        pass
+    elif filters.get_item_is_checked("read","1"):
+        q = q.filter(UserMessageAssociation.message_read != None)
+
+    elif filters.get_item_is_checked("read","2"):
+        q = q.filter(UserMessageAssociation.message_read == None)
+
+    if filters.get_item_is_checked("read","3"):
+        q = q.filter(UserMessageAssociation.message_deleted != None)
+    else:
+        q = q.filter(UserMessageAssociation.message_deleted == None)
+        
+    if request.args.get('q', None):
+        request_q = request.args.get('q')
+        q =  q.join(Message).filter(or_(
+            Message.body.like(f"%{request_q}%"),
+            Message.subject.like(f"%{request_q}%"),
+                                        ))
+    else:
+        q = q.join(Message)
+    
+    q = q.order_by(Message.created_date.desc())
+
+    return (q)
+
 @user_bp.route('/messages', methods=['GET', 'POST'])
 @auth_required()
 def messages():
-    q = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
-                                                                UserMessageAssociation.message_id==Message.id,
-                                                                UserMessageAssociation.message_deleted == None)).order_by(
-                                                                    Message.created_date.desc())
-
-    messages = b_pagination(q, per_page=23)
-                                                 
-    message_selected_id = request.args.get('m', 0, int)
-    message = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
-                                                                UserMessageAssociation.message_id==message_selected_id)).first()
-
     
-    if message:
-        m_mark_unread = request.args.get('u', 0, int)
-        m_mark_read = request.args.get('r', 0, int)
-        m_delete = request.args.get('d', 0, int)
-        
-        if m_mark_unread == 1:
-            print ("m_mark_unread" )
-            message.message_read = None
-        elif m_mark_read == 1:
-            message.message_read = datetime.now(timezone.utc)
-        elif m_delete == 1:
-            message.message_deleted = datetime.now(timezone.utc)            
-        db.session.commit()
+    clear = request.args.getlist('submit_id')
+    if clear and clear[0]=='clear':
+        return redirect(url_for('user_bp.messages', show=request.args.getlist('show')))
 
+    filters = make_filters().process_filters()
+
+    q = make_message_select(filters)                                                 
        
-        
-    q = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
-                                                                UserMessageAssociation.message_id==Message.id,
-                                                                UserMessageAssociation.message_deleted == None)).order_by(
-                                                                    Message.created_date.desc())
-
     messages = b_pagination(q, per_page=22)
+
     
     
-    
-    # if message_selected_id == None and messages:
-    #     message_selected_id = messages[0].message.id
-    #
-    # try:
-    #     message_selected_id = int(message_selected_id)
-    # except:
-    #     message_selected_id = None
-    #
-    # # mark message as read
-    # if message_selected_id:
-    #     user_association = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
-    #                                                             UserMessageAssociation.message_id==message_selected_id))
-    #     a = user_association.first()
-    #     mark_unread = request.args.get('u')
-    #     msg_delete = request.args.get('d')
-    #
-    #     if a and mark_unread != "1" and msg_delete != "1" :
-    #         a.message_read = datetime.now(timezone.utc)
-    #         db.session.commit()
-    #         message_selected = a.message
-    #     elif(a and mark_unread == "1"):
-    #         a.message_read = None
-    #         db.session.commit()
-    #         message_selected = a.message
-    #     elif(a and  msg_delete == "1" ):
-    #         a.message_deleted = datetime.now(timezone.utc)
-    #         db.session.commit()
-    #         messages = q.all()
-    #         if messages:
-    #             message_selected = messages[0].message
-    #         else:
-    #             message_selected = None
-
-
-
     return render_template("user/messages.html",
-                           filters={},
+                           filters=filters,
                            form=MessageActionform(),
                            page_name=_l("Messages"),
                            pagination=messages)
 
-# @user_bp.route('/message', methods=['GET', 'POST'])
-# @auth_required()
-# def message():
-#     form = UserMessages()
-#
-#     reply_message_id = request.args.get('reply')
-#
-#
-#     if reply_message_id and not form.is_submitted():
-#
-#         user_message_association = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
-#                                                                 UserMessageAssociation.message_id==reply_message_id)).first()
-#
-#         if not user_message_association:
-#             flash(_("Message does not exists!"), 'error')
-#             return redirect(url_for('user_bp.messages'))                          
-#
-#         if user_message_association:
-#
-#             date = user_message_association.message.created_date
-#             date_tz = date.replace(tzinfo=pytz.timezone('UTC'))            
-#
-#             reply_message = f'On {date_tz.astimezone().strftime("%c %Z")}, {user_message_association.message.envelop_from} wrote: {user_message_association.message.body}'
-#
-#             form.body.data = reply_message
-#
-#             form.envelop_tos.data = [f"{user_message_association.message.envelop_from.id}"]
-#             form.envelop_tos.choices = [(user_message_association.message.envelop_from.id,user_message_association.message.envelop_from.fullname)]
-#
-#             form.subject.data = f'Re: {user_message_association.message.subject}'
-#
-#     if form.is_submitted():
-#         if form.envelop_tos.data:
-#             choices = []
-#             envelop_tos = User().query.filter(User.id.in_(form.envelop_tos.data)).all()
-#             for user in envelop_tos:
-#                 choices.append((user.id, user.fullname ))
-#
-#             form.envelop_tos.choices = choices
-#         else:
-#             form.envelop_tos.choices = form.envelop_tos.data
-#
-#
-#     if form.validate_on_submit():
-#         envelop_tos = User().query.filter(User.id.in_(form.envelop_tos.data)).all()
-#         if not envelop_tos:
-#             flash(_("Could not find user!"))
-#         else:
-#             message = Message.create_db_message(db.session,
-#                                              current_user,
-#                                              envelop_tos,
-#                                              form.subject.data,
-#                                              form.body.data)
-#
-#             flash(_("Message sent!"))
-#             return redirect(url_for('user_bp.messages'))
-#
-#     return render_template("user/message.html", form=form)
+@user_bp.route('/message', methods=['GET', 'POST'])
+@auth_required()
+def message():
+    form = UserMessages()
+    
+    get_url(form)
+
+    reply_message_id = request.args.get('reply')
+
+
+    if reply_message_id and not form.is_submitted():
+
+        user_message_association = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
+                                                                UserMessageAssociation.message_id==reply_message_id)).first()
+
+        if not user_message_association:
+            flash(_("Message does not exists!"), 'error')
+            return redirect(url_for('user_bp.messages'))                          
+
+        if user_message_association:
+
+            date = user_message_association.message.created_date
+            date_tz = date.replace(tzinfo=pytz.timezone('UTC'))            
+
+            reply_message = f'On {date_tz.astimezone().strftime("%c %Z")}, {user_message_association.message.envelop_from} wrote: {user_message_association.message.body}'
+
+            form.body.data = reply_message
+
+            form.envelop_tos.data = [f"{user_message_association.message.envelop_from.id}"]
+            form.envelop_tos.choices = [(user_message_association.message.envelop_from.id,user_message_association.message.envelop_from.fullname)]
+
+            form.subject.data = f'Re: {user_message_association.message.subject}'
+
+    if form.is_submitted():
+        if form.envelop_tos.data:
+            choices = []
+            envelop_tos = User().query.filter(User.id.in_(form.envelop_tos.data)).all()
+            for user in envelop_tos:
+                choices.append((user.id, user.fullname ))
+
+            form.envelop_tos.choices = choices
+        else:
+            form.envelop_tos.choices = form.envelop_tos.data
+
+
+    if form.validate_on_submit():
+        envelop_tos = User().query.filter(User.id.in_(form.envelop_tos.data)).all()
+        if not envelop_tos:
+            flash(_("Could not find user!"))
+        else:
+            message = Message.create_db_message(db.session,
+                                             current_user,
+                                             envelop_tos,
+                                             form.subject.data,
+                                             form.body.data)
+
+            flash(_("Message sent!"))
+            return redirect(url_for('user_bp.messages'))
+
+    return render_template("user/message.html", form=form)
     
 
 @user_bp.route('/search',methods=['GET'])
@@ -304,16 +291,21 @@ def search():
     results.update({"results": []})
 
     query_term = request.args.get('q')
-    r = []
     
+    q = User().query
+    if current_user.has_role('trainer'):
+        q = q.join(User.roles).filter(Role.name == "trainer")
+
     if query_term:
-        r = User().query.filter(or_( 
+        q = q.filter(or_( 
             User.first_name.ilike(f'%{query_term}%'), 
             User.last_name.ilike(f'%{query_term}%'),
-            User.email.ilike(f'%{query_term}%'))).order_by(User.first_name, User.last_name).all()
+            User.email.ilike(f'%{query_term}%')))
 
-    for student in r:
-        results["results"].append({"id": student.id,  "text":  student.fullname})
+    r = q.order_by(User.first_name, User.last_name).limit(20).all()
+            
+    for user in r:
+        results["results"].append({"id": user.id,  "text":  user.fullname})
     return jsonify(results)
 
 
