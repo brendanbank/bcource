@@ -1,0 +1,48 @@
+{% extends 'form.html' %}
+
+{% set menu="Send Message" %}
+
+{% block nav %}
+    {% include 'nav.html' %}
+{% endblock %}
+
+{% block css_content %}
+     {% include 'ckeditor-css.html' %}
+{% endblock %}
+
+{% block js %}
+     {% include 'ckeditor-js.html' %}
+
+<script type="text/javascript">
+     $('#envelop_tos').select2({
+          placeholder : 'start typing',
+          minimumInputLength: 1,
+          containerCssClass : "myFont",
+          ajax : {
+               url : "{{url_for('user_bp.search')}}",
+               dataType : 'json'
+          // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+          }
+     });
+     $('#envelop_tos').select2('data');
+     
+     
+</script>
+ 
+<script>
+
+</script>
+{% endblock %}
+
+{% block formheader %}
+<!-- Button trigger modal -->
+
+<div class="col-md-12">
+     <h3 class="text-center">{{ form.form_description }}</h3>
+</div>
+          
+{% endblock %}
+
+
+
+

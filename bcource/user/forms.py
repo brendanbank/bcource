@@ -15,10 +15,8 @@ class MessageActionform(FlaskForm):
     action = MyHiddenField("action")
 
 class UserMessages(FlaskForm):
-    form_description = _l("Send Message")
+    form_description = _l("New Message")
     formclass =  "col-md-10"
-    hrfields = { 'envelop_to': '', "submit": ''
-    }
     
     envelop_tos = MySelectMultipleField(_l("To"), [validators.DataRequired()],
                                        # query_factory=lambda: models.User().query.order_by(models.User.first_name, models.User.last_name).all(),
@@ -36,10 +34,11 @@ class UserMessages(FlaskForm):
         divclass = "col-md-12 mt-1",
         render_kw={"class": "ckeditor position-relative form-control"})
 
+    url = MyHiddenField()
     
-    submit = MySubmitField(_l('Send'), 
-        render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1"},
-        divclass="col-md-12")
+    # submit = MySubmitField(_l('Send'), 
+    #     render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1"},
+    #     divclass="col-md-12")
 
 class UserSettingsForm(FlaskForm):
     form_description = _l("Update account settings")
