@@ -69,6 +69,7 @@
                
                     {% endfor -%}
                {% endfor -%}
+               {% if user_q != "" %}<span] class="small pt-1"> <span class="">Search term: <span class="fw-semibold">{{user_q}}</span></<span></span>{% endif %}
                <div class="px-0 pt-2 pb-2">
                <div class="" >
                     <button
@@ -82,6 +83,7 @@
                     </div>
                </div>
                </div>
+               <input id="q" name="q" type="hidden" value="{{user_q}}"> 
                <input id="hidden_show" name="show" type="hidden" value="{{filters.show}}"> 
                <input id="page" name="page" type="hidden" value="{{pagination.page}}"> 
 

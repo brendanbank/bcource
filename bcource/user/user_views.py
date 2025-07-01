@@ -167,7 +167,7 @@ def make_filters():
 
     return(filters)
 
-def make_message_select(filters):
+def make_message_select(filters, user_q=None):
     
     
     q = UserMessageAssociation().query
@@ -187,11 +187,10 @@ def make_message_select(filters):
     else:
         q = q.filter(UserMessageAssociation.message_deleted == None)
         
-    if request.args.get('q', None):
-        request_q = request.args.get('q')
+    if user_q:
         q =  q.join(Message).filter(or_(
-            Message.body.like(f"%{request_q}%"),
-            Message.subject.like(f"%{request_q}%"),
+            Message.body.like(f"%{user_q}%"),
+            Message.subject.like(f"%{user_q}%"),
                                         ))
     else:
         q = q.join(Message)
@@ -210,7 +209,10 @@ def messages():
 
     filters = make_filters().process_filters()
 
-    q = make_message_select(filters)                                                 
+
+    user_q = request.args.get('q', None)
+
+    q = make_message_select(filters, user_q)                                                 
        
     messages = b_pagination(q, per_page=22)
 
@@ -218,6 +220,7 @@ def messages():
     
     return render_template("user/messages.html",
                            filters=filters,
+                           user_q=user_q if user_q != None else "",
                            form=MessageActionform(),
                            page_name=_l("Messages"),
                            pagination=messages)
