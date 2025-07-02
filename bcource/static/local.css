@@ -425,3 +425,9 @@ select#practice_selector:hover {
 .main_div {
       padding-top: 50px; /* Adjust value */
 }
+
+:root {
+    --ck-z-default: 100;
+    --ck-z-panel: calc( var(--ck-z-default) + 999 );
+}
+

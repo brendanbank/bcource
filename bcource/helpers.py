@@ -16,6 +16,7 @@ from flask_babel import lazy_gettext as _l
 import nh3
 from jinja2.filters import do_mark_safe
 from datetime import timedelta, datetime
+from copy import deepcopy
 
 
 
@@ -26,6 +27,7 @@ def has_trainer_role():
         raise(HTTPExceptionMustHaveTwoFactorEnabled())
     
 def nh3_save(txt):
+    attributes = deepcopy(nh3.ALLOWED_ATTRIBUTES)
     return do_mark_safe(nh3.clean(txt))
 
 def message_date(db_datetime_notz, mobile_date=False):

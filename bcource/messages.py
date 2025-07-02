@@ -15,17 +15,30 @@ def cleanhtml(raw_html):
     return cleantext.getText()
 
 class SystemMessage(object):
-    def __init__(self, envelop_to=None, envelop_from=None, **kwargs):
+    message_tag = "transation"
+    
+    def __init__(self, envelop_to=None, envelop_from=None, taglist=None, **kwargs):
         if not envelop_to:
             raise Exception('envelop_to cannot be None')
         
         if not envelop_from:
             envelop_from = security.datastore.find_user(email=cv('SYSTEM_USER'))
+        
+        if not taglist:
+            self.taglist = []
+        else:
+            self.taglist = taglist
+        
+        if not self.__class__.message_tag in self.taglist:
+            self.taglist.append(self.__class__.message_tag)
+            
+        if not SystemMessage.message_tag in self.taglist:
+            self.taglist.append(SystemMessage.message_tag)
             
         self.kwargs=kwargs
-        self.TAG = self.__class__.__name__
-        self.body = Content.get_tag(self.TAG, **self.kwargs)
-        self.subject = Content.get_tag(f'{self.TAG}Subject', **self.kwargs)
+        self.CONTENT_TAG = self.__class__.__name__
+        self.body = Content.get_tag(self.CONTENT_TAG, **self.kwargs)
+        self.subject = Content.get_tag(f'{self.CONTENT_TAG}Subject', **self.kwargs)
         if not isinstance(envelop_to, list):
             envelop_to = [envelop_to]
 
@@ -47,13 +60,18 @@ class SystemMessage(object):
                                   envelop_from=self.envelop_from,
                                   envelop_to=self.envelop_to,
                                   body=self.render_body(),
-                                  subject=self.render_subject())
+                                  subject=self.render_subject(),
+                                  tags=self.taglist)
 
 
 class SendEmail(SystemMessage):
+    message_tag = "email"
     
     def send(self):
         
+        if not SendEmail.message_tag in self.taglist:
+            self.taglist.append(SendEmail.message_tag)
+
         email_to = []
         for email_user in self.envelop_to:
             email_to.append(f'{email_user.fullname} <{email_user.email}>')
@@ -84,6 +102,8 @@ class EmailStudentCreated(SendEmail):
 
 
 class EmailStudentEnrolledInTrainingWaitlist(SendEmail):
+    message_tag = "wait list"
+    
     def process_attachment(self, msg):
         if not 'enrollment' in self.kwargs:
             raise Exception(f"'enrollment' not present into kwargs")
@@ -94,7 +114,6 @@ class EmailStudentEnrolledInTrainingWaitlist(SendEmail):
         
         user = enrollment.student.user
         training = enrollment.training
-        
 
         cal = Calendar()
         cal.add("prodid", "-//Gnarst B.V.//Bcourse//EN")
@@ -123,9 +142,11 @@ class EmailStudentEnrolledInTrainingWaitlist(SendEmail):
         msg.attach(f'{training.name}.ics', cal.to_ical(), 'text/calendar')
 
 class EmailStudentEnrolledWaitlist(SendEmail):
-    pass
+    message_tag = "wait list"
 
 class EmailStudentEnrolledInTraining(SendEmail):
+    message_tag = "enrolled"
+    
     def process_attachment(self, msg):
         if not 'enrollment' in self.kwargs:
             raise Exception(f"'enrollment' not present into kwargs")
@@ -136,7 +157,6 @@ class EmailStudentEnrolledInTraining(SendEmail):
         
         user = enrollment.student.user
         training = enrollment.training
-        
 
         cal = Calendar()
         cal.add("prodid", "-//Gnarst B.V.//Bcourse//EN")
@@ -165,6 +185,8 @@ class EmailStudentEnrolledInTraining(SendEmail):
         msg.attach(f'{training.name}.ics', cal.to_ical(), 'text/calendar')
         
 class EmailStudentDerolledInTraining(SendEmail):
+    message_tag = "derolled"
+
     def process_attachment(self, msg):
 
         if not 'enrollment' in self.kwargs:
@@ -176,7 +198,7 @@ class EmailStudentDerolledInTraining(SendEmail):
         
         user = enrollment.student.user
         training = enrollment.training
-
+        
         cal = Calendar()
         cal.add("prodid", "-//Gnarst B.V.//Bcourse//EN")
         cal.add("version", "2.0")
@@ -205,21 +227,20 @@ class EmailStudentDerolledInTraining(SendEmail):
         msg.attach(f'{enrollment.training.name} canceled.ics', cal.to_ical(), 'text/calendar')
 
 class EmailStudentStatusActive(SendEmail):
-    pass
+    message_tag = "active"
 
 class EmailStudentEnrolled(SystemMessage):
-    pass
+    message_tag = "enrolled"
 
 # message to trainers to notify that the student has derolled
 class EmailStudentDerolled(SystemMessage):
-    pass
+    message_tag = "derolled"
 
 class EmailStudentEnrolledInTrainingInviteAccepted(EmailStudentEnrolledInTraining):
-    pass
+    message_tag = "enrolled"
 
 class EmailStudentEnrolledInTrainingInvited(SendEmail):
-    pass
+    message_tag = "invited"
 
 class EmailStudentEnrolledInTrainingDeInvited(SendEmail):
-    pass
-
+    message_tag = "devited"

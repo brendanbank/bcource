@@ -62,8 +62,9 @@ $(window).on('load', function() {
    });
 
    //$('#envelop_tos').select2('data');
-	$('#settingModel').modal('show');
+	$('#settingModel').modal('show', {focus: false});
 
+	
     const settingModel = document.getElementById('settingModel')
     settingModel.addEventListener('hide.bs.modal', event => {
      setTimeout(function(){window.location.href = document.getElementById('url').value;},2);

@@ -73,8 +73,10 @@ def enroll_common(training, user):
         system_msg.EmailStudentEnrolledWaitlist(envelop_to=training.trainer_users, enrollment=enroll).send()
 
     else:
-        system_msg.EmailStudentEnrolledInTraining(envelop_to=user, 
-                                                  enrollment=enroll).send()
+        a = system_msg.EmailStudentEnrolledInTraining(envelop_to=user, 
+                                                  enrollment=enroll)
+        a.send()
+                                                  
         system_msg.EmailStudentEnrolled(envelop_to=training.trainer_users, enrollment=enroll).send()
 
         db.session.commit()

@@ -25,17 +25,13 @@
 <div class="col-lg-4 p-0 ">
      <input class="form-check-input" onClick="all_messages_enable(this);" id="select_all" name="select_all" type="checkbox" value="y">
 
-                    {{- message_action(0, "new_message", "bi-envelope-plus","New Message", class="icon-link link-body-emphasis", class="ps-2 icon-link link-body-emphasis fs-5") }}
-
-
-<span id="when_active" name="when_active" class="d-none ">
-                    {{- message_action(0, "read_selected", "bi-envelope","Mark as read", class="icon-link link-body-emphasis fs-5") }}
-                    {{- message_action(0, "unread_selected", "bi-envelope-open","Mark as unread", class="icon-link link-body-emphasis fs-5") }}
-                    {{- message_action(0, "delete_selected", "bi-trash","Delete selected", class="icon-link link-body-emphasis fs-5") }}
-                    {{- message_action(0, "undelete_selected", "bi-envelope-x","Undelete selected", class="icon-link link-body-emphasis fs-5") }}
+{{- message_action(0, "new_message", "bi-envelope-plus","New Message", class="icon-link link-body-emphasis", class="ps-2 icon-link link-body-emphasis fs-5") }}
+{{- message_action(0, "read_selected", "bi-envelope-open","Mark as read", class="icon-link link-body-emphasis fs-5 when_active d-none") }}
+{{- message_action(0, "unread_selected", "bi-envelope","Mark as unread", class="icon-link link-body-emphasis fs-5 when_active d-none") }}
+{{- message_action(0, "delete_selected", "bi-trash","Delete selected", class="icon-link link-body-emphasis fs-5 when_active d-none") }}
+{{- message_action(0, "undelete_selected", "bi-envelope-x","Undelete selected", class="icon-link link-body-emphasis fs-5 when_active d-none") }}
                     
                     
-</span>
 </div>
 <div class="col-lg-8 d-flex pe-1">
   <div class="col-lg-8 small text-end">
@@ -65,16 +61,15 @@
   </div>
 </div>
 
-<div class="col-lg-6 ps-1 ms-0">
+<div class="ps-1 ms-0 lh-1 d-flex justify-content-between">
+<div>
      <input class="form-check-input" onClick="all_messages_enable(this);" id="select_all" name="select_all" type="checkbox" value="y">
-{{- message_action(0, "new_message", "bi-envelope-plus","New", class="icon-link link-body-emphasis", class="ps-2 icon-link link-body-emphasis", mobile=True) }}
+{{- message_action(0, "new_message", "bi-envelope-plus","New", class="icon-link link-body-emphasis", class="ps-5 pe-0 icon-link link-body-emphasis") }}
+</div>
+                    {{- message_action(0, "read_selected", "bi-envelope-open","Mark read",  class="icon-link link-body-emphasis when_active d-none") }}
+                    {{- message_action(0, "unread_selected", "bi-envelope","Mark unread", class="icon-link link-body-emphasis when_active d-none") }}
+                    {{- message_action(0, "delete_selected", "bi-trash","Del",  class="icon-link link-body-emphasis when_active d-none") }}
 
-<span id="when_active" name="when_active" class="d-none ps-2">
-                    {{- message_action(0, "read_selected", "bi-envelope","Mark read", mobile=True, class="icon-link link-body-emphasis") }}
-                    {{- message_action(0, "unread_selected", "bi-envelope-open","Mark unread", mobile=True, class="icon-link link-body-emphasis") }}
-                    {{- message_action(0, "delete_selected", "bi-trash","Delete", mobile=True, class="icon-link link-body-emphasis") }}
-
-</span>
 </div>
 
 
@@ -107,50 +102,59 @@
 
 
       {% for user_envelop in pagination -%}
-      <div class="row base-row position-relative {{ loop.cycle('evendiv', 'odddiv')}} m-0 {% if g.is_mobile %}py-3 {%endif%}" >
-          <div id="m_{{user_envelop.message.id}}" message-id={{user_envelop.message.id}} 
-               message-bcourse-read-status="{{1 if user_envelop.message_read else 0}}" 
-                    class="highlight hover-container  px-0 {% if user_envelop.message_read == None%}fw-bold{%endif%} "> 
-              <div  class=" d-lg-flex hover-target" 
-              onClick="user_show_model(this);" message-id={{user_envelop.message.id}}
-              style="cursor: pointer;">
-              
-                    <div class="test-overflow col-lg-8 py-0 text-truncate order-lg-1">
-                    {% if g.is_mobile %}{{ msg_checkbox(user_envelop.message.id) }}{%endif%}
-                                   <span class="test-overflow  ps-1 {{ show_mobile }}">Subject: </span>{{ user_envelop.message.subject }}</div>
-                    <div class="me-3 col-lg-3 text-truncate pb-1 ">
-                    {% if not g.is_mobile %}{{ msg_checkbox(user_envelop.message.id) }}{%endif%}
+               
+      {%if g.is_mobile %} 
+      <div class="row base-row position-relative {{ loop.cycle('evendiv', 'odddiv')}} m-0 {% if user_envelop.message_read == None%}fw-semibold{%endif%} " 
+          id="m_{{user_envelop.message.id}}" message-id={{user_envelop.message.id}} onClick="user_show_model(this);"
+               message-bcourse-read-status="{{1 if user_envelop.message_read else 0}} "  >
+      
+                    <div class="ps-0 d-flex align-items-center border-bottom">
+                         <div class="">{{ msg_checkbox(user_envelop.message.id) }}</div>
+                         <div class="col-10">
+                              <div class="me-3 text-truncate pb-1 ">
+                                   <span class="ps-1 ">{{ user_envelop.message.envelop_from }}</span><br>
+                                   <span class="ps-1 ">{{ user_envelop.message.subject }}</span>
+                              </div>
+                         </div >
+                         <div class="w-100 justify-content-end text-end">
+                                        <span class="">{{ user_envelop.message.created_date | message_date}}</span>
+                         </div>
 
-                              <span class="ps-1 {{ show_mobile }}">From:</span>
-                    <span class="ps-1 ">{{ user_envelop.message.envelop_from }}</span>
                     </div>
-                    <div class="col-lg-1  order-lg-3">
-                                   <span class="pe-2 test-overflow {{ hide_mobile }} ">{{ user_envelop.message.created_date | message_date}}</span>
-                                   <span class="test-overflow {{ show_mobile }} py-0 px-1">Date: {{ user_envelop.message.created_date | message_date(mobile_date=True)}}</span>
+      
+      
+      {% else %}
+      <div class="row base-row position-relative {{ loop.cycle('evendiv', 'odddiv')}} m-0" >
+          <div  class="highlight hover-container px-0"> 
+              <div  class=" d-lg-flex hover-target {% if user_envelop.message_read == None%}fw-semibold{%endif%}" 
+              style="cursor: pointer;" id="m_{{user_envelop.message.id}}" message-id={{user_envelop.message.id}} onClick="user_show_model(this);"
+               message-bcourse-read-status="{{1 if user_envelop.message_read else 0}}">
+                    <div class="me-3 col-lg-3 text-truncate pb-1 ">
+                         {{ msg_checkbox(user_envelop.message.id) }}
+                         <span class="ps-1 ">{{ user_envelop.message.envelop_from }}</span>
+                    </div>
+
+                    <div class="test-overflow col-lg-8 py-0 text-truncate">
+                         {{ user_envelop.message.subject }}
+                    </div>
+                    <div class="text-end w-100">
+                                   <span class="pe-2  test-overflow">{{ user_envelop.message.created_date | message_date}}</span>
                     </div>
                </div>
-               <div  class="{{hide_mobile}}">
+               
                <div class="highlighttext-lg-end hover-message lh-1 ps-5" style="width: fit-content;">
 
-               {% if user_envelop.message_read == None %}
-                    {{- message_action(user_envelop.message.id, "toggle", "bi-envelope-open","Toggle read", class="icon-link link-body-emphasis") }}
-               {% else %}
-                    {{- message_action(user_envelop.message.id, "toggle", "bi-envelope","Toggle read", class="icon-link link-body-emphasis") }}
-               {% endif %}
-               {{ message_action(user_envelop.message.id, "delete", "bi-trash","Delete", class="icon-link link-body-emphasis") }}
+                    {% if user_envelop.message_read == None %}
+                         {{- message_action(user_envelop.message.id, "toggle", "bi-envelope-open","Toggle read", class="icon-link link-body-emphasis") }}
+                    {% else %}
+                         {{- message_action(user_envelop.message.id, "toggle", "bi-envelope","Toggle read", class="icon-link link-body-emphasis") }}
+                    {% endif %}
+                    {{ message_action(user_envelop.message.id, "delete", "bi-trash","Delete", class="icon-link link-body-emphasis") }}
                </div>
-               </div>
-               <div class="{{show_mobile}} ps-1 pt-0 pb-2">
-               
-               {% if user_envelop.message_read == None %}
-                    {{- message_action(user_envelop.message.id, "toggle_mobile", "bi-envelope-open","Toggle read", True, class="icon-link link-body-emphasis") }}
-               {% else %}
-                    {{- message_action(user_envelop.message.id, "toggle_mobile", "bi-envelope","Toggle read", True, class="icon-link link-body-emphasis") }}
-               {% endif %}
-               {{ message_action(user_envelop.message.id, "delete", "bi-trash","Delete", True, class="icon-link link-body-emphasis") }}
-               </div>
+               <!-- hover -->
                
          </div>
+         {% endif %}
      </div>
 
           {% endfor %}
@@ -163,7 +167,7 @@
 <div class="modal fade" id="modal_message" message-id="" tabindex="-1" aria-labelledby="label_modal_message" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
+      <div class="modal-header d-flex justify-content-between">
       <div class="row">
       <div class="col-lg-12">
         <span class="fw-semibold">From:&nbsp;</span><span class="modal-title " id="message_from"></span>
@@ -182,11 +186,13 @@
       </div>
       <div class="modal-body">
         <div id="message_body"></div>
+        <div id="message_tags"></div>
       </div>
       <div class="modal-footer">
-               <span class="fs-3">{{- message_action(0, "unread_msg_modal", "bi-envelope mb-2","Mark Unread ", mobile=True, class="btn btn-outline-dark") }}</span>&nbsp;
-               <span class="fs-3">{{- message_action(0, "reply", "bi-reply mb-2","Reply", mobile=True, class="btn btn-outline-dark") }}</span>&nbsp;
-               <span class="fs-3">{{- message_action(0, "delete_msg_modal", "bi-trash mb-2","Delete", mobile=True, class="btn btn-outline-dark") }}</span>&nbsp;
+               <span class="fs-3"><button onClick="this.blur();" type="button" class="btn btn-sm btn-outline-dark" data-bs-dismiss="modal">Close</button>&nbsp;</span>
+               <span class="fs-3">{{- message_action(0, "unread_msg_modal", "bi-envelope mb-2","Unread ", mobile=True, class="btn btn-sm btn-outline-dark") }}&nbsp;</span>
+               <span class="fs-3 admin_hide">{{- message_action(0, "reply", "bi-reply mb-2","Reply", mobile=True, class="btn btn-sm btn-outline-dark ") }}&nbsp;</span>
+               <span class="fs-3">{{- message_action(0, "delete_msg_modal", "bi-trash mb-2","Delete", mobile=True, class="btn btn-sm btn-outline-dark") }}&nbsp;</span>
       </div>
     </div>
   </div>
@@ -212,10 +218,17 @@ function user_show_model(item){
 	
 	
 	$.getJSON(`/account/messages/api/get/${msg_id}`, function(data) {
+		console.log(data)
 	    $('#message_body').html(data.body);
 	    $('#message_subject').html(data.subject);
 	    $('#message_date').html(data.created_date);
 	    $('#message_from').html(data.from )
+	    $('#message_tags').html("Tags: " + data.tags.join(", ") )
+	    if (data.from == "do-not-reply"){
+	    	$('.admin_hide').addClass("d-none")
+	    } else {
+	    	$('.admin_hide').removeClass("d-none")
+	    }
 	    action_read_toggle([msg_id], 1)
 	});
 	MsgModal.show()
@@ -232,7 +245,7 @@ function action_read_toggle(message_ids, is_read){
           
     	  if (is_read == 0){
     		  
-              $("#m_" + message_id).addClass("fw-bold")
+              $("#m_" + message_id).addClass("fw-semibold")
               $("#icon_toggle_" + message_id).removeClass("bi-envelope")
               $("#icon_toggle_mobile_" + message_id).removeClass("bi-envelope")
 
@@ -242,7 +255,7 @@ function action_read_toggle(message_ids, is_read){
               
     	  } else {
 
-              $("#m_" + message_id).removeClass("fw-bold")
+              $("#m_" + message_id).removeClass("fw-semibold")
               $("#icon_toggle_" + message_id).removeClass("bi-envelope-open")
               $("#icon_toggle_mobile_" + message_id).removeClass("bi-envelope-open")
 
@@ -271,7 +284,6 @@ function action_find_selected(){
 }
 
 function call_action (message_ids,action){
-
 	
  	if (action == "toggle" || action == "toggle_mobile"){
 		$.each(message_ids, function() {
@@ -287,6 +299,12 @@ function call_action (message_ids,action){
 		})
  	} else if (action == "new_message") {
  		window.location.href = '{{ url_for("user_bp.message") }}';
+ 		return(false)
+ 	} else if (action == "reply") {
+ 		var message_url = '{{ url_for("user_bp.message", _external=True) }}'
+ 		console.log(message_url)
+ 		message_url = addOrReplaceUrlParam(message_url, 'reply',parseInt($('#modal_message').attr('message-id')) )
+ 		window.location.href = message_url
  		return(false)
  	} else if (action == "delete_msg_modal") {
  		message_ids = [parseInt($('#modal_message').attr('message-id'))]
@@ -332,7 +350,9 @@ function call_action (message_ids,action){
          	},
          type : 'POST',
      	 success: function (data) {
+     		 
             console.log(data)
+            
 			switch (action) {
 			case "delete_selected":
 				location.reload();
@@ -373,9 +393,9 @@ function call_action (message_ids,action){
 function all_messages_enable(checkbox){
 	$('.all_messages_check').prop('checked', checkbox.checked);
 	if (checkbox.checked){
-		$('#when_active').removeClass("d-none")
+		$('.when_active').removeClass("d-none")
 	}else {
-		$('#when_active').addClass("d-none")
+		$('.when_active').addClass("d-none")
 	}
 
      }
@@ -393,9 +413,9 @@ function all_messages_enable(checkbox){
 		  }
 	  });
 		if (checked){
-			$('#when_active').removeClass("d-none")
+			$('.when_active').removeClass("d-none")
 		}else {
-			$('#when_active').addClass("d-none")
+			$('.when_active').addClass("d-none")
 		}
 
   });
