@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for, jsonify, current_app
 from flask_babel import _
 from flask_security import current_user
-from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role
+from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag
 from flask import current_app as app
 from flask_security import auth_required
 from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform
@@ -148,8 +148,8 @@ def get_messages(id):
             "subject": envelop.message.subject,
             "created_date": envelop.message.created_date,
             "body": envelop.message.body,
-            
-            "from": f'{envelop.message.envelop_from}',
+            "tags": [tag.tag for tag in envelop.message.tags ],
+            "from": f'{envelop.message.envelop_from}' if not current_app.config["BCOURSE_SYSTEM_USER"] == envelop.message.envelop_from.email else "do-not-reply",
             # "to": [ f'{envelop.user}' for envelop in envelop.message.envelop_to ],
             "to": f'{envelop.user}',
             "deleted": f'{message_date(envelop.message_deleted, mobile_date=True)}' if envelop.message_deleted != None else None,
@@ -166,6 +166,10 @@ def make_filters():
     past_training_filter.add_filter_item( 1, _("Read"))
     past_training_filter.add_filter_item( 2, _("Unread"))
     past_training_filter.add_filter_item( 3, _("Deleted"))
+    
+    tags_filter = filters.new_filter("tag", _("Tags"))
+    for tagobj in MessageTag().query.filter(MessageTag.hidden == False).order_by(MessageTag.tag).all():
+        tags_filter.add_filter_item( tagobj.id, tagobj.tag)
 
 
     return(filters)
@@ -189,7 +193,9 @@ def make_message_select(filters, user_q=None):
         q = q.filter(UserMessageAssociation.message_deleted != None)
     else:
         q = q.filter(UserMessageAssociation.message_deleted == None)
-        
+
+    
+
     if user_q:
         q =  q.join(Message).filter(or_(
             Message.body.like(f"%{user_q}%"),
@@ -197,7 +203,12 @@ def make_message_select(filters, user_q=None):
                                         ))
     else:
         q = q.join(Message)
-    
+
+    items_checked = filters.get_items_checked('tag')
+
+    if items_checked:
+        q = q.join(Message.tags).filter(MessageTag.id.in_(items_checked))
+
     q = q.order_by(Message.created_date.desc())
 
     return (q)
@@ -252,7 +263,7 @@ def message():
             date = user_message_association.message.created_date
             date_tz = date.replace(tzinfo=pytz.timezone('UTC'))            
 
-            reply_message = f'On {date_tz.astimezone().strftime("%c %Z")}, {user_message_association.message.envelop_from} wrote: {user_message_association.message.body}'
+            reply_message = f'On {date_tz.astimezone().strftime("%c %Z")}, {user_message_association.message.envelop_from} wrote: <blockquote>{user_message_association.message.body}</blockquote>'
 
             form.body.data = reply_message
 
@@ -282,7 +293,8 @@ def message():
                                              current_user,
                                              envelop_tos,
                                              form.subject.data,
-                                             form.body.data)
+                                             form.body.data,
+                                             tags=['User'])
 
             flash(_("Message sent!"))
             return redirect(url_for('user_bp.messages'))
