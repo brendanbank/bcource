@@ -561,6 +561,40 @@ class UserMessageAssociation(db.Model):
                                               )
     user: Mapped["User"] = relationship(back_populates="messages")
 
+
+message_tag_association = Table(
+    "message_tag_message",
+    db.Model.metadata,
+    Column("messagetag_id", ForeignKey("message_tag.id", ondelete="CASCADE"), primary_key=True),
+    Column("message_id", ForeignKey("message.id", ondelete="CASCADE"), primary_key=True),
+)
+
+class MessageTag(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tag: Mapped[str] = mapped_column(String(256), nullable=False)
+    
+    
+    messages: Mapped[List["Message"]] =  relationship(
+        secondary=message_tag_association, back_populates="tags", 
+    )
+    hidden: Mapped[bool] = mapped_column(Boolean(), default=False)
+
+    created_date: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    
+    def __str__(self):
+        return self.tag
+    
+    @classmethod
+    def get_tag(cls,tag_name):
+        tag = MessageTag().query.filter(MessageTag.tag == tag_name).first()
+        if not tag:
+            tag=cls()
+            tag.tag = tag_name
+            db.session.add(tag)
+        return (tag)
+    
 class Message(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     subject: Mapped[str] = mapped_column(String(256), nullable=False)
@@ -576,19 +610,25 @@ class Message(db.Model):
     created_date: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-        
+    
+    tags: Mapped[List["MessageTag"]] =  relationship(
+        secondary=message_tag_association, back_populates="messages", 
+    )
+    
     @staticmethod
     def shorten(data, text_length=30):
         return (data[:text_length] + '..') if len(data) > text_length else data
             
     
     @classmethod
-    def create_db_message(cls, db_session, envelop_from, envelop_to, subject, body, in_reply_to=None):
+    def create_db_message(cls, db_session, envelop_from, envelop_to, subject, body, in_reply_to=None, tags=[]):
         
         message = cls(envelop_from_id=envelop_from.id,
                       subject=subject, 
                       body=nh3.clean(body))
-                      # body=body)
+        # body=body)
+        for tag in tags:
+            message.tags.append(MessageTag.get_tag(tag))
         
         if in_reply_to:
             message.in_reply_to = in_reply_to
