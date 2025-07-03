@@ -146,7 +146,7 @@ def get_messages(id):
             "results": True,
             "id": envelop.message.id, 
             "subject": envelop.message.subject,
-            "created_date": envelop.message.created_date,
+            "created_date": f'{message_date(envelop.message.created_date, mobile_date=True)}',
             "body": envelop.message.body,
             "tags": [tag.tag for tag in envelop.message.tags ],
             "from": f'{envelop.message.envelop_from}' if not current_app.config["BCOURSE_SYSTEM_USER"] == envelop.message.envelop_from.email else "do-not-reply",
