@@ -80,10 +80,10 @@
                     data-bs-toggle="modal" data-bs-target="#modal_{{training.traningtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
                <div class="col-lg-3  align-self-center "><span class="{{show_mobile}}">{{_("Date")}}: </span> {% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
                <div class="col-lg-1  align-self-center {{hide_mobile}}">
-                                                  {{ training.max_participants }}&nbsp;/&nbsp;{{training._amount_enrolled }}&nbsp;/
-                                                  {%- if training._amount_enrolled >= training.max_participants %}
+                                                  {{ training.max_participants }}/{{training._amount_enrolled -}}/
+                                                  {%- if training._amount_enrolled >= training.max_participants -%}
                                                        <span class="text-warning">{{ training._amount_enrolled - training.max_participants}}</span>
-                                                   {% else %}
+                                                   {%- else -%}
                                                        <span class="text-success">0</span>
                                                    {%- endif -%}
                                                    
