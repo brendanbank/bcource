@@ -39,15 +39,16 @@
 {% endblock %} {% block formfooter %}
 
                </div>
-      <div class="modal-footer">
-<div class="col-7 me-4">
+      <div class="modal-footer flex-nowrap">
+<div class="col-7 ps-3">
 <a class="icon-link small" onclick="this.blur();" href="#" data-bs-target="#TandCID" data-bs-toggle="modal">{{_('Terms and Conditions') }}</a><br>
 <a class="icon-link small" onclick="this.blur();" href="#" data-bs-target="#CancellationPolicyId" data-bs-toggle="modal">{{_('Cancellation Policy') }}</a>
 </div>
+       <div class="col-5 text-end">
         
         <a onclick="this.blur();" href="{{return_url}}" id="close" type="button" class="btn btn-secondary">{{_('Close')}}</a>
         <button onclick="this.blur();" type="submit" class="btn btn-primary">{{_('Enroll')}}</button>
-
+     </div>
       </div>
     </div>
   </div>
