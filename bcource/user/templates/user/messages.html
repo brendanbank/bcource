@@ -4,8 +4,8 @@
 {% macro message_action(message_id, action, icon,tooltip, mobile=False, toggle=True, class="") %}
      <a href="javascript:void(0);" class="{{class}}  {% if not mobile %}pe-2 pt-1 {%endif%}" 
           {% if toggle %} onClick="this.blur(); call_action([{{message_id}}], '{{action}}');"{% endif %}>
-     {%- if mobile %}<span class="">{{tooltip}}</span>{%- endif -%}<i id="icon_{{action}}_{{message_id}}" class=" bi {{icon}}"
-          data-toggle="tooltip" data-placement="top" title="{{tooltip}}"></i>        
+     <i id="icon_{{action}}_{{message_id}}" class=" bi {{icon}}"
+          data-toggle="tooltip" data-placement="top" title="{{tooltip}}"></i>{%- if mobile %}<span class="">{{tooltip}}</span>{%- endif -%}        
           </a>   
 {%- endmacro %}
 
@@ -64,12 +64,13 @@
 <div class="ps-1 ms-0 lh-1 d-flex justify-content-between">
 <div>
      <input class="form-check-input" onClick="all_messages_enable(this);" id="select_all" name="select_all" type="checkbox" value="y">
-{{- message_action(0, "new_message", "bi-envelope-plus","New", class="icon-link link-body-emphasis", class="ps-5 pe-0 icon-link link-body-emphasis") }}
+     {% set iconclass="icon-link link-body-emphasis when_active d-none small " %}
+{{- message_action(0, "new_message", "bi-envelope-plus","New", mobile=True, class="small ps-4 pe-0 icon-link link-body-emphasis") }}
 </div>
-                    {{- message_action(0, "read_selected", "bi-envelope-open","Mark read",  class="icon-link link-body-emphasis when_active d-none") }}
-                    {{- message_action(0, "unread_selected", "bi-envelope","Mark unread", class="icon-link link-body-emphasis when_active d-none") }}
-                    {{- message_action(0, "delete_selected", "bi-trash","Del",  class="icon-link link-body-emphasis when_active d-none") }}
-
+                    {{- message_action(0, "read_selected", "bi-envelope-open","Read", mobile=True, class=iconclass) }}
+                    {{- message_action(0, "unread_selected", "bi-envelope","Unread", mobile=True,class=iconclass) }}
+                    {{- message_action(0, "delete_selected", "bi-trash","Del",  mobile=True,class=iconclass) }}
+     {{- message_action(0, "undelete_selected", "bi-envelope-x","Undelete", mobile=True,class=iconclass) }}
 </div>
 
 
