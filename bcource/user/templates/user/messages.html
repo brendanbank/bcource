@@ -230,9 +230,13 @@ function user_show_model(item){
 	    } else {
 	    	$('.admin_hide').removeClass("d-none")
 	    }
+	    action_update_nav_unread(data.unread_messages)
 	    action_read_toggle([msg_id], 1)
+	    MsgModal.show()
 	});
-	MsgModal.show()
+	
+	
+	
 }
 
 function action_read_toggle(message_ids, is_read){
