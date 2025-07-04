@@ -154,6 +154,7 @@ def get_messages(id):
             "to": f'{envelop.user}',
             "deleted": f'{message_date(envelop.message_deleted, mobile_date=True)}' if envelop.message_deleted != None else None,
             "read": f'{message_date(envelop.message_read, mobile_date=True)}' if envelop.message_read != None else None,
+            "unread_messages": current_user.unread_messages
             }
         
     return jsonify(results)
