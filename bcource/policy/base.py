@@ -32,10 +32,12 @@ class BaseMeta(type):
 class PolicyBase(object, metaclass=BaseMeta):
     
     def __init__(self, *args, **kwargs):
+        
         self._validation_rules = OrderedDict()
         self.args = args
         self.kwargs = kwargs
         self.status = False
+        self._policyactive = None
                 
         for name, validator in self._unbound_validators.items():
             
@@ -44,12 +46,23 @@ class PolicyBase(object, metaclass=BaseMeta):
             # attributes with the same names.
             self._validation_rules[name] = obj
             setattr(self, name, obj)
+        
+        if self._unbound_validators.items:
+            self._policyactive = self.policyactive()
             
     def pre_validate(self):
         """ can be sub-classed """
         return(True)
+    
+    def policyactive(self):
+        """ can be sub-classed """
+        return (True)
             
     def validate(self):
+        
+        if not self.policyactive():
+            print (f'policy not active {self.__class__.__name__} args: {self.kwargs} kwargs: {self.kwargs}')
+            return (True)
         
         if not self.pre_validate():
             return (False)
@@ -65,5 +78,3 @@ class PolicyBase(object, metaclass=BaseMeta):
     def __iter__(self):
         """Iterate form fields in creation order."""
         return iter(self._validation_rules.values())
-
-    
