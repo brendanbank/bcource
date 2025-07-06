@@ -143,18 +143,13 @@ def edit_training(id=None):
     form.trainers.query=practice.trainers
     
     
+    
     if form.validate_on_submit():
         if training == None:
             training=Training()
             training.practice = practice
             db.session.add(training)
-            
-        if not training.reminders:
-            reminders = Reminders().query.all()
-            print (reminders)
-            for reminder in reminders:
-                print (reminder.event == EmailReminderEvents.training)
-            
+                        
 
         event_array = create_training_event_dict(request.form)
         if not event_array:
@@ -168,7 +163,6 @@ def edit_training(id=None):
         update_training_events(training, event_array)
                 
         form.populate_obj(training)   
-        
         db.session.commit()
         flash(_('Training details are successfully saved!'))
         
