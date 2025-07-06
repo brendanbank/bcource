@@ -7,7 +7,8 @@ from bcource import db, menu_structure
 from flask_security import roles_required, current_user
 from bcource.helpers import admin_has_role, get_url, has_trainer_role
 from bcource.training.helper import make_table_header
-from bcource.models import Training, Practice, TrainingEvent, TrainingType, Trainer
+from bcource.models import Training, Practice, TrainingEvent, TrainingType, Trainer,\
+    Reminders, EmailReminderEvents
 from bcource.training.training_forms import TrainingForm, EventForm, TrainingDeleteForm
 from flask.globals import request
 from sqlalchemy import and_, or_
@@ -147,6 +148,13 @@ def edit_training(id=None):
             training=Training()
             training.practice = practice
             db.session.add(training)
+            
+        if not training.reminders:
+            reminders = Reminders().query.all()
+            print (reminders)
+            for reminder in reminders:
+                print (reminder.event == EmailReminderEvents.training)
+            
 
         event_array = create_training_event_dict(request.form)
         if not event_array:
