@@ -275,8 +275,8 @@ class Training(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256), nullable=False)
     
-    traningtype_id: Mapped[int] = mapped_column(ForeignKey("training_type.id"), nullable=False)
-    traningtype: Mapped["TrainingType"] = relationship(backref="trainings")
+    trainingtype_id: Mapped[int] = mapped_column(ForeignKey("training_type.id"), nullable=False)
+    trainingtype: Mapped["TrainingType"] = relationship(backref="trainings")
     
     practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id"))
     practice: Mapped["Practice"] = relationship(backref="trainings")
