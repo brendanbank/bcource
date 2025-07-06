@@ -69,7 +69,7 @@ class ValidationRule(object):
         self.bp_url = kwargs.get('bp_url')
         
         self._validator = kwargs.get('_validator', None)
-                
+                        
         
     def __new__(cls, *args, **kwargs):
         if "_from_base" in kwargs:

@@ -2,7 +2,7 @@ import datetime
 from typing import List
 from sqlalchemy.dialects.mysql import LONGTEXT
 
-from sqlalchemy import Integer, String, Double,Date, ForeignKey, Table, Column, Text, TIMESTAMP, Boolean, DateTime, UniqueConstraint, and_
+from sqlalchemy import Integer, String, Double,Date, ForeignKey, Table, Column, Text, TIMESTAMP, Boolean, DateTime, UniqueConstraint, Interval,  and_
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr, backref
 from sqlalchemy.sql import func
 from flask_security.models import sqla as sqla
@@ -15,8 +15,10 @@ from flask import current_app, session
 import pytz
 from sqlalchemy import or_
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy import orm
+from sqlalchemy import orm, Enum
 import nh3
+from enum import Enum
+from datetime import timedelta
 
 from uuid import UUID, uuid4
 
@@ -152,7 +154,38 @@ class TrainingEvent(db.Model):
         server_default=func.now(),
         onupdate=func.now(),
     )
+
+
+class EmailReminderEvents(Enum):
+    training = "training"
+    account = "account"
+
+
+training_reminders_association = Table(
+    "training_reminders_association",
+    db.Model.metadata,
+    Column("reminder_id", ForeignKey("training.id", ondelete="CASCADE"), primary_key=True),
+    Column("training_id", ForeignKey("reminders.id", ondelete="CASCADE"), primary_key=True),
+)
+
+class Reminders(db.Model):
+    __table_args__ = (db.UniqueConstraint("name"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(256), nullable=False)
+    event: Mapped[EmailReminderEvents]
+    interval: Mapped[timedelta]  = mapped_column(Interval, nullable=False)
     
+    update_datetime: Mapped[datetime.datetime] = mapped_column(
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    trainings: Mapped[List["Training"]] =  relationship(
+        secondary=training_reminders_association, back_populates="reminders", 
+    )
+
+
+
 class Policy(db.Model):
     CONFIG='DEFAULT_TRAINING_POLICY'
 
@@ -187,6 +220,9 @@ class Policy(db.Model):
             db.session.add(obj)
         db.session.commit()
         return(obj)
+
+    def __repr__(self)->str:
+        return f'<{self.__class__.__name__} name = "{self.name}" practice="{self.practice}>'
 
 
 class TrainingEnroll(db.Model):
@@ -253,6 +289,11 @@ class Training(db.Model):
     )
     
     trainingevents: Mapped[List["TrainingEvent"]] = relationship(backref="training", cascade="all, delete", order_by='TrainingEvent.start_time.asc()')
+
+
+    reminders: Mapped[List["Reminders"]] =  relationship(
+        secondary=training_reminders_association, back_populates="trainings", 
+    )
 
     def __init__(self):
         self._spots_enrolled = None
