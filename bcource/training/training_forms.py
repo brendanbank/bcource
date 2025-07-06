@@ -85,7 +85,7 @@ class TrainingForm(FlaskForm):
         divclass = "col-md-4 mt-2 pt-4 ",
         render_kw={"class": "form-check-input"})
 
-    traningtype = MyQuerySelectField(_l("Training type"),
+    trainingtype = MyQuerySelectField(_l("Training type"),
                                       [validators.DataRequired()],
                                       divclass = "col-md-6 mt-1",
                                       render_kw={"class": "position-relative form-control form-select select2-js"}, #select2-js
