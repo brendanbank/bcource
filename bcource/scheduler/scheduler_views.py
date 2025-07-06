@@ -130,12 +130,12 @@ def fill_trainings(select_query, per_page=current_app.config['POSTS_PER_PAGE']):
         t.fill_numbers(current_user)
         # t.in_policy = TrainingBookingPolicy(training=t,user=current_user)
         # t.in_policy.validate()
-        if not t.traningtype in training_types:
-            training_types.append(t.traningtype)
+        if not t.trainingtype in training_types:
+            training_types.append(t.trainingtype)
 
     
-    for traningtype in training_types:
-        results = can_student_book_trainings(current_user.student_from_practice, trainings, traningtype)
+    for trainingtype in training_types:
+        results = can_student_book_trainings(current_user.student_from_practice, trainings, trainingtype)
         for training in trainings:
             if training.id in results.keys():
                 training.in_policy = results[training.id]
