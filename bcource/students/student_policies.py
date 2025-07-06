@@ -55,7 +55,7 @@ class Bookwindow(ValidationRule):
         if not check_book_window(training, student, time_window_duration, timedelta_before):
             
             self.msg_fail = _l(BOOK_WINDOW_VIOLATION_TXT, 
-                          time_window_duration=round(time_window_duration.total_seconds() / 3600 / 24)    , trainingname=training.name , trainingtype=training.traningtype)
+                          time_window_duration=round(time_window_duration.total_seconds() / 3600 / 24)    , trainingname=training.name , trainingtype=training.trainingtype)
             self.status = False
             return self.status
         else:
@@ -77,7 +77,7 @@ class TrainingBookingPolicy(PolicyBase):
             raise(ValueError(f'kwargs "training" missing in {self.__class__.__name__}'))
 
 
-        if self.policy_name in [item.name for item in training.traningtype.policies]:
+        if self.policy_name in [item.name for item in training.trainingtype.policies]:
             return True
         else:
             return False
@@ -87,7 +87,7 @@ def check_book_window(training, student, time_window_duration, timedelta_before)
     
     
     q = TrainingEvent().query.join(Training).join(TrainingEnroll).join(TrainingType).filter(
-        Training.traningtype_id == training.traningtype_id,
+        Training.trainingtype_id == training.trainingtype_id,
         Training.active == True,
         TrainingEnroll.student_id == student.id,
         TrainingEvent.start_time > (training.trainingevents[0].start_time - time_window_duration),
@@ -159,7 +159,7 @@ def can_student_book_trainings(student, trainings, training_type, time_window_du
     ids = [t.id for t in trainings ]
 
     existing_bookings_dates = TrainingEvent().query.with_entities(TrainingEvent.start_time).join(Training).join(TrainingEnroll).join(TrainingType).filter(
-            Training.traningtype_id == training_type.id,
+            Training.trainingtype_id == training_type.id,
             Training.id.in_(ids),
             Training.active == True,
             TrainingEnroll.student_id == student.id,
@@ -170,19 +170,19 @@ def can_student_book_trainings(student, trainings, training_type, time_window_du
     
       
     potential_trainings = Training().query.with_entities(Training.id, Training.name, TrainingEvent.start_time).join(TrainingEvent).join(TrainingType).filter(
-        Training.traningtype_id == training_type.id,
+        Training.trainingtype_id == training_type.id,
             Training.id.in_(ids),
         # TrainingEvent.start_time > datetime.utcnow(), # only future trainings
         ).all()
 
     potential_trainings = Training().query.with_entities(Training.id, Training.name, TrainingEvent.start_time).join(TrainingEvent).join(TrainingType).filter(
-        Training.traningtype_id == training_type.id,
+        Training.trainingtype_id == training_type.id,
             Training.id.in_(ids),
         # TrainingEvent.start_time > datetime.utcnow(), # only future trainings
         ).all()
 
     potential_trainings = Training().query.join(TrainingEvent).join(TrainingType).filter(
-        Training.traningtype_id == training_type.id,
+        Training.trainingtype_id == training_type.id,
             Training.id.in_(ids),
         # TrainingEvent.start_time > datetime.utcnow(), # only future trainings
         ).all()

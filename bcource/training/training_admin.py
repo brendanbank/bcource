@@ -29,8 +29,8 @@ class LocationAdmin(TagMixIn, CkModelView, AuthModelView):
     
 class TrainingAdmin(AuthModelView):
     permission = "admin-training-edit"
-    form_columns = ["name", "traningtype", "practice", "trainers", "trainingevents"]
-    column_list = ["name", "traningtype", "practice", "trainers", "trainingevents"]
+    form_columns = ["name", "trainingtype", "practice", "trainers", "trainingevents"]
+    column_list = ["name", "trainingtype", "practice", "trainers", "trainingevents"]
 
 
 class TrainingTypeAdmin(TagMixIn, CkModelView, AuthModelView):
