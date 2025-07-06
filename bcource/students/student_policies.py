@@ -16,10 +16,15 @@ MAX_BOOKINGS = 3 # max + 1!!!
 
 BOOK_WINDOW_VIOLATION_TXT = "You cannot book <strong>%(trainingname)s</strong> as you can only book 2 sessions in a %(time_window_duration)s day period!"
 
+
 class Bookwindow(ValidationRule):
     def validate(self):
+        if not self._validator.policyactive():
+            return True
+        
         user = self._validator.kwargs.get('user')
         training = self._validator.kwargs.get('training')
+        
         
         timedelta_before = self._validator.kwargs.get('timedelta_before', BOOKWINDOW_ONE_WEEK)
 
@@ -27,7 +32,10 @@ class Bookwindow(ValidationRule):
         
         if not user or not training:
             raise(ValueError(f'kwargs "user" or "training" missing in {self._validator.__class__.__name__}'))
-        
+
+        if not self._validator.policyactive():
+            return True
+
         student = user.student_from_practice
         if not student:
             self.msg_fail = _("User does not have Student role!")
@@ -57,7 +65,23 @@ class Bookwindow(ValidationRule):
         
 class TrainingBookingPolicy(PolicyBase):
     book_window = Bookwindow(_l('Check if the student is satisfying all policies to book this training.'))
+    policy_name = "max-2-sessions-4-weeks"
+    
+    def policyactive(self):
+        training = self.kwargs.get('training')
+        
+        if (self._policyactive == True or self._policyactive == False):
+            return self._policyactive
 
+        if not training:
+            raise(ValueError(f'kwargs "training" missing in {self.__class__.__name__}'))
+
+
+        if self.policy_name in [item.name for item in training.traningtype.policies]:
+            return True
+        else:
+            return False
+                    
 
 def check_book_window(training, student, time_window_duration, timedelta_before):
     
@@ -157,16 +181,25 @@ def can_student_book_trainings(student, trainings, training_type, time_window_du
         # TrainingEvent.start_time > datetime.utcnow(), # only future trainings
         ).all()
 
+    potential_trainings = Training().query.join(TrainingEvent).join(TrainingType).filter(
+        Training.traningtype_id == training_type.id,
+            Training.id.in_(ids),
+        # TrainingEvent.start_time > datetime.utcnow(), # only future trainings
+        ).all()
     
     results = {}
 
     for training in potential_trainings:
     #     # Assuming training object has a 'date' attribute or 'date' key
         
-        policy_obj = TrainingBookingPolicy(student.user, training)
+        policy_obj = TrainingBookingPolicy(user=student.user, training=training)
+        results[training.id] = policy_obj
+                
+        if policy_obj._policyactive == False:
+            policy_obj.status = True
+            continue
         
-        
-        potential_date_obj = training.start_time
+        potential_date_obj = training.trainingevents[0].start_time
 
         # no bookings yet this training is already booked.
         if not existing_bookings_dates or potential_date_obj in existing_bookings_dates:
@@ -196,12 +229,10 @@ def can_student_book_trainings(student, trainings, training_type, time_window_du
                           trainingname=training.name ,
                           trainingtype=training_type.name)
             
-            results[training.id] = policy_obj
 
         else:
             policy_obj.book_window.status = policy_obj.status = True
             policy_obj.book_window.msg_fail = ''
-            results[training.id] = policy_obj
 
         
         # IMPORTANT: Remove the temporarily added date before the next iteration
