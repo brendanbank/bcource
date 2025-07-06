@@ -264,6 +264,10 @@ def enroll(id):
     
     training = Training().query.get(id)
     
+    if not training:
+        flash(f"cannot find training with id {id}")
+        abort (404)
+    
     
     form = SchedulerTrainingEnrollForm()    
     url = get_url(form)
