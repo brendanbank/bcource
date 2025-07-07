@@ -68,7 +68,7 @@ table_admin.add_view(PerminssonAdmin(Permission, db.session, category='User'))
 
 class ContentModelView(CkModelView, AuthModelView):
     column_display_pk = True
-    form_columns = ('tag', 'text', 'lang')
+    form_columns = ('tag', 'text', 'lang', 'subject')
     edit_template = 'admin/cms.html'
     column_list = ['tag', 'lang']
     permission = "cms-admin"

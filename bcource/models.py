@@ -828,6 +828,7 @@ class Content(db.Model):
     tag: Mapped[str] = mapped_column(String(256), primary_key=True)
     lang: Mapped[str] = mapped_column(String(16), default="en", primary_key=True)
     text: Mapped[str] = mapped_column(LONGTEXT, nullable=True)
+    subject: Mapped[str] = mapped_column(String(256), nullable=True)
 
     @classmethod
     def get_tag(cls,tag,obj=False,lang="en", **kwargs):
@@ -840,7 +841,29 @@ class Content(db.Model):
             return (content)
         
         return(render_template_string(content.text, **kwargs))
-    
+
+    @classmethod
+    def get_subject(cls,tag,obj=False,lang="en", **kwargs):
+        
+        content = db.session.query(cls).filter(cls.tag==tag, lang==lang).first()
+        if not content:
+            content=cls(tag=tag,text="")
+            db.session.add(content)
+            db.session.commit()
+            
+        elif content.subject == None:
+            subject_tag = f'{tag}Subject'
+            subject_obj = db.session.query(cls).filter(cls.tag==subject_tag, lang==lang).first()
+            if subject_obj:
+                content.subject = subject_obj.text
+                db.session.delete(subject_obj)
+                db.session.commit()
+        
+        if obj:
+            return (content)
+        
+        return(render_template_string(content.subject, **kwargs))
+
     def update(self):
         db.session.commit()
 
@@ -954,6 +977,24 @@ def role_student_default():
 
 class SystemInitValidations():
     pass
+
+
+def init_app_scheduler(app_scheduler, db):
+
+    from bcource.automation import get_registered_automation_classes
+    for class_name, details in get_registered_automation_classes().items():
+        existing_config = AutomationClasses().query.filter_by(class_name=class_name).first()
+        if not existing_config:
+            new_config = AutomationClasses(
+                class_name=class_name,
+                description=details['description'],
+                module_path=details['module'],
+                qualified_name=details['qualified_name']
+            )
+            db.session.add(new_config)
+            print(f"Registered new automation class in DB: {class_name}")
+    db.session.commit()
+
 
 def db_init_data (app):
 

@@ -154,7 +154,6 @@ def create_app():
 
         # db.create_all()  # Create sql tables for our data models
         
-        import bcource.app_scheduler_tasks
         app_scheduler.start()
         
         def get_locale():
@@ -162,8 +161,8 @@ def create_app():
         
         models.db_init_data(app)
         
-        from bcource.automation_registry import init_scheduler
-        init_scheduler(app_scheduler, db)
+        from bcource.models import init_app_scheduler
+        init_app_scheduler(app_scheduler, db)
         
         return app
     
