@@ -108,24 +108,21 @@ def _execute_automation_task_job(id: int, name, classname, *args, **kwargs):
     
     # b = cls()
 
-def echo_schedule(*args, **kwargs):
-    print (f"Test echo {args} {kwargs}")
-
 def init_scheduler(app_scheduler, db):
     
-    now = datetime.utcnow()
-    
-    then = now + timedelta(seconds=5)
-    
-    app_scheduler.add_job(
-        id='db_refresh_job',
-        func=echo_schedule,
-        trigger='date',
-        kwargs={"a": "a"},
-        run_date=then,
-        replace_existing=True,
-        max_instances=1 # Ensure only one refresh job runs at a time
-    )
+    # now = datetime.utcnow()
+    #
+    # then = now + timedelta(seconds=5)
+    #
+    # app_scheduler.add_job(
+    #     id='db_refresh_job',
+    #     func=echo_schedule,
+    #     trigger='date',
+    #     kwargs={"a": "a"},
+    #     run_date=then,
+    #     replace_existing=True,
+    #     max_instances=1 # Ensure only one refresh job runs at a time
+    # )
 
     # Optional: Populate AutomationConfig table with registered classes on first run
 
