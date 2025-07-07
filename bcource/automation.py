@@ -1,6 +1,6 @@
 # This will be our central registry for automation classes
-import bcource
 _automation_classes = {}
+
 from datetime import datetime, timedelta
 from bcource.models import AutomationClasses, TypeEnum, BeforeAfterEnum, AutomationSchedule
 
@@ -66,7 +66,7 @@ class BaseAutomationTask:
         pass
         
 
-def create_tasks(id: int, event_dt: datetime, type: TypeEnum, **kwargs):
+def create_app_scheduler_tasks(id: int, event_dt: datetime, type: TypeEnum, **kwargs):
     #print (id, event_dt, type)
     task_schedules = AutomationSchedule().query.filter(AutomationSchedule.type==type).all()
         
@@ -83,7 +83,6 @@ def create_tasks(id: int, event_dt: datetime, type: TypeEnum, **kwargs):
             
         str_id = f'{task.name}_{id}'
         
-        
         app_scheduler.add_job(
             id=str_id,
             func=_execute_automation_task_job,
@@ -95,9 +94,6 @@ def create_tasks(id: int, event_dt: datetime, type: TypeEnum, **kwargs):
             max_instances=1 # Ensure only one refresh job runs at a time
         )
         
-        
-    
-
 def _execute_automation_task_job(id: int, name, classname, *args, **kwargs):    
     
     with app_scheduler.app.app_context(): 
@@ -108,39 +104,4 @@ def _execute_automation_task_job(id: int, name, classname, *args, **kwargs):
     
     # b = cls()
 
-def init_scheduler(app_scheduler, db):
-    
-    # now = datetime.utcnow()
-    #
-    # then = now + timedelta(seconds=5)
-    #
-    # app_scheduler.add_job(
-    #     id='db_refresh_job',
-    #     func=echo_schedule,
-    #     trigger='date',
-    #     kwargs={"a": "a"},
-    #     run_date=then,
-    #     replace_existing=True,
-    #     max_instances=1 # Ensure only one refresh job runs at a time
-    # )
-
-    # Optional: Populate AutomationConfig table with registered classes on first run
-
-    for class_name, details in get_registered_automation_classes().items():
-        existing_config = AutomationClasses().query.filter_by(class_name=class_name).first()
-        if not existing_config:
-            new_config = AutomationClasses(
-                class_name=class_name,
-                description=details['description'],
-                module_path=details['module'],
-                qualified_name=details['qualified_name']
-            )
-            db.session.add(new_config)
-            print(f"Registered new automation class in DB: {class_name}")
-    db.session.commit()
-
-
-    from bcource.app_scheduler_tasks import ReminderTask
-
-    create_tasks(3, datetime.utcnow(), TypeEnum.training)
     

@@ -1,6 +1,8 @@
-from bcource.automation_registry import BaseAutomationTask, register_automation, create_tasks
+from bcource.automation import BaseAutomationTask, register_automation
 from bcource.models import TypeEnum, Training
 from datetime import datetime
+
+
 @register_automation(
     description="Class to handle sending reminders."
 )
