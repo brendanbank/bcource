@@ -1012,17 +1012,26 @@ def init_app_scheduler(app_scheduler, db):
     orphan_classes = AutomationClasses().query.filter(~AutomationClasses.class_name.in_(get_registered_automation_classes().keys())).delete()
     if orphan_classes:
         print (f'delete AutomationClasses: {orphan_classes}')
-        
+    
     db.session.commit()
 
     ## renew automations for all trainings
     renew_automations(app_scheduler, db)
     
 
+
 def renew_automations(app_scheduler, db):
     
-    
+    from bcource.automation import report_active_jobs
     app_scheduler.remove_all_jobs()
+    
+    
+    app_scheduler.add_job(func=report_active_jobs,
+                          trigger='interval', 
+                          minutes=1,
+                          id='report_active_jobs_id', 
+                          replace_existing=True)
+
     
     ## training automations
     trainings = Training().query.join(Training.trainingevents).filter(TrainingEvent.start_time > datetime.datetime.utcnow(), Training.active==True)
@@ -1033,6 +1042,7 @@ def renew_automations(app_scheduler, db):
         create_app_scheduler_tasks(training.id, first_training_event_dt, TypeEnum.training)
 
 
+    report_active_jobs()
 
 def db_init_data (app):
 
