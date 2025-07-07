@@ -17,7 +17,7 @@ def cleanhtml(raw_html):
 class SystemMessage(object):
     message_tag = "transation"
     
-    def __init__(self, envelop_to=None, envelop_from=None, taglist=None, **kwargs):
+    def __init__(self, envelop_to=None, envelop_from=None, taglist=None, CONTENT_TAG=None, **kwargs):
         if not envelop_to:
             raise Exception('envelop_to cannot be None')
         
@@ -29,14 +29,18 @@ class SystemMessage(object):
         else:
             self.taglist = taglist
         
-        if not self.__class__.message_tag in self.taglist:
+        if hasattr(self.__class__, "message_tag") and not self.__class__.message_tag in self.taglist:
             self.taglist.append(self.__class__.message_tag)
             
         if not SystemMessage.message_tag in self.taglist:
             self.taglist.append(SystemMessage.message_tag)
             
         self.kwargs=kwargs
-        self.CONTENT_TAG = self.__class__.__name__
+        if not CONTENT_TAG:
+            self.CONTENT_TAG = self.__class__.__name__
+        else:
+            self.CONTENT_TAG = CONTENT_TAG
+            
         self.body = Content.get_tag(self.CONTENT_TAG, **self.kwargs)
         self.subject = Content.get_subject(self.CONTENT_TAG, **self.kwargs)
         if not isinstance(envelop_to, list):
