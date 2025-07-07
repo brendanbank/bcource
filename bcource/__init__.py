@@ -161,6 +161,10 @@ def create_app():
             return request.accept_languages.best_match(cv('LANGUAGES'))
         
         models.db_init_data(app)
+        
+        from bcource.automation_registry import init_scheduler
+        init_scheduler(app_scheduler, db)
+        
         return app
     
 

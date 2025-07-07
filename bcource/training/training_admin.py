@@ -1,7 +1,6 @@
 from bcource.admin.helper import AuthModelView, CkModelView, CKTextAreaField, TagMixIn
 from bcource import db, table_admin
-from bcource.models import Location, Practice, Trainer, Training, TrainingType, TrainingEvent,\
-    Content, Policy, Reminders
+from bcource.models import Location, Practice, Trainer, Training, TrainingType, TrainingEvent, Content, Policy, AutomationSchedule
 
 
 class TrainerAdmin(TagMixIn, CkModelView, AuthModelView):
@@ -135,10 +134,10 @@ class IntervalStringField(StringField):
         else:
             self.data = None
 
-class TrainingReminders(AuthModelView):
+class AutomationScheduleAdmin(AuthModelView):
     permission = "admin-trainingevent-edit"
-    column_list = ["name", "interval", "event"]
-    form_columns = ["name", "interval", "event"]
+    column_list = ["name", "interval", "automation_class", ]
+    form_columns = ["name", "automation_class", "type", "interval", "beforeafter", "events"]
 
     # Override the 'duration' field with your custom WTForms field
     form_overrides = {
@@ -150,6 +149,6 @@ class TrainingReminders(AuthModelView):
         'interval': lambda s, a, d, c: str(d.interval) if d.interval else ''
     }
 
-table_admin.add_view(TrainingReminders(Reminders, db.session, category='Training'))
+table_admin.add_view(AutomationScheduleAdmin(AutomationSchedule, db.session, category='Training'))
 
 

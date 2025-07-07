@@ -244,3 +244,7 @@ class EmailStudentEnrolledInTrainingInvited(SendEmail):
 
 class EmailStudentEnrolledInTrainingDeInvited(SendEmail):
     message_tag = "devited"
+
+
+class EmailReminders():
+    pass

@@ -156,36 +156,6 @@ class TrainingEvent(db.Model):
     )
 
 
-class EmailReminderEvents(Enum):
-    training = "training"
-    account = "account"
-
-
-training_reminders_association = Table(
-    "training_reminders_association",
-    db.Model.metadata,
-    Column("reminder_id", ForeignKey("training.id", ondelete="CASCADE"), primary_key=True),
-    Column("training_id", ForeignKey("reminders.id", ondelete="CASCADE"), primary_key=True),
-)
-
-class Reminders(db.Model):
-    __table_args__ = (db.UniqueConstraint("name"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(256), nullable=False)
-    event: Mapped[EmailReminderEvents]
-    interval: Mapped[timedelta]  = mapped_column(Interval, nullable=False)
-    
-    update_datetime: Mapped[datetime.datetime] = mapped_column(
-        server_default=func.now(),
-        onupdate=func.now(),
-    )
-
-    trainings: Mapped[List["Training"]] =  relationship(
-        secondary=training_reminders_association, back_populates="reminders", 
-    )
-
-
-
 class Policy(db.Model):
     CONFIG='DEFAULT_TRAINING_POLICY'
 
@@ -291,9 +261,9 @@ class Training(db.Model):
     trainingevents: Mapped[List["TrainingEvent"]] = relationship(backref="training", cascade="all, delete", order_by='TrainingEvent.start_time.asc()')
 
 
-    reminders: Mapped[List["Reminders"]] =  relationship(
-        secondary=training_reminders_association, back_populates="trainings", 
-    )
+    # reminders: Mapped[List["Reminders"]] =  relationship(
+    #     secondary=training_reminders_association, back_populates="trainings", 
+    # )
 
     def __init__(self):
         self._spots_enrolled = None
@@ -912,8 +882,71 @@ class UserSettings(db.Model):
         onupdate=func.now(),
     )
 
+# class EmailReminderEvents(Enum):
+#     training = "training"
+#     account = "account"
+#
+#
+# training_reminders_association = Table(
+#     "training_reminders_association",
+#     db.Model.metadata,
+#     Column("reminder_id", ForeignKey("training.id", ondelete="CASCADE"), primary_key=True),
+#     Column("training_id", ForeignKey("reminders.id", ondelete="CASCADE"), primary_key=True),
+# )
+#
 
-                
+class AutomationClasses(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    class_name = db.Column(db.String(255), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    module_path = db.Column(db.String(255), nullable=False)
+    qualified_name = db.Column(db.String(255), unique=True, nullable=False)
+    # is_enabled is now part of the schedule, not the config itself
+    created_at = db.Column(db.DateTime, default=func.now())
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
+
+    def __str__(self):
+        return f"{self.class_name}"
+
+
+    def __repr__(self):
+        return f"<AutomationConfig {self.class_name}>"
+
+class BeforeAfterEnum(Enum):
+    before = "before"
+    after = "after"
+    
+class EventsEnum(Enum):
+    first="first"
+    last="last"
+    all="all"
+
+class TypeEnum(Enum):
+    training="training"
+    account_creation="account_creation"
+
+class AutomationSchedule(db.Model):
+    __table_args__ = (db.UniqueConstraint("name"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(256), nullable=False)
+    
+    beforeafter: Mapped[BeforeAfterEnum] 
+    events: Mapped[EventsEnum]
+    type: Mapped[TypeEnum]
+
+    interval: Mapped[timedelta] = mapped_column(Interval, nullable=False)
+
+    automation_class = db.relationship('AutomationClasses', lazy=True, backref='schedules')
+    automation_class_id: Mapped[int] = mapped_column(ForeignKey(AutomationClasses.id, ondelete="CASCADE"), nullable=True)
+
+    update_datetime: Mapped[datetime.datetime] = mapped_column(
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+
 def role_student_default():
     return Practice().query.filter(Practice.name==cv('BCOURSE_DEFAULT_STUDENT_ROLE')).first()
 
