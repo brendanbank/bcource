@@ -1,12 +1,27 @@
-from bcource import app_scheduler, db
-from flask import current_app
-from bcource.models import Training
+from bcource.automation_registry import BaseAutomationTask, register_automation, create_tasks
+from bcource.models import TypeEnum, Training
+from datetime import datetime
+@register_automation(
+    description="Class to handle sending reminders."
+)
+class ReminderTask(BaseAutomationTask):
+    def __init__(self, id, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        t = Training().query.get(id)
+        print (f'Training: {t}')
+        print (f'students: {t.trainingenrollments_sorted}')
+        
+        
+    def setup(self):
+        print(f"Setting up DailyReportSender for {self.report_type}...")
 
-# # interval example
-# @app_scheduler.task('interval', id='do_job_1', seconds=3, misfire_grace_time=900)
-# def job1():
-#     print('Job 1 executed')
-#     with app_scheduler.app.app_context():
-#         trainings = Training().query.all()
-#         print (trainings)
-    
+    def execute(self):
+        print(f"Sending daily {self.report_type} reports from class...")
+        # Actual report sending logic here
+        return f"Daily {self.report_type} reports sent successfully by class."
+
+    def teardown(self):
+        print(f"Tearing down DailyReportSender for {self.report_type}...")
+        
+
+

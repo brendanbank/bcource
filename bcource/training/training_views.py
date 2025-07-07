@@ -7,8 +7,7 @@ from bcource import db, menu_structure
 from flask_security import roles_required, current_user
 from bcource.helpers import admin_has_role, get_url, has_trainer_role
 from bcource.training.helper import make_table_header
-from bcource.models import Training, Practice, TrainingEvent, TrainingType, Trainer,\
-    Reminders, EmailReminderEvents
+from bcource.models import Training, Practice, TrainingEvent, TrainingType, Trainer
 from bcource.training.training_forms import TrainingForm, EventForm, TrainingDeleteForm
 from flask.globals import request
 from sqlalchemy import and_, or_
@@ -164,6 +163,9 @@ def edit_training(id=None):
                 
         form.populate_obj(training)   
         db.session.commit()
+
+        
+        
         flash(_('Training details are successfully saved!'))
         
         return(redirect(url))
