@@ -127,7 +127,13 @@ def _execute_automation_task_job(id: int, name: str, classname: str, *args, **kw
             return 
         
         obj.execute()
+        
     
     
+def report_active_jobs():
+    logger.info("Reporting active ...")
     
-    
+    all_jobs = app_scheduler.get_jobs()
+    for jobs in all_jobs:
+        logger.info(f'scheduled job: {jobs}')
+
