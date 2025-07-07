@@ -164,7 +164,7 @@ function getTimezoneShort(timeZone) {
 function formatTz (date){
 	const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
 	console.log(tz);
-	const result = moment.utc(date).tz(tz).format("dddd D MMM yyyy HH:mm z");
+	const result = moment.utc(date).tz(tz).format("ddd D MMM yyyy HH:mm z");
 	console.log(result);
 	return result;
 	

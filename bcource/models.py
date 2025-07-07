@@ -582,7 +582,7 @@ message_tag_association = Table(
 
 class MessageTag(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    tag: Mapped[str] = mapped_column(String(256), nullable=False)
+    tag: Mapped[str] = mapped_column(String(256), nullable=False, unique=True)
     
     
     messages: Mapped[List["Message"]] =  relationship(
@@ -604,6 +604,7 @@ class MessageTag(db.Model):
             tag=cls()
             tag.tag = tag_name
             db.session.add(tag)
+            db.session.commit()
         return (tag)
     
 class Message(db.Model):
@@ -633,13 +634,15 @@ class Message(db.Model):
     
     @classmethod
     def create_db_message(cls, db_session, envelop_from, envelop_to, subject, body, in_reply_to=None, tags=[]):
+        tagobjs = []
+        for tag in tags:
+            tagobjs.append(MessageTag.get_tag(tag))
+            
         
         message = cls(envelop_from_id=envelop_from.id,
                       subject=subject, 
                       body=nh3.clean(body))
         # body=body)
-        for tag in tags:
-            message.tags.append(MessageTag.get_tag(tag))
         
         if in_reply_to:
             message.in_reply_to = in_reply_to
@@ -649,6 +652,9 @@ class Message(db.Model):
             association.user = user
             message.envelop_to.append(association)
 
+        for tag in tagobjs:
+            message.tags.append(tag)
+            
         db_session.add(message)
         db_session.commit()
         return(message)
@@ -840,7 +846,9 @@ class Content(db.Model):
         if obj:
             return (content)
         
-        return(render_template_string(content.text, **kwargs))
+        if content.text:
+            return(render_template_string(content.text, **kwargs))
+        return ""
 
     @classmethod
     def get_subject(cls,tag,obj=False,lang="en", **kwargs):
@@ -862,7 +870,10 @@ class Content(db.Model):
         if obj:
             return (content)
         
-        return(render_template_string(content.subject, **kwargs))
+        if content.subject:
+            return(render_template_string(content.subject, **kwargs))
+        return ""
+
 
     def update(self):
         db.session.commit()
@@ -981,7 +992,10 @@ class SystemInitValidations():
 
 def init_app_scheduler(app_scheduler, db):
 
+
+    import bcource.automation_tasks
     from bcource.automation import get_registered_automation_classes
+
     for class_name, details in get_registered_automation_classes().items():
         existing_config = AutomationClasses().query.filter_by(class_name=class_name).first()
         if not existing_config:
@@ -993,7 +1007,27 @@ def init_app_scheduler(app_scheduler, db):
             )
             db.session.add(new_config)
             print(f"Registered new automation class in DB: {class_name}")
+    
+    
+    orphan_classes = AutomationClasses().query.filter(~AutomationClasses.class_name.in_(get_registered_automation_classes().keys())).delete()
+    if orphan_classes:
+        print (f'delete AutomationClasses: {orphan_classes}')
+        
     db.session.commit()
+
+    ## renew automations for all trainings
+    renew_automations(app_scheduler, db)
+    
+
+def renew_automations(app_scheduler, db):
+    
+    trainings = Training().query.join(Training.trainingevents).filter(TrainingEvent.start_time > datetime.datetime.utcnow(), Training.active==True)
+    for training in trainings:
+        first_training_event_dt = training.trainingevents[0].start_time
+        
+        from bcource.automation import create_app_scheduler_tasks
+        create_app_scheduler_tasks(training.id, first_training_event_dt, TypeEnum.training)
+
 
 
 def db_init_data (app):

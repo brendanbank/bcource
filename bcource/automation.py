@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 from bcource.models import AutomationClasses, TypeEnum, BeforeAfterEnum, AutomationSchedule
 
 from bcource import db, app_scheduler
+import logging
+logger = logging.getLogger(__name__)
 
 def register_automation(name=None, description=None, enabled=True):
     """
@@ -50,7 +52,7 @@ class BaseAutomationTask:
     def __init__(self, *args, **kwags):
         self.args = args
         self.kwags = kwags
-        print (f'Started {self.__class__.__name__} args: {args} kvargs: {kwags}' )
+        logger.warning (f'Started {self.__class__.__name__} args: {args} kvargs: {kwags}' )
 
 
     def execute(self):
@@ -66,8 +68,8 @@ class BaseAutomationTask:
         pass
         
 
-def create_app_scheduler_tasks(id: int, event_dt: datetime, type: TypeEnum, **kwargs):
-    #print (id, event_dt, type)
+def create_app_scheduler_tasks(id: int, event_dt: datetime, type: TypeEnum, force_now=False, **kwargs):
+    
     task_schedules = AutomationSchedule().query.filter(AutomationSchedule.type==type).all()
         
     for task in task_schedules:
@@ -81,7 +83,12 @@ def create_app_scheduler_tasks(id: int, event_dt: datetime, type: TypeEnum, **kw
         else:
             when = event_dt
             
+        if force_now:
+            when = datetime.utcnow()
+            
         str_id = f'{task.name}_{id}'
+        
+        logging.warning(f'{__name__} added task {str_id} for {when} force_now: {force_now}')
         
         app_scheduler.add_job(
             id=str_id,
@@ -89,19 +96,24 @@ def create_app_scheduler_tasks(id: int, event_dt: datetime, type: TypeEnum, **kw
             trigger='date',
             args=(id,task.name, task.automation_class.class_name),
             kwargs=kwargs,
+            misfire_grace_time=300,
             run_date=when,
             replace_existing=True,
             max_instances=1 # Ensure only one refresh job runs at a time
         )
         
-def _execute_automation_task_job(id: int, name, classname, *args, **kwargs):    
+def _execute_automation_task_job(id: int, name: str, classname: str, *args, **kwargs):    
     
     with app_scheduler.app.app_context(): 
         cls = get_automation_class(classname)
-        b = cls.get('class', None)(id)
-        print (b)
+        if cls:
+            obj = cls.get('class', None)(id)
+        else:
+            print (f'{__name__}: cannot find classname: {classname}')
+            return 
+        
+        obj.execute()
     
     
-    # b = cls()
-
+    
     

@@ -120,7 +120,7 @@ class Config:
         }
     }
     SCHEDULER_EXECUTORS = {
-        'default': {'type': 'threadpool', 'max_workers': 20}
+        'default': {'type': 'threadpool', 'max_workers': 1}
     }
     SCHEDULER_JOB_DEFAULTS = {
         'coalesce': True,

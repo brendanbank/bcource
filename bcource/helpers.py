@@ -56,13 +56,17 @@ def add_url_argument(url, key, value):
     return new_url
 
 def db_datetime(db_datetime_notz):
+    
     return db_datetime_notz.replace(tzinfo=pytz.timezone('UTC'))
 
-def db_datetime_str(db_datetime_notz):
+def ordinal(n):
+    return str(n)+("th" if 4<=n%100<=20 else {1:"st",2:"nd",3:"rd"}.get(n%10, "th"))
+
+def db_datetime_str(db_datetime_notz,fmt="%a, %b %-d %Y, %H:%M %p %Z"):
     dt = db_datetime(db_datetime_notz)
     TZ_NAME = app.config.get('BCOURCE_TZ', 'Europe/Amsterdam')
     TZ = pytz.timezone(TZ_NAME)    
-    return dt.astimezone(TZ).strftime("%a, %b %d %Y, %H:%M %p %Z")
+    return dt.astimezone(TZ).strftime(fmt).replace("{th}", ordinal(dt.day))
 
 def get_url (form=None,default=None, back_button=False):
     
