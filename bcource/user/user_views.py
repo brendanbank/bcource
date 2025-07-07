@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for, jsonify, current_app
 from flask_babel import _
 from flask_security import current_user
-from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag
+from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag, Training
 from flask import current_app as app
 from flask_security import auth_required
 from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform
@@ -17,6 +17,7 @@ from flask_babel import lazy_gettext as _l
 from bcource.helper_app_context import b_pagination
 from jsonschema import validate, ValidationError
 from bcource.filters import Filters
+from bcource.messages import SendEmail
 # Blueprint Configuration
 user_bp = Blueprint(
     'user_bp', __name__,
@@ -248,9 +249,20 @@ def message():
     get_url(form)
 
     reply_message_id = request.args.get('reply')
+    training_id = request.args.get('training_id',None,int)
+    
+    
+    if training_id and not form.is_submitted():
+        training = Training().query.get(training_id)
+        users = [ enrollemnt.student.user for enrollemnt in training.trainingenrollments ]
+        
+        uids =  [str(user.id) for user in users]
+        form.envelop_tos.data = uids
+        form.subject.data = training.name
+        
+        form.envelop_tos.choices = [(user.id, user.fullname) for user in users]
 
-
-    if reply_message_id and not form.is_submitted():
+    elif reply_message_id and not form.is_submitted():
 
         user_message_association = UserMessageAssociation().query.join(Message).filter(and_(UserMessageAssociation.user==current_user,
                                                                 UserMessageAssociation.message_id==reply_message_id)).first()
@@ -288,15 +300,17 @@ def message():
     if form.validate_on_submit():
         envelop_tos = User().query.filter(User.id.in_(form.envelop_tos.data)).all()
         if not envelop_tos:
-            flash(_("Could not find user!"))
+            flash(_("Could not find users!"))
         else:
-            message = Message.create_db_message(db.session,
-                                             current_user,
-                                             envelop_tos,
-                                             form.subject.data,
-                                             form.body.data,
-                                             tags=['User'])
-
+            m = SendEmail(envelop_to=envelop_tos, 
+                          envelop_from=current_user,
+                          has_content=True,
+                          body=form.body.data,
+                          taglist=['email', 'form'],
+                          subject=form.subject.data)
+            
+            m.send()
+            
             flash(_("Message sent!"))
             return redirect(url_for('user_bp.messages'))
 
@@ -311,20 +325,26 @@ def search():
 
     query_term = request.args.get('q')
     
+    exclude = request.args.getlist('exclude',int)
+    
     q = User().query
     if not current_user.has_role('trainer'):
         q = q.join(User.roles).filter(Role.name == "trainer")
 
+    if exclude:
+        q = q.filter(~User.id.in_(exclude))
+    
     if query_term:
         q = q.filter(or_( 
             User.first_name.ilike(f'%{query_term}%'), 
             User.last_name.ilike(f'%{query_term}%'),
             User.email.ilike(f'%{query_term}%')))
 
-    r = q.order_by(User.first_name, User.last_name).limit(20).all()
+    r = q.order_by(User.first_name, User.last_name).all()
             
     for user in r:
         results["results"].append({"id": user.id,  "text":  user.fullname})
+        
     return jsonify(results)
 
 

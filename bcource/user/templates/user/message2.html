@@ -7,7 +7,7 @@
 {% endblock %}
 
 
-
+{#
 {% block formheader %}
 <div class="modal fade" id="settingModel" tabindex="-1" aria-labelledby="settingModelLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -32,7 +32,11 @@
   </div>
 </div>
 {% endblock %}
+#}
 
+{% block formfooter %}
+</form>
+{% endblock %}
 
 {% block css_content %}
      {% include 'ckeditor-css.html' %}
@@ -70,11 +74,10 @@ $(window).on('load', function() {
 	
 	selectElement.select2({
         placeholder : 'start typing',
-        dropdownParent: $('#settingModel'),
+//        dropdownParent: $('#settingModel'),
         containerCssClass : "myFont",
         //templateResult: filterSelectedOptions,
          dropdownAutoWidth: 'true',
-         width: "100%",
          selectionCssClass: "my_select_container",
 
          ajax : {
@@ -96,16 +99,17 @@ $(window).on('load', function() {
              
         }
     });
- 
+/* 
    //$('#envelop_tos').select2('data');
 	$('#settingModel').modal('show', {focus: false});
 
-	
-    const settingModel = document.getElementById('settingModel')
-    settingModel.addEventListener('hide.bs.modal', event => {
-     setTimeout(function(){window.location.href = document.getElementById('url').value;},2);
+    const close_button = document.getElementById('close')
+    close_button.addEventListener('click', event => {
+    	console.log('test')
+    	event.stopPropagation()
+    	//window.location.href = document.getElementById('url').value;
     })
-    
+    */	
 
 });
 

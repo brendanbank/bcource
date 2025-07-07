@@ -38,7 +38,14 @@ class UserMessages(FlaskForm):
     
     # submit = MySubmitField(_l('Send'), 
     #     render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1"},
-    #     divclass="col-md-12")
+    #     divclass="col-md-4")
+    #
+    # close = MySubmitField(_l('Close'), 
+    #     render_kw={"class_": "btn btn-outline-dark position-relative form-control mt-1", 
+    #                # "onClick": "console.log('test');this.stopPropagation();"
+    # },
+    #     divclass="col-md-4")
+
 
 class UserSettingsForm(FlaskForm):
     form_description = _l("Update account settings")

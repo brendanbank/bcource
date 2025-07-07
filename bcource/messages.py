@@ -15,9 +15,16 @@ def cleanhtml(raw_html):
     return cleantext.getText()
 
 class SystemMessage(object):
-    message_tag = "transation"
     
-    def __init__(self, envelop_to=None, envelop_from=None, taglist=None, CONTENT_TAG=None, **kwargs):
+    def __init__(self, envelop_to=None, 
+                 envelop_from=None, 
+                 taglist=None, 
+                 CONTENT_TAG=None,
+                 body=None,
+                 subject=None,
+                 **kwargs):
+        
+
         if not envelop_to:
             raise Exception('envelop_to cannot be None')
         
@@ -29,20 +36,25 @@ class SystemMessage(object):
         else:
             self.taglist = taglist
         
-        if hasattr(self.__class__, "message_tag") and not self.__class__.message_tag in self.taglist:
+        if hasattr(self.__class__, "message_tag") and not self.__class__.message_tag in self.taglist and not taglist:
             self.taglist.append(self.__class__.message_tag)
-            
-        if not SystemMessage.message_tag in self.taglist:
-            self.taglist.append(SystemMessage.message_tag)
-            
+                        
         self.kwargs=kwargs
-        if not CONTENT_TAG:
-            self.CONTENT_TAG = self.__class__.__name__
-        else:
-            self.CONTENT_TAG = CONTENT_TAG
+        
+        if body and subject:
+            self.body = body
+            self.subject = subject
             
-        self.body = Content.get_tag(self.CONTENT_TAG, **self.kwargs)
-        self.subject = Content.get_subject(self.CONTENT_TAG, **self.kwargs)
+        else:
+        
+            if not CONTENT_TAG:
+                self.CONTENT_TAG = self.__class__.__name__
+            else:
+                self.CONTENT_TAG = CONTENT_TAG
+                
+            self.body = Content.get_tag(self.CONTENT_TAG, **self.kwargs)
+            self.subject = Content.get_subject(self.CONTENT_TAG, **self.kwargs)
+            
         if not isinstance(envelop_to, list):
             envelop_to = [envelop_to]
 
@@ -76,19 +88,22 @@ class SendEmail(SystemMessage):
         if not SendEmail.message_tag in self.taglist:
             self.taglist.append(SendEmail.message_tag)
 
-        email_to = []
-        for email_user in self.envelop_to:
-            email_to.append(f'{email_user.fullname} <{email_user.email}>')
         
+        envelop_from_system = security.datastore.find_user(email=cv('SYSTEM_USER'))
+        email_from = f'{envelop_from_system.fullname} <{envelop_from_system.email}>'
         
-        email_from = f'{self.envelop_from.fullname} <{self.envelop_from.email}>'
+        for user in self.envelop_to:
+            email_str = f'{user.fullname} <{user.email}>'
+            msg = EmailMessage(subject=self.render_subject(), 
+                               body=self.render_body(),
+                               from_email=email_from,
+                               to=[email_str]
+                               )
+            
+            msg.content_subtype = "html"
+            self.process_attachment(msg)
         
-        msg = EmailMessage(self.render_subject(), self.render_body(),email_from , email_to)
-        
-        msg.content_subtype = "html"
-        self.process_attachment(msg)
-        
-        msg.send()
+            msg.send()
         
         super().send()
 
@@ -249,6 +264,6 @@ class EmailStudentEnrolledInTrainingInvited(SendEmail):
 class EmailStudentEnrolledInTrainingDeInvited(SendEmail):
     message_tag = "devited"
 
-
 class EmailReminders():
+    message_tag = "reminder"
     pass
