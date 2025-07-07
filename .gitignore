@@ -175,3 +175,4 @@ migrations/*
 /migrations
 /bcourse.dump-2025-06-23.2
 /bcourse.dump-2025-06-23.3
+/tmp/
