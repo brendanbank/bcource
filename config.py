@@ -108,8 +108,26 @@ class Config:
 
     SECURITY_AUTHORIZE_REQUEST = {'admin.index': [ BCOURSE_SUPER_USER_ROLE, 'cms-admin' ]}
     
+    #sheduler
+    
     SCHEDULER_API_ENABLED: True
     
+    # APScheduler configuration
+    SCHEDULER_JOBSTORES = {
+        'default': {
+            'type': 'sqlalchemy',
+            'url': SQLALCHEMY_DATABASE_URI # Use the same database for Flask and APScheduler
+        }
+    }
+    SCHEDULER_EXECUTORS = {
+        'default': {'type': 'threadpool', 'max_workers': 20}
+    }
+    SCHEDULER_JOB_DEFAULTS = {
+        'coalesce': True,
+        'max_instances': 1
+    }
+    SCHEDULER_TIMEZONE = 'UTC' # Store/process all internal times in UTC
+    SCHEDULER_API_ENABLED = False # For Flask-APScheduler, if you want its API
 
 settings = Config
 
