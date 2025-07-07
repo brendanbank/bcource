@@ -7,7 +7,7 @@ from bcource import db, menu_structure
 from flask_security import roles_required, current_user
 from bcource.helpers import admin_has_role, get_url, has_trainer_role
 from bcource.training.helper import make_table_header
-from bcource.models import Training, Practice, TrainingEvent, TrainingType, Trainer
+from bcource.models import Training, Practice, TrainingEvent, TrainingType, Trainer, TypeEnum
 from bcource.training.training_forms import TrainingForm, EventForm, TrainingDeleteForm
 from flask.globals import request
 from sqlalchemy import and_, or_
@@ -17,6 +17,7 @@ import pytz
 from sqlalchemy.orm import joinedload
 from bcource.filters import Filters
 from bcource.helper_app_context import b_pagination
+from bcource.automation import create_app_scheduler_tasks
 
 # Blueprint Configuration
 training_bp = Blueprint(
@@ -163,6 +164,9 @@ def edit_training(id=None):
                 
         form.populate_obj(training)   
         db.session.commit()
+        first_training_event_dt = training.trainingevents[0].start_time
+                    
+        create_app_scheduler_tasks(training.id, first_training_event_dt, TypeEnum.training)
 
         
         
