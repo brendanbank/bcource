@@ -35,6 +35,14 @@
                                                             title="{{_('Edit Training') }}"></i>
                      </a>  
              </div>
+               <div class="col-lg-12">
+                         <a class="icon-link link-body-emphasis"
+                         href="{{url_for('user_bp.message', training_id=training.id, first_url=return_url)}}"> 
+                         {{_('Email All participants') }}: <i class="bi bi-envelope"
+                              data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Email All participants') }}"></i>
+                     </a>  
+             </div>
      </div>
 <div class="border-top">
      <div class="col-lg-12 fw-semibold">{{_('Trainers:')}}</div>
@@ -157,7 +165,7 @@
 
 {% block js %}
 
-<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
+{#<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
 
           <script>
           const input = document.querySelector("#phone");
@@ -169,7 +177,7 @@
           });          
           </script>
 
-
+#}
 <script type="text/javascript">
 $('#student_search').select2({
      placeholder : 'start typing',

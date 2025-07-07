@@ -67,7 +67,17 @@ class BaseAutomationTask:
         """Optional teardown method."""
         pass
         
-
+def remove_app_scheduler_tasks(id: int, type: TypeEnum, force_now=False, **kwargs):
+    task_schedules = AutomationSchedule().query.filter(AutomationSchedule.type==type).all()
+    for task in task_schedules:
+        
+        str_id = f'{task.name}_{id}'
+        
+        job = app_scheduler.get_job(str_id)
+        if job:
+            logger.warn(f'remove {job}')
+            app_scheduler.remove_job(str_id)
+            
 def create_app_scheduler_tasks(id: int, event_dt: datetime, type: TypeEnum, force_now=False, **kwargs):
     
     task_schedules = AutomationSchedule().query.filter(AutomationSchedule.type==type).all()
@@ -88,9 +98,8 @@ def create_app_scheduler_tasks(id: int, event_dt: datetime, type: TypeEnum, forc
             
         str_id = f'{task.name}_{id}'
         
-        logging.warning(f'{__name__} added task {str_id} for {when} force_now: {force_now}')
         
-        app_scheduler.add_job(
+        job = app_scheduler.add_job(
             id=str_id,
             func=_execute_automation_task_job,
             trigger='date',
@@ -101,6 +110,11 @@ def create_app_scheduler_tasks(id: int, event_dt: datetime, type: TypeEnum, forc
             replace_existing=True,
             max_instances=1 # Ensure only one refresh job runs at a time
         )
+        
+        logging.warning(f'{__name__} added task {str_id} for {when} force_now: {force_now}')
+        logger.warn(f'added {job}')
+        
+        
         
 def _execute_automation_task_job(id: int, name: str, classname: str, *args, **kwargs):    
     

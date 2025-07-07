@@ -1021,10 +1021,14 @@ def init_app_scheduler(app_scheduler, db):
 
 def renew_automations(app_scheduler, db):
     
+    
+    app_scheduler.remove_all_jobs()
+    
+    ## training automations
     trainings = Training().query.join(Training.trainingevents).filter(TrainingEvent.start_time > datetime.datetime.utcnow(), Training.active==True)
     for training in trainings:
         first_training_event_dt = training.trainingevents[0].start_time
-        
+    
         from bcource.automation import create_app_scheduler_tasks
         create_app_scheduler_tasks(training.id, first_training_event_dt, TypeEnum.training)
 
