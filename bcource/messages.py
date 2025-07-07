@@ -38,7 +38,7 @@ class SystemMessage(object):
         self.kwargs=kwargs
         self.CONTENT_TAG = self.__class__.__name__
         self.body = Content.get_tag(self.CONTENT_TAG, **self.kwargs)
-        self.subject = Content.get_tag(f'{self.CONTENT_TAG}Subject', **self.kwargs)
+        self.subject = Content.get_subject(self.CONTENT_TAG, **self.kwargs)
         if not isinstance(envelop_to, list):
             envelop_to = [envelop_to]
 
