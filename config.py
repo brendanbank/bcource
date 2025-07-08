@@ -127,7 +127,12 @@ class Config:
         'max_instances': 1
     }
     SCHEDULER_TIMEZONE = 'UTC' # Store/process all internal times in UTC
-    SCHEDULER_API_ENABLED = False # For Flask-APScheduler, if you want its API
+    SCHEDULER_API_ENABLED = True # For Flask-APScheduler, if you want its API
+    
+    
+    BCOURSE_LOCK_HOST="127.0.0.1"
+    BCOURSE_LOCK_PORT=53462
+
 
 settings = Config
 
