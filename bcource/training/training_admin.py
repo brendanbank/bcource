@@ -1,6 +1,6 @@
-from bcource.admin.helper import AuthModelView, CkModelView, CKTextAreaField, TagMixIn
+from bcource.admin.helper import AuthModelView, CkModelView, TagMixIn
 from bcource import db, table_admin
-from bcource.models import Location, Practice, Trainer, Training, TrainingType, TrainingEvent, Content, Policy, AutomationSchedule
+from bcource.models import Location, Practice, Trainer, Training, TrainingType, TrainingEvent, Policy, AutomationSchedule
 
 
 class TrainerAdmin(TagMixIn, CkModelView, AuthModelView):
@@ -60,7 +60,6 @@ table_admin.add_view(TrainingEventAdmin(TrainingEvent, db.session, category='Tra
 table_admin.add_view(PolicyAdmin(Policy, db.session, category='Training', tag_field="policy"))
 
 from wtforms import StringField
-from wtforms.validators import DataRequired
 from datetime import timedelta
 
 class IntervalStringField(StringField):

@@ -1,15 +1,9 @@
-from datetime import datetime, timedelta
-from bcource.models import AutomationClasses, BeforeAfterEnum, AutomationSchedule
-from bcource import db
-from bcource.models import Training, TrainingEvent
 import config
-import datetime
 import logging
 
 logger = logging.getLogger(__name__)
 
 from pytz import utc
-import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore

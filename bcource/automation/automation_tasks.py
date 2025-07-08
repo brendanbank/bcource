@@ -1,6 +1,5 @@
 from bcource.automation.automation_base import BaseAutomationTask, register_automation
-from bcource.models import Training, TrainingEvent, TrainingEnroll,\
-    Content
+from bcource.models import Training, TrainingEvent, TrainingEnroll
 from bcource.messages import SendEmail, EmailStudentEnrolledInTraining
 from datetime import datetime
 import logging
@@ -31,7 +30,7 @@ class Reminder(BaseAutomationTask):
     description="Class to handle sending reminder to students."
 )
 class StudentReminderTask(Reminder):
-    def __init__(self, id, *args, **kwargs):
+    def __init__(self, id, *args, **kwargs):  # @ReservedAssignment
         super().__init__(*args, **kwargs)
         self.to = []
         self.enrollments = TrainingEnroll().query.join(Training).filter(TrainingEnroll.status=="enrolled", Training.id == id).all()
@@ -52,7 +51,7 @@ class StudentReminderTask(Reminder):
     description="Class to handle sending reminders to trainers."
 )
 class TrainerReminderTask(Reminder):
-    def __init__(self, id, *args, **kwargs):
+    def __init__(self, id, *args, **kwargs):  # @ReservedAssignment
         super().__init__(*args, **kwargs)
         self.to = []
         self.training = Training().query.get(id)
@@ -75,7 +74,7 @@ class TrainerReminderTask(Reminder):
 )
 class AutomaticWaitList(BaseAutomationTask):
     misfire_grace_time = 3600
-    def __init__(self, id, *args, **kwargs):
+    def __init__(self, id, *args, **kwargs):  # @ReservedAssignment
         super().__init__(*args, **kwargs)
         self.id = id
         

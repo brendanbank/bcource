@@ -12,15 +12,14 @@ from flask import render_template_string
 from bcource.helpers import config_value as cv
 from bcource.helpers import genpwd
 from flask import current_app, session
-import pytz
 from sqlalchemy import or_
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy import orm, Enum
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import orm
 import nh3
 from enum import Enum
 from datetime import timedelta
 
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 policy_association = Table(
     "training_policies",
@@ -695,7 +694,7 @@ class User(db.Model, sqla.FsUserMixin):
         return f'{self.first_name} {self.last_name}'
 
     @declared_attr
-    def webauthn(cls):
+    def webauthn(cls):  # @NoSelf
         return relationship(
             "WebAuthn", back_populates="user", cascade="all, delete"
         )
@@ -825,7 +824,7 @@ class WebAuthn(db.Model,sqla.FsWebAuthnMixin):
     credential_id: Mapped[str] = mapped_column(String(1024))
     
     @declared_attr
-    def user_id(cls) -> Mapped[int]:
+    def user_id(cls) -> Mapped[int]:  # @NoSelf
         return mapped_column(
             ForeignKey("user.id", ondelete="CASCADE")
         )
