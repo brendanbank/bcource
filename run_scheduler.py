@@ -2,7 +2,6 @@
 
 import time
 from bcource.automation import init_app_scheduler, start_app_sscheduler
-import config
 from bcource.automation.lock import acquire_socket_lock, release_socket_lock
 import config
 import sys
