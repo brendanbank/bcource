@@ -8,6 +8,36 @@ import bcource.messages as system_msg
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
 from bcource.helpers import add_url_argument
+import logging
+logger = logging.getLogger(__name__)
+
+
+def deinvite_from_waitlist(enrollment: TrainingEnroll):
+    
+    enrollment.status="waitlist-invite-expired"
+    enrollment.invite_date = datetime.utcnow()
+    
+    system_msg.EmailStudentEnrolledInTrainingDeInvited(envelop_to=enrollment.student.user, 
+                                                  enrollment=enrollment).send()
+
+    db.session.commit()
+    
+    logger.info(f'deinvited user: {enrollment.student.user} from training: {enrollment.training}')
+    return (True)
+
+
+def invite_from_waitlist(enrollment: TrainingEnroll):
+    
+    enrollment.status="waitlist-invited"
+    enrollment.invite_date = datetime.utcnow()
+    
+    system_msg.EmailStudentEnrolledInTrainingInvited(envelop_to=enrollment.student.user, 
+                                                  enrollment=enrollment).send()
+
+    db.session.commit()
+    logger.info(f'invited user: {enrollment.student.user} from training: {enrollment.training}')
+
+    return (True)
 
 
 def enroll_from_waitlist(enrollment: TrainingEnroll):
@@ -29,13 +59,21 @@ def enroll_from_waitlist(enrollment: TrainingEnroll):
 
 def enroll_common(training, user):
     enrolled_user = training.enrolled(user)
-    if enrolled_user:
+    
+    if enrolled_user and enrolled_user.status != "waitlist-invite-expired":
         flash(_("%(fullname)s has already enrolled for this training: %(trainingname)s", 
                 fullname=user.fullname,trainingname=training.name ),'error')
         return False
     
-    waitlist = len(training.trainingenrollments) >= training.max_participants
-    enroll = TrainingEnroll()
+    training.fill_numbers(user)
+    
+    waitlist = training._amount_enrolled >= training.max_participants
+    
+    if enrolled_user:
+        enroll = enrolled_user
+    else:
+        enroll = TrainingEnroll()
+        
 
     student = Student().query.join(Practice).filter(and_(
                     Practice.shortname==Practice.default_row().shortname, Student.user==user)
@@ -85,7 +123,7 @@ def enroll_common(training, user):
     
 
 
-def deroll_common(training, user):
+def deroll_common(training, user, admin=False):
     training_enroll = training.enrolled(user)
             
     if not training_enroll:
@@ -110,6 +148,11 @@ def deroll_common(training, user):
 
     db.session.delete(training_enroll)        
     db.session.commit()
+    
+    if admin==False: # only run if the a student is derolling (not via the admin screen)
+        waitlist_enrollments_eligeble = training.waitlist_enrollments_eligeble()
+        for enrollment in waitlist_enrollments_eligeble:
+            invite_from_waitlist(enrollment)
     
     
     return True
