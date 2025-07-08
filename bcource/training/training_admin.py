@@ -135,7 +135,7 @@ class IntervalStringField(StringField):
 
 class AutomationScheduleAdmin(AuthModelView):
     permission = "admin-trainingevent-edit"
-    column_list = ["name", "interval", "automation_class", ]
+    column_list = ["name", "interval", "automation_class","active" ]
     form_columns = ["name", "automation_class", "interval", "beforeafter", "events", "active"]
 
     # Override the 'duration' field with your custom WTForms field
