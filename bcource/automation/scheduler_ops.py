@@ -1,13 +1,7 @@
-from datetime import datetime, timedelta
-from bcource.models import AutomationClasses, BeforeAfterEnum, AutomationSchedule,\
-    TrainingEnroll
-from flask_apscheduler import APScheduler
+from bcource.models import AutomationClasses, AutomationSchedule
 from bcource import db
-from bcource.models import Training, TrainingEvent
 from bcource.automation.automation_base import get_registered_automation_classes, get_automation_class
-import datetime
 import logging
-from bcource.helpers import db_datetime_str
 from bcource.automation.scheduler import app_scheduler
 
 logger = logging.getLogger(__name__)
@@ -39,7 +33,6 @@ def renew_automations():
         automations = AutomationSchedule().query.filter(
             AutomationSchedule.active == True).all()
         
-        all_jobs = []
         for automation in automations:
             logger.info(f'check for jobs in {automation.automation_class}')
             automationobj = get_automation_class (automation.automation_class.class_name)
@@ -63,7 +56,7 @@ def init_app_scheduler(app):
     app_scheduler.flask_app = app
     #app_scheduler.remove_all_jobs()
 
-    import bcource.automation.automation_tasks
+    import bcource.automation.automation_tasks  # @UnusedImport
     
     with app_scheduler.flask_app.app_context():
         for class_name, details in get_registered_automation_classes().items():
