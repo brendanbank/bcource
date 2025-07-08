@@ -111,6 +111,9 @@ class SendEmail(SystemMessage):
         return(msg)
     
     def email_render_body(self):
+        if self.envelop_from == security.datastore.find_user(email=cv('SYSTEM_USER')):
+            return self.body
+        
         return f'{self.envelop_from} wrote:<p>{self.body}'
 
 class EmailStudentWelcomeMessage(SendEmail):

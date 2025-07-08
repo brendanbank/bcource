@@ -4,6 +4,7 @@ from flask import render_template
 from flask_babel import _
 from flask_babel import lazy_gettext as _l
 from bcource.models import Training, TrainingType, TrainingEvent, TrainingEnroll, Student
+from bcource.students.common import invite_from_waitlist
 from datetime import datetime
 from bcource.training.training_forms import TrainingDerollForm
 from bcource.filters import Filters
@@ -82,13 +83,11 @@ def invite(training_id,student_id):
         return redirect(url)
     
     enrollment = TrainingEnroll().query.filter(TrainingEnroll.student == student, TrainingEnroll.training == training).first()
-    enrollment.status="waitlist-invited"
+    if not enrollment:
+        flash(_('Could not find enrollment'))
+        return redirect(url)
     
-    system_msg.EmailStudentEnrolledInTrainingInvited(envelop_to=enrollment.student.user, 
-                                                  enrollment=enrollment).send()
-
-    db.session.rollback()
-    
+    invite_from_waitlist(enrollment)    
     flash(_('Student %(fullname)s is invited for %(trainingname)s.', 
             fullname=student.fullname, 
             trainingname=training.name))

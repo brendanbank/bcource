@@ -943,7 +943,6 @@ class AutomationClasses(db.Model):
     def __str__(self):
         return f"{self.class_name}"
 
-
     def __repr__(self):
         return f"<AutomationConfig {self.class_name}>"
 
@@ -956,9 +955,6 @@ class EventsEnum(Enum):
     last="last"
     all="all"
 
-class TypeEnum(Enum):
-    training="training"
-    account_creation="account_creation"
 
 class AutomationSchedule(db.Model):
     __table_args__ = (db.UniqueConstraint("name"),)
@@ -967,9 +963,9 @@ class AutomationSchedule(db.Model):
     
     beforeafter: Mapped[BeforeAfterEnum] 
     events: Mapped[EventsEnum]
-    type: Mapped[TypeEnum]
 
     interval: Mapped[timedelta] = mapped_column(Interval, nullable=False)
+    active: Mapped[bool] = mapped_column(Boolean(), default=True)
 
     automation_class = db.relationship('AutomationClasses', lazy=True, backref='schedules')
     automation_class_id: Mapped[int] = mapped_column(ForeignKey(AutomationClasses.id, ondelete="CASCADE"), nullable=True)
@@ -978,7 +974,6 @@ class AutomationSchedule(db.Model):
         server_default=func.now(),
         onupdate=func.now(),
     )
-
 
 
 def role_student_default():

@@ -10,6 +10,18 @@ from flask_babel import _
 from bcource.helpers import add_url_argument
 
 
+def invite_from_waitlist(enrollment: TrainingEnroll):
+    
+    enrollment.status="waitlist-invited"
+    enrollment.invite_date = datetime.utcnow()
+    
+    system_msg.EmailStudentEnrolledInTrainingInvited(envelop_to=enrollment.student.user, 
+                                                  enrollment=enrollment).send()
+
+    db.session.commit()
+    return (True)
+
+
 def enroll_from_waitlist(enrollment: TrainingEnroll):
     if not enrollment:
         flash(_("enroll: Cannot find invitation!"), 'error')

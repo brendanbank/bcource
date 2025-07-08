@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from bcource.models import AutomationClasses, TypeEnum, BeforeAfterEnum, AutomationSchedule
+from bcource.models import AutomationClasses, BeforeAfterEnum, AutomationSchedule,\
+    TrainingEnroll
 from flask_apscheduler import APScheduler
 from bcource import db
 from bcource.models import Training, TrainingEvent
@@ -7,74 +8,14 @@ from bcource.automation.automation_base import get_registered_automation_classes
 import datetime
 import logging
 from bcource.helpers import db_datetime_str
+from bcource.automation.scheduler import app_scheduler
 
 logger = logging.getLogger(__name__)
 
-app_scheduler = None
-
-def remove_app_scheduler_tasks(id: int, type: TypeEnum, force_now=False, **kwargs):
-    task_schedules = AutomationSchedule().query.filter(AutomationSchedule.type==type).all()
-    for task in task_schedules:
-        
-        str_id = f'{task.name}_{id}'
-        
-        job = app_scheduler.get_job(str_id)
-        if job:
-            logger.warn(f'remove {job}')
-            app_scheduler.remove_job(str_id)
-            
-def create_app_scheduler_tasks(id: int, event_dt: datetime, type: TypeEnum, force_now=False, **kwargs):
-    
-    task_schedules = AutomationSchedule().query.filter(AutomationSchedule.type==type).all()
-    for task in task_schedules:
-        dt_delta = task.interval
-        
-        if task.beforeafter == BeforeAfterEnum.before:
-            when = event_dt - dt_delta
-        elif task.beforeafter == BeforeAfterEnum.after:
-            when = event_dt + dt_delta
-        else:
-            when = event_dt
-            
-        if force_now:
-            when = datetime.datetime.utcnow()
-            
-        if when < datetime.datetime.utcnow():
-            logger.warning(f"job is scheduler in the past: {db_datetime_str(when)} ignoring task with type: {type} id: {id}")
-            continue
-            
-        str_id = f'{task.name}_{id}'
-        
-        job = app_scheduler.add_job(
-            id=str_id,
-            func=_execute_automation_task_job,
-            trigger='date',
-            args=(id,task.name, task.automation_class.class_name),
-            kwargs=kwargs,
-            misfire_grace_time=300,
-            run_date=when,
-            replace_existing=True,
-            max_instances=1 # Ensure only one refresh job runs at a time
-        )
-                
-        logging.warning(f'added job: {job}')
-        
-        
-        
-def _execute_automation_task_job(id: int, name: str, classname: str, *args, **kwargs):    
-    
-
-    with app_scheduler.flask_app.app_context(): 
-        cls = get_automation_class(classname)
-        if cls:
-            obj = cls.get('class', None)(id)
-        else:
-            logging.info (f'{__name__}: cannot find classname: {classname}')
-            return 
-        
-        obj.execute()
+                    
     
 def report_active_jobs():
+    renew_automations()
     logger.info("Reporting active ...")
     all_jobs = app_scheduler.get_jobs()
     for jobs in all_jobs:
@@ -82,7 +23,6 @@ def report_active_jobs():
         
 def renew_automations():
     
-    app_scheduler.remove_all_jobs()
     with app_scheduler.flask_app.app_context():        
         job = app_scheduler.add_job(func=report_active_jobs,
                               trigger='interval', 
@@ -91,20 +31,37 @@ def renew_automations():
                               replace_existing=True)
     
         logger.info(f'added job {job}')
-        # training automations
-        trainings = Training().query.join(Training.trainingevents).filter(TrainingEvent.start_time > datetime.datetime.utcnow(), Training.active==True).all()
-        
-        for training in trainings:
-            logger.info (f'renew: {training}')
-            first_training_event_dt = training.trainingevents[0].start_time
-            create_app_scheduler_tasks(training.id, first_training_event_dt, TypeEnum.training)
-        
 
-def init_app_scheduler(app, scheduler):
-    global app_scheduler
-    app_scheduler = scheduler
+        current_job_ids = {job.id for job in app_scheduler.get_jobs()}
+        
+        new_jobs_ids = set()
+        
+        automations = AutomationSchedule().query.filter(
+            AutomationSchedule.active == True).all()
+        
+        all_jobs = []
+        for automation in automations:
+            logger.info(f'check for jobs in {automation.automation_class}')
+            automationobj = get_automation_class (automation.automation_class.class_name)
+            if not automationobj:
+                logging.critical(f'class_name: {automation.automation_class.class_name} does not exists')
+                continue
+            
+            cls = automationobj['class']
+            
+            new_jobs_ids.update(cls.create_jobs(automation))     
+        
+        remove_jobs_list = current_job_ids - new_jobs_ids
+
+        
+        for job_id in remove_jobs_list:
+            if job_id == "report_active_jobs_id":
+                continue
+            app_scheduler.remove_job(job_id)
+            
+def init_app_scheduler(app):
     app_scheduler.flask_app = app
-    app_scheduler.remove_all_jobs()
+    #app_scheduler.remove_all_jobs()
 
     import bcource.automation.automation_tasks
     
@@ -130,7 +87,6 @@ def init_app_scheduler(app, scheduler):
 
     
     ## renew automations for all trainings
-    renew_automations()
     report_active_jobs()
 
 
