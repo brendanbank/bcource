@@ -20,9 +20,9 @@ def main():
         sys.exit (1)
     
     app = create_app()
-    app_scheduler = start_app_sscheduler()
+    start_app_sscheduler()
 
-    init_app_scheduler(app, app_scheduler)
+    init_app_scheduler(app)
     # keep it running
     
     try:
