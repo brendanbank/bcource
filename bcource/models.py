@@ -322,7 +322,8 @@ class Training(db.Model):
             return False
             
     def fill_numbers(self,user):
-        self._amount_enrolled = len(self.trainingenrollments)
+                
+        self._amount_enrolled = self.query.join(TrainingEnroll).filter(and_(Training.id == self.id,TrainingEnroll.status != "waitlist-invite-expired")).count()
         e = self.enrolled(user)
         if e:
             self._user_enrollment = e

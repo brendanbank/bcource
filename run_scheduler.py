@@ -29,7 +29,7 @@ def main():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        logger.info("\nScript interrupted by user.")
+        logger.info("Script interrupted by user.")
     finally:
         release_socket_lock(lock_socket)
         logger.info("Script finished.")

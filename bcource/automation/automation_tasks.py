@@ -3,6 +3,7 @@ from bcource.models import Training, TrainingEvent, TrainingEnroll
 from bcource.messages import SendEmail, EmailStudentEnrolledInTraining
 from datetime import datetime
 import logging
+from bcource.students.common import deinvite_from_waitlist, invite_from_waitlist
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,8 @@ class EmailReminderIcal(EmailStudentEnrolledInTraining):
     
 
 class Reminder(BaseAutomationTask):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, id, automation_name, *args, **kwargs):
+        super().__init__(id, automation_name, *args, **kwargs)
         logger.warning (f'Reminder Class: {self.__class__.__name__}')
         self.template_kw= {}
 
@@ -30,8 +32,8 @@ class Reminder(BaseAutomationTask):
     description="Class to handle sending reminder to students."
 )
 class StudentReminderTask(Reminder):
-    def __init__(self, id, *args, **kwargs):  # @ReservedAssignment
-        super().__init__(*args, **kwargs)
+    def __init__(self, id, automation_name, *args, **kwargs):  # @ReservedAssignment
+        super().__init__(id, automation_name, *args, **kwargs)
         self.to = []
         self.enrollments = TrainingEnroll().query.join(Training).filter(TrainingEnroll.status=="enrolled", Training.id == id).all()
         if not self.enrollments:
@@ -44,15 +46,15 @@ class StudentReminderTask(Reminder):
         for enrollment in self.enrollments:
             self.template_kw['user'] = enrollment.student.user
             self.template_kw['enrollment'] = enrollment
-            a = EmailReminderIcal(envelop_to=[enrollment.student.user], CONTENT_TAG=self.__class__.__name__, taglist=['reminder'], **self.template_kw)
+            a = EmailReminderIcal(envelop_to=[enrollment.student.user], CONTENT_TAG=self.automation_name, taglist=['reminder'], **self.template_kw)
             a.send()
 
 @register_automation(
     description="Class to handle sending reminders to trainers."
 )
 class TrainerReminderTask(Reminder):
-    def __init__(self, id, *args, **kwargs):  # @ReservedAssignment
-        super().__init__(*args, **kwargs)
+    def __init__(self, id, automation_name, *args, **kwargs):  # @ReservedAssignment
+        super().__init__(id, automation_name,*args, **kwargs)
         self.to = []
         self.training = Training().query.get(id)
         if not self.training:
@@ -66,7 +68,7 @@ class TrainerReminderTask(Reminder):
         for user in self.training.trainer_users:
             self.template_kw['user'] = user
             self.template_kw['training'] = self.training
-            a = EmailReminder(envelop_to=[user], CONTENT_TAG=self.__class__.__name__, taglist=['reminder'], **self.template_kw)
+            a = EmailReminder(envelop_to=[user], CONTENT_TAG=self.automation_name, taglist=['reminder'], **self.template_kw)
             a.send()
 
 @register_automation(
@@ -74,13 +76,22 @@ class TrainerReminderTask(Reminder):
 )
 class AutomaticWaitList(BaseAutomationTask):
     misfire_grace_time = 3600
-    def __init__(self, id, *args, **kwargs):  # @ReservedAssignment
-        super().__init__(*args, **kwargs)
+    def __init__(self, id, automation_name, *args, **kwargs):  # @ReservedAssignment
+        super().__init__(id, automation_name, *args, **kwargs)
         self.id = id
         
     def execute(self):
-        print (self.id)
+        enrollment = TrainingEnroll().query.filter(TrainingEnroll.uuid == self.id).first()
+        if enrollment.status != "waitlist-invited":
+            logging.warn(f'{enrollment} enrollment.status: {enrollment.status} is not waitlist-invited, stop automation')
+            return True
+        
+        deinvite = deinvite_from_waitlist(enrollment)
+        waitlist_enrollments_eligeble = enrollment.training.waitlist_enrollments_eligeble()
+        for enrollment in waitlist_enrollments_eligeble:
+            invite_from_waitlist(enrollment)
 
+    
     @classmethod
     def query(cls):
         return TrainingEnroll().query.filter(TrainingEnroll.status =="waitlist-invited").all()

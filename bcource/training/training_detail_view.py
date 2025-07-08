@@ -4,7 +4,7 @@ from flask import render_template
 from flask_babel import _
 from flask_babel import lazy_gettext as _l
 from bcource.models import Training, TrainingType, TrainingEvent, TrainingEnroll, Student
-from bcource.students.common import invite_from_waitlist
+from bcource.students.common import invite_from_waitlist, enroll_common
 from datetime import datetime
 from bcource.training.training_forms import TrainingDerollForm
 from bcource.filters import Filters
@@ -32,7 +32,22 @@ def enrollement_query(training, filters):
         return training.trainingenrollments_sorted
 
 
-@training_bp.route('/training-de-infite/<int:training_id>/<int:student_id>',methods=['GET', 'POST'])
+
+@training_bp.route('/enable-user-enrollment/<string:uuid>',methods=['GET', 'POST'])
+def enable(uuid):
+    enrollment = TrainingEnroll().query.filter(TrainingEnroll.uuid == uuid).first()
+
+    url = get_url()
+    if not (enrollment):
+        flash(_("Cannot find your enrollement!"), 'error')
+        return redirect(url)
+
+    enroll_common(enrollment.training, enrollment.student.user)
+
+    return redirect(url)
+
+
+@training_bp.route('/training-de-invite/<int:training_id>/<int:student_id>',methods=['GET', 'POST'])
 def deinvite(training_id,student_id):        
     training=Training().query.get(training_id)
     if not training:

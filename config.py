@@ -29,6 +29,11 @@ class Config:
     SECRET_KEY = environ.get("SECRET_KEY")
     FLASK_DEBUG = environ.get("FLASK_DEBUG")
     FLASK_APP = "wsgi.py"
+    
+    # url config
+    SERVER_NAME="bcourse.nl"
+    APPLICATION_ROOT="/"
+    PREFERRED_URL_SCHEME="https"
 
     # Static Assets
     STATIC_FOLDER = "static"
