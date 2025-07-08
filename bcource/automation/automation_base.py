@@ -1,15 +1,11 @@
 # This will be our central registry for automation classes
 _automation_classes = {}
 
-from datetime import datetime, timedelta
-from bcource.models import AutomationClasses, BeforeAfterEnum, AutomationSchedule
-from flask_apscheduler import APScheduler
-from bcource import db
-from bcource.models import Training, TrainingEvent
-import datetime
+from bcource.models import BeforeAfterEnum
 from bcource.helpers import db_datetime_str
 from bcource.automation.scheduler import app_scheduler
-
+import datetime
+from datetime import timedelta
 import logging
 logger = logging.getLogger(__name__)
 
@@ -51,7 +47,7 @@ def get_automation_class(name):
     """
     return _automation_classes.get(name)
 
-def _execute_automation_task_job(id: int, classname: str, *args, **kwargs):    
+def _execute_automation_task_job(id: int, classname: str, *args, **kwargs):    # @ReservedAssignment
     
 
     with app_scheduler.flask_app.app_context(): 
@@ -158,8 +154,8 @@ class BaseAutomationTask:
                 
         if when < datetime.datetime.utcnow():
             logger.warning(f"job is scheduler in the past: {db_datetime_str(when)} task will be probably be ignored event_dt: {event_dt}")
-            # if app_scheduler.flask_app.config.get('ENVIRONMENT') == "DEVELOPMENT":
-            #     when = datetime.datetime.utcnow() + timedelta(seconds=1)
+            if app_scheduler.flask_app.config.get('ENVIRONMENT') == "DEVELOPMENT":
+                when = datetime.datetime.utcnow() + timedelta(seconds=1)
                 
         return when
     

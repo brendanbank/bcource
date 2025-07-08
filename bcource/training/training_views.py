@@ -1,11 +1,10 @@
-from flask import render_template, current_app, g, flash, redirect, url_for, jsonify
+from flask import render_template,  flash, redirect, url_for, jsonify
 from flask_babel import _
 from flask_babel import lazy_gettext as _l
 from flask import Blueprint, abort
-from flask_security import permissions_required
 from bcource import db, menu_structure
-from flask_security import roles_required, current_user
-from bcource.helpers import admin_has_role, get_url, has_trainer_role
+from flask_security import current_user
+from bcource.helpers import get_url, has_trainer_role
 from bcource.training.helper import make_table_header
 from bcource.models import Training, Practice, TrainingEvent, TrainingType, Trainer
 from bcource.training.training_forms import TrainingForm, EventForm, TrainingDeleteForm
@@ -14,7 +13,6 @@ from sqlalchemy import and_, or_
 import json
 from datetime import datetime
 import pytz
-from sqlalchemy.orm import joinedload
 from bcource.filters import Filters
 from bcource.helper_app_context import b_pagination
 
@@ -80,7 +78,7 @@ def update_training_events(training, form_events):
         else:
             db.session.delete(row)
             
-    for key, val in form_dict.items():
+    for key, val in form_dict.items():  # @UnusedVariable
         te = TrainingEvent(training=training,
                            start_time=val["start_time"],
                            end_time=val["end_time"],
@@ -90,7 +88,7 @@ def update_training_events(training, form_events):
 
 
 @training_bp.route('/delete/<int:id>',methods=['GET', 'POST'])
-def delete(id):
+def delete(id):  # @ReservedAssignment
     training=Training().query.filter(Training.id==id).first()
     if not training:
         abort(404)
@@ -111,7 +109,7 @@ def delete(id):
 
 @training_bp.route('/edit/<int:id>',methods=['GET', 'POST'])
 @training_bp.route('/edit/',methods=['GET', 'POST'])
-def edit_training(id=None):
+def edit_training(id=None):  # @ReservedAssignment
     
     practice=Practice.default_row() #@UndefinedVariable
     
@@ -162,9 +160,7 @@ def edit_training(id=None):
         update_training_events(training, event_array)
                 
         form.populate_obj(training)   
-        db.session.commit()
-        first_training_event_dt = training.trainingevents[0].start_time
-                
+        db.session.commit()                
         
         flash(_('Training details are successfully saved!'))
         
@@ -285,8 +281,7 @@ def search():
     query_term = request.args.get('q')
     
     r = []
-    time_now = datetime.now(tz=pytz.timezone('UTC'))
-    
+        
     if query_term:
         r = Training().query.join(TrainingEvent).join(Practice).filter(and_(
                 Practice.shortname==Practice.default_row().shortname, 
