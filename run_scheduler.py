@@ -2,7 +2,6 @@
 
 import time
 from bcource.automation import init_app_scheduler, start_app_sscheduler
-import config
 from bcource.automation.lock import acquire_socket_lock, release_socket_lock
 import config
 import sys
@@ -20,9 +19,9 @@ def main():
         sys.exit (1)
     
     app = create_app()
-    app_scheduler = start_app_sscheduler()
+    start_app_sscheduler()
 
-    init_app_scheduler(app, app_scheduler)
+    init_app_scheduler(app)
     # keep it running
     
     try:
@@ -30,7 +29,7 @@ def main():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        logger.info("\nScript interrupted by user.")
+        logger.info("Script interrupted by user.")
     finally:
         release_socket_lock(lock_socket)
         logger.info("Script finished.")

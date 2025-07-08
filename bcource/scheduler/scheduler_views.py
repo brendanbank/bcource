@@ -209,6 +209,21 @@ def index():
                            deroll_form=deroll_form
                            )
 
+
+@scheduler_bp.route('/training/enable/<string:uuid>',methods=['GET', 'POST'])
+@auth_required()
+def enable(uuid):
+    enrollment = TrainingEnroll().query.join(Student).join(User).filter(TrainingEnroll.uuid == uuid, User.id == current_user.id).first()
+
+    url = get_url()
+    if not (enrollment):
+        flash(_("Cannot find your enrollement!"), 'error')
+        return redirect(url)
+
+    enroll_common(enrollment.training, current_user)
+
+    return redirect(url)
+
 @scheduler_bp.route('/training/deroll/<int:id>',methods=['GET', 'POST'])
 @auth_required()
 def deroll(id):
@@ -228,7 +243,7 @@ def deroll(id):
 @auth_required()
 def accept_invite(uuid):
     
-    enrollment = TrainingEnroll().query.filter(TrainingEnroll.uuid == uuid).first()
+    enrollment = TrainingEnroll().query.join(Student).join(User).filter(TrainingEnroll.uuid == uuid, User.id == current_user.id).first()
     
     url = get_url()
     
@@ -244,7 +259,7 @@ def accept_invite(uuid):
 @auth_required()
 def decline_invite(uuid):
     
-    enrollment = TrainingEnroll().query.filter(TrainingEnroll.uuid == uuid).first()
+    enrollment = TrainingEnroll().query.join(Student).join(User).filter(TrainingEnroll.uuid == uuid, User.id == current_user.id).first()
     
     url = get_url()
     
@@ -287,6 +302,8 @@ def enroll(id):
         if redirect_url:
             return redirect(url)
         
+    training.fill_numbers(current_user)
+    
     return render_template("scheduler/enroll.html", training=training, form=form, return_url=url)
 
 

@@ -25,7 +25,7 @@
                {% endfor %}
           </ol>
           </div>
-{%- if training.trainingenrollments | length >= training.max_participants %}
+{%- if training._amount_enrolled >= training.max_participants %}
 
      <div class="p-2">
           <div class="row">

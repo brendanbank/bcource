@@ -121,10 +121,23 @@
                 <span class="{{show_mobile}}">{{_('Phone: ')}}</span>
                {{ student_enrollment.student.phone_number | format_phone_number | safe }}</div>
           <div class="col-lg-3 pt-0 pb-0">
-                <span class="{{show_mobile}}">{{_('Enrollment Status: ')}}</span>{{ student_enrollment.status }} <span class="{{show_mobile}}"><br></span>
+                <span class="{{show_mobile}}">{{_('Enrollment Status: ')}}</span>{{ student_enrollment.status }}<span class="{{show_mobile}}"><br></span>
 
 
 
+                {% if student_enrollment.status == "waitlist-invite-expired" %}
+                                          <a class="icon-link link-body-emphasis align-self-center small"
+               href="{{url_for('training_bp.enable', uuid=student_enrollment.uuid, first_url=return_url)}}"
+               onclick="return safeConfirm('{{_("Are you sure you want to re-enable %(email)s for this training?", email=student_enrollment.student.email)}}');"
+               > 
+               <i class="fs-5 bi bi-check-circle align-self-center" 
+                    data-toggle="tooltip" data-placement="top" 
+                                                  title="{{_('Re-enable this for this training.') }}"></i>
+               
+               <span class="{{show_mobile}} fw-semibold">{{_('Re-enable')}}</span></a>
+                
+                
+                {% endif %}
                 {% if student_enrollment.status == "waitlist-invited" %}
                           <a class="icon-link link-body-emphasis align-self-center"
                href="{{url_for('training_bp.deinvite', training_id=training.id, student_id=student_enrollment.student.id, first_url=return_url)}}"
@@ -165,29 +178,17 @@
 
 {% block js %}
 
-{#<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
-
-          <script>
-          const input = document.querySelector("#phone");
-          window.intlTelInput(input, {
-      	    loadUtils: () => import("https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/utils.js"),
-    	    initialCountry: "NL",
-    	    nationalMode: true,
-
-          });          
-          </script>
-
-#}
 <script type="text/javascript">
-$('#student_search').select2({
-     placeholder : 'start typing',
-//     minimumInputLength: 1,
-     containerCssClass : "myFont",
-     ajax : {
-          url : '/students/search',
-          dataType : 'json',
-     }
-});
+
+     $('#student_search').select2({
+          placeholder : 'start typing',
+     //     minimumInputLength: 1,
+          containerCssClass : "myFont",
+          ajax : {
+               url : '/students/search',
+               dataType : 'json',
+          }
+     });
 
 $('#student_search').on('change', function() {
      var id = $("#student_search option:selected").val();
