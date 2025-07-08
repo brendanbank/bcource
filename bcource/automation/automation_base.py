@@ -47,18 +47,18 @@ def get_automation_class(name):
     """
     return _automation_classes.get(name)
 
-def _execute_automation_task_job(id: int, classname: str, *args, **kwargs):    # @ReservedAssignment
+def _execute_automation_task_job(id: int, automation_name: str, classname: str, *args, **kwargs):    # @ReservedAssignment
     
 
     with app_scheduler.flask_app.app_context(): 
         cls = get_automation_class(classname)
         if cls:
-            obj = cls.get('class', None)(id)
+            obj = cls.get('class', None)(id, automation_name)
         else:
             logging.info (f'{__name__}: cannot find classname: {classname}')
-            return 
+            return True
         
-        obj.execute()
+        return (obj.execute())
 
 
 class BaseAutomationTask:
@@ -68,10 +68,12 @@ class BaseAutomationTask:
     max_instances = 1
     replace_existing = True
     
-    def __init__(self, *args, **kwags):
+    def __init__(self, id, automation_name, *args, **kwags):  # @ReservedAssignment
+        self.id = id
+        self.automation_name = automation_name
         self.args = args
         self.kwags = kwags
-        logger.warning (f'Started {self.__class__.__name__} args: {args} kvargs: {kwags}' )
+        logger.warning (f'Started {self.__class__.__name__} automation_name: {automation_name} args: {args} kvargs: {kwags}' )
 
     @classmethod
     def query(cls):
@@ -93,7 +95,7 @@ class BaseAutomationTask:
             id=str_id,
             func=_execute_automation_task_job,
             trigger='date',
-            args=(cls._get_id(item), automation.automation_class.class_name),
+            args=(cls._get_id(item), automation.name, automation.automation_class.class_name),
             misfire_grace_time=cls.misfire_grace_time,
             run_date=when,
             replace_existing=cls.replace_existing,
@@ -154,8 +156,9 @@ class BaseAutomationTask:
                 
         if when < datetime.datetime.utcnow():
             logger.warning(f"job is scheduler in the past: {db_datetime_str(when)} task will be probably be ignored event_dt: {event_dt}")
-            if app_scheduler.flask_app.config.get('ENVIRONMENT') == "DEVELOPMENT":
-                when = datetime.datetime.utcnow() + timedelta(seconds=1)
+            
+        # if app_scheduler.flask_app.config.get('ENVIRONMENT') == "DEVELOPMENT":
+        #     when = datetime.datetime.utcnow() + timedelta(seconds=1)
                 
         return when
     
