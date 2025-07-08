@@ -1,7 +1,6 @@
           {% for training in pagination -%}
           {% if training.in_policy.status or admin%}
                <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}} p-0 m-0">
-
            {%else%}
                 <div class="highlight_red  {{ loop.cycle('evendiv', 'odddiv')}} even_red py-0 m-0 " 
                      data-toggle="tooltip" 
@@ -18,7 +17,9 @@
                </div>
                
               <div class="col-lg-1 {% if g.is_mobile %}py-3 {%endif%}lh-1 align-self-center">
-               {% if training._user_status == 'enrolled' or training._user_status == 'waitlist' or training._user_status == 'waitlist-invited'%}
+               {% if training._user_status == 'enrolled' or training._user_status == 'waitlist' or 
+                         training._user_status == 'waitlist-invited'
+                         or training._user_status == 'waitlist-invite-expired' %}
                     {% if admin %}
                          <a class="icon-link link-body-emphasis"
                               href="{{url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url)}}"
@@ -133,6 +134,21 @@
                                                                     
                                                         {% elif training._user_status == 'waitlist' %}
                                                             <span class="fw-bold text-danger small">{{_('wait list') }}</span>
+                                                        {% elif training._user_status == 'waitlist-invite-expired' %}
+                                                        
+                                                            <span class="fw-bold text-danger small">{{_('Expired wait list') }}
+                    <a class="link-underline link-underline-opacity-0"
+                         href="{{url_for('scheduler_bp.enable', uuid=training._user_enrollment.uuid)}}">
+
+                                                            <span class="fw-bold text-danger small text-nowrap" data-toggle="tooltip" 
+                         data-placement="top" 
+                         title="{{_('Re-enable the wait list for this training.')}}">
+
+                                                            <span class="fw-bold text-primary text-nowrap">
+                                                                    <i class="bi bi-check-circle "></i>
+                                                                    {{_('Re-enable') }}</span>
+                                                                    </a>
+                                                            </span>
                                                         {% elif not training.in_policy.status %}
                                                             <span class="">
                                                                  <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
