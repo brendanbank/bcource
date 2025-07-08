@@ -17,7 +17,6 @@ from bcource.helpers import (MyFsModels, admin_has_role, db_datetime, db_datetim
                              format_phone_number, format_email, nh3_save, add_url_argument, message_date)
 from bcource.helpers import config_value as cv
 from flask_mobility import Mobility
-from flask_apscheduler import APScheduler
 
 class Base(DeclarativeBase):
     # __abstract__ = True
@@ -42,7 +41,6 @@ menu_structure = Menu('root')
 
 moment = Moment()
 mobility = Mobility()
-app_scheduler = APScheduler()
 
 db = SQLAlchemy(model_class=Base)
 
@@ -73,13 +71,12 @@ def create_app():
     
     db.init_app(app)
     mobility.init_app(app)
-    app_scheduler.init_app(app)
     babel.init_app(app)
     csrf.init_app(app)
     table_admin.init_app(app)
     
-    # if app.config.get('ENVIRONMENT') == "DEVELOPMENT":
-    #     app.config["MAIL_BACKEND"] = 'console'
+    if app.config.get('ENVIRONMENT') == "DEVELOPMENT":
+        app.config["MAIL_BACKEND"] = 'console'
     
     mail.init_app(app)
     migrate.init_app(app, db)
@@ -116,6 +113,8 @@ def create_app():
         
     with app.app_context():
         
+        import bcource.commands
+
         # Import parts of our application
         import bcource.home as home
         import bcource.admin 
@@ -154,16 +153,13 @@ def create_app():
 
         # db.create_all()  # Create sql tables for our data models
         
-        app_scheduler.start()
         
         def get_locale():
             return request.accept_languages.best_match(cv('LANGUAGES'))
         
         models.db_init_data(app)
-        
-        from bcource.models import init_app_scheduler
-        init_app_scheduler(app_scheduler, db)
-        
+        print ("here")
+                
         return app
     
 

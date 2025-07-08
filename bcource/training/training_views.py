@@ -17,7 +17,6 @@ import pytz
 from sqlalchemy.orm import joinedload
 from bcource.filters import Filters
 from bcource.helper_app_context import b_pagination
-from bcource.automation import create_app_scheduler_tasks, remove_app_scheduler_tasks
 
 # Blueprint Configuration
 training_bp = Blueprint(
@@ -165,12 +164,7 @@ def edit_training(id=None):
         form.populate_obj(training)   
         db.session.commit()
         first_training_event_dt = training.trainingevents[0].start_time
-        
-        if training.active:
-            create_app_scheduler_tasks(training.id, first_training_event_dt, TypeEnum.training)
-        else:
-            remove_app_scheduler_tasks(training.id, TypeEnum.training)
-        
+                
         
         flash(_('Training details are successfully saved!'))
         

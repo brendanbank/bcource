@@ -95,7 +95,7 @@ class SendEmail(SystemMessage):
         for user in self.envelop_to:
             email_str = f'{user.fullname} <{user.email}>'
             msg = EmailMessage(subject=self.render_subject(), 
-                               body=self.render_body(),
+                               body=self.email_render_body(),
                                from_email=email_from,
                                to=[email_str]
                                )
@@ -109,6 +109,9 @@ class SendEmail(SystemMessage):
 
     def process_attachment(self, msg):
         return(msg)
+    
+    def email_render_body(self):
+        return f'{self.envelop_from} wrote:<p>{self.body}'
 
 class EmailStudentWelcomeMessage(SendEmail):
     pass

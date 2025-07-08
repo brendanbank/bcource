@@ -1,4 +1,4 @@
-from bcource.automation import BaseAutomationTask, register_automation
+from bcource.automation.automation_base import BaseAutomationTask, register_automation
 from bcource.models import TypeEnum, Training, TrainingEvent, TrainingEnroll,\
     Content
 from bcource.messages import SendEmail, EmailStudentEnrolledInTraining
@@ -28,7 +28,7 @@ class StudentReminderTask(Reminder):
         self.to = []
         self.enrollments = TrainingEnroll().query.join(Training).filter(TrainingEnroll.status=="enrolled", Training.id == id).all()
         if not self.enrollments:
-            logger.warning(f"traiing with id {id} is not found")
+            logger.warning(f"No enrollments in training with id {id}")
             return
         self.to = [ enrollment.student.user for enrollment in self.enrollments ]
         self.template_kw['training'] = Training().query.get(id)

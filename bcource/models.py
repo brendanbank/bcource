@@ -990,59 +990,7 @@ class SystemInitValidations():
     pass
 
 
-def init_app_scheduler(app_scheduler, db):
 
-
-    import bcource.automation_tasks
-    from bcource.automation import get_registered_automation_classes
-
-    for class_name, details in get_registered_automation_classes().items():
-        existing_config = AutomationClasses().query.filter_by(class_name=class_name).first()
-        if not existing_config:
-            new_config = AutomationClasses(
-                class_name=class_name,
-                description=details['description'],
-                module_path=details['module'],
-                qualified_name=details['qualified_name']
-            )
-            db.session.add(new_config)
-            print(f"Registered new automation class in DB: {class_name}")
-    
-    
-    orphan_classes = AutomationClasses().query.filter(~AutomationClasses.class_name.in_(get_registered_automation_classes().keys())).delete()
-    if orphan_classes:
-        print (f'delete AutomationClasses: {orphan_classes}')
-    
-    db.session.commit()
-
-    ## renew automations for all trainings
-    renew_automations(app_scheduler, db)
-    
-
-
-def renew_automations(app_scheduler, db):
-    
-    from bcource.automation import report_active_jobs
-    app_scheduler.remove_all_jobs()
-    
-    
-    app_scheduler.add_job(func=report_active_jobs,
-                          trigger='interval', 
-                          minutes=1,
-                          id='report_active_jobs_id', 
-                          replace_existing=True)
-
-    
-    ## training automations
-    trainings = Training().query.join(Training.trainingevents).filter(TrainingEvent.start_time > datetime.datetime.utcnow(), Training.active==True)
-    for training in trainings:
-        first_training_event_dt = training.trainingevents[0].start_time
-    
-        from bcource.automation import create_app_scheduler_tasks
-        create_app_scheduler_tasks(training.id, first_training_event_dt, TypeEnum.training)
-
-
-    report_active_jobs()
 
 def db_init_data (app):
 
