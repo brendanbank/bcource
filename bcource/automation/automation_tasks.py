@@ -1,9 +1,10 @@
 from bcource.automation.automation_base import BaseAutomationTask, register_automation
-from bcource.models import TypeEnum, Training, TrainingEvent, TrainingEnroll,\
+from bcource.models import Training, TrainingEvent, TrainingEnroll,\
     Content
 from bcource.messages import SendEmail, EmailStudentEnrolledInTraining
 from datetime import datetime
 import logging
+
 logger = logging.getLogger(__name__)
 
 class EmailReminder(SendEmail):
@@ -17,7 +18,14 @@ class Reminder(BaseAutomationTask):
     def __init__(self, *args, **kwargs):
         logger.warning (f'Reminder Class: {self.__class__.__name__}')
         self.template_kw= {}
-        
+
+    @classmethod
+    def query(cls):
+        return Training().query.join(Training.trainingevents).filter(TrainingEvent.start_time > datetime.utcnow(), Training.active==True).all()
+    
+    @classmethod
+    def get_event_dt(cls, item):
+        return item.trainingevents[0].start_time
                 
 @register_automation(
     description="Class to handle sending reminder to students."
@@ -61,5 +69,29 @@ class TrainerReminderTask(Reminder):
             self.template_kw['training'] = self.training
             a = EmailReminder(envelop_to=[user], CONTENT_TAG=self.__class__.__name__, taglist=['reminder'], **self.template_kw)
             a.send()
+
+@register_automation(
+    description="Automatic Waitlist."
+)
+class AutomaticWaitList(BaseAutomationTask):
+    misfire_grace_time = 3600
+    def __init__(self, id, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.id = id
+        
+    def execute(self):
+        print (self.id)
+
+    @classmethod
+    def query(cls):
+        return TrainingEnroll().query.filter(TrainingEnroll.status =="waitlist-invited").all()
+
+    @classmethod
+    def get_event_dt(cls, item):
+        return item.invite_date
+    
+    @classmethod
+    def _get_id(cls,item):
+        return item.uuid
 
 
