@@ -1,4 +1,4 @@
-#!env python3
+#!/usr/bin/env python3
 
 import time
 from bcource.automation import init_app_scheduler, start_app_sscheduler
