@@ -262,7 +262,7 @@ def deroll(user_id,training_id):
     training = Training().query.get(training_id)
     user = User().query.get(user_id)
     url = get_url()
-    deroll_common(training, user)
+    deroll_common(training, user, admin=True)
     return redirect(url)
 
     

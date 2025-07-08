@@ -12,15 +12,14 @@ from flask import render_template_string
 from bcource.helpers import config_value as cv
 from bcource.helpers import genpwd
 from flask import current_app, session
-import pytz
 from sqlalchemy import or_
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy import orm, Enum
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import orm
 import nh3
 from enum import Enum
 from datetime import timedelta
 
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 policy_association = Table(
     "training_policies",
@@ -323,7 +322,8 @@ class Training(db.Model):
             return False
             
     def fill_numbers(self,user):
-        self._amount_enrolled = len(self.trainingenrollments)
+                
+        self._amount_enrolled = self.query.join(TrainingEnroll).filter(and_(Training.id == self.id,TrainingEnroll.status != "waitlist-invite-expired")).count()
         e = self.enrolled(user)
         if e:
             self._user_enrollment = e
@@ -695,7 +695,7 @@ class User(db.Model, sqla.FsUserMixin):
         return f'{self.first_name} {self.last_name}'
 
     @declared_attr
-    def webauthn(cls):
+    def webauthn(cls):  # @NoSelf
         return relationship(
             "WebAuthn", back_populates="user", cascade="all, delete"
         )
@@ -825,7 +825,7 @@ class WebAuthn(db.Model,sqla.FsWebAuthnMixin):
     credential_id: Mapped[str] = mapped_column(String(1024))
     
     @declared_attr
-    def user_id(cls) -> Mapped[int]:
+    def user_id(cls) -> Mapped[int]:  # @NoSelf
         return mapped_column(
             ForeignKey("user.id", ondelete="CASCADE")
         )
@@ -943,7 +943,6 @@ class AutomationClasses(db.Model):
     def __str__(self):
         return f"{self.class_name}"
 
-
     def __repr__(self):
         return f"<AutomationConfig {self.class_name}>"
 
@@ -956,9 +955,6 @@ class EventsEnum(Enum):
     last="last"
     all="all"
 
-class TypeEnum(Enum):
-    training="training"
-    account_creation="account_creation"
 
 class AutomationSchedule(db.Model):
     __table_args__ = (db.UniqueConstraint("name"),)
@@ -967,9 +963,9 @@ class AutomationSchedule(db.Model):
     
     beforeafter: Mapped[BeforeAfterEnum] 
     events: Mapped[EventsEnum]
-    type: Mapped[TypeEnum]
 
     interval: Mapped[timedelta] = mapped_column(Interval, nullable=False)
+    active: Mapped[bool] = mapped_column(Boolean(), default=True)
 
     automation_class = db.relationship('AutomationClasses', lazy=True, backref='schedules')
     automation_class_id: Mapped[int] = mapped_column(ForeignKey(AutomationClasses.id, ondelete="CASCADE"), nullable=True)
@@ -978,7 +974,6 @@ class AutomationSchedule(db.Model):
         server_default=func.now(),
         onupdate=func.now(),
     )
-
 
 
 def role_student_default():
