@@ -84,13 +84,14 @@ class AutomaticWaitList(BaseAutomationTask):
         enrollment = TrainingEnroll().query.filter(TrainingEnroll.uuid == self.id).first()
         if enrollment.status != "waitlist-invited":
             logging.warn(f'{enrollment} enrollment.status: {enrollment.status} is not waitlist-invited, stop automation')
-            return True
-        
-        deinvite = deinvite_from_waitlist(enrollment)
+        else:
+            deinvite = deinvite_from_waitlist(enrollment)
+            
         waitlist_enrollments_eligeble = enrollment.training.waitlist_enrollments_eligeble()
         for enrollment in waitlist_enrollments_eligeble:
             invite_from_waitlist(enrollment)
 
+        return(True)
     
     @classmethod
     def query(cls):
