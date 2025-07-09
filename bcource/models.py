@@ -267,9 +267,8 @@ class Training(db.Model):
     def __init__(self):
         self._spots_enrolled = None
         self._spots_waitlist = None
-        self._spots_waitlist = None
+        self._spots_waitlist_count = None
         self.student_allowed = {}
-        self._amount_enrolled = 0
         self._user_enrollment = None
         self.in_policy = None
 
@@ -277,8 +276,8 @@ class Training(db.Model):
     def init_on_load(self):
         self._spots_enrolled = None
         self._spots_waitlist = None
+        self._spots_waitlist_count = None
         self.student_allowed = {}
-        self._amount_enrolled = 0
         self._user_enrollment = None
         self.in_policy = None
         
@@ -294,10 +293,11 @@ class Training(db.Model):
         if self._spots_waitlist == None:                   
             self._spots_waitlist = TrainingEnroll.query.join(Training).join(Student).filter(
                             TrainingEnroll.training_id==self.id, 
-                            TrainingEnroll.status.ilike('waitlist')
+                            TrainingEnroll.status.in_(['waitlist'])
                         ).order_by(TrainingEnroll.enrole_date).all()  
                                                 
-       
+        self._spots_waitlist_count = len(self._spots_waitlist)
+                
         spots_avalablie = self.max_participants - self._spots_enrolled
         
         i=0
@@ -322,8 +322,7 @@ class Training(db.Model):
             return False
             
     def fill_numbers(self,user):
-                
-        self._amount_enrolled = self.query.join(TrainingEnroll).filter(and_(Training.id == self.id,TrainingEnroll.status != "waitlist-invite-expired")).count()
+        self._cal_enrollments()       
         e = self.enrolled(user)
         if e:
             self._user_enrollment = e
