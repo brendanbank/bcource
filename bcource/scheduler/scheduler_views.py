@@ -10,7 +10,7 @@ from bcource.helpers import admin_has_role, get_url
 from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent, TrainingEnroll
 from sqlalchemy import or_, and_
 import bcource.messages as system_msg
-from bcource.students.common import deroll_common, enroll_common, enroll_from_waitlist
+from bcource.students.common import deroll_common, enroll_common, enroll_from_waitlist, invite_from_waitlist
 from sqlalchemy.orm import joinedload
 from datetime import datetime
 import pytz, time
@@ -264,11 +264,15 @@ def decline_invite(uuid):
     url = get_url()
     
     if not (enrollment):
-        flash(_("Cannot find invitation!"), 'error')
+        flash(_("Cannot find invitation! Have Did is expire?"), 'error')
         return redirect(url)
     
     enrollment.status="waitlist-declined"
     db.session.commit()
+    
+    waitlist_enrollments_eligeble = enrollment.training.waitlist_enrollments_eligeble()
+    for enrollment in waitlist_enrollments_eligeble:
+        invite_from_waitlist(enrollment)
     
     flash(_("You have declined the invite for training %(trainingname)s!", trainingname=enrollment.training.name), 'error')
     return redirect(url)

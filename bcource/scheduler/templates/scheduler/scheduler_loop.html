@@ -19,7 +19,8 @@
               <div class="col-lg-1 {% if g.is_mobile %}py-3 {%endif%}lh-1 align-self-center">
                {% if training._user_status == 'enrolled' or training._user_status == 'waitlist' or 
                          training._user_status == 'waitlist-invited'
-                         or training._user_status == 'waitlist-invite-expired' %}
+                         or training._user_status == 'waitlist-invite-expired' 
+                         or training._user_status == "waitlist-declined"%}
                     {% if admin %}
                          <a class="icon-link link-body-emphasis"
                               href="{{url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url)}}"
@@ -42,7 +43,7 @@
                     {% endif %}
                {%- else -%}
                     {% if not admin %}
-                         {% if training._amount_enrolled >= training.max_participants %}
+                         {% if training._spots_enrolled >= training.max_participants %}
                          <a class="icon-link link-body-emphasis"
                               href="{{url_for("scheduler_bp.enroll", id=training.id)}}"
                          > <i class="mb-2 fs-5 bi bi-person-fill-add text-warning" data-toggle="tooltip" 
@@ -81,9 +82,9 @@
                     data-bs-toggle="modal" data-bs-target="#modal_{{training.trainingtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
                <div class="col-lg-3  align-self-center small"><span class="{{show_mobile}}">{{_("Date")}}: </span> {% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
                <div class="col-lg-1  align-self-center {{hide_mobile}}">
-                                                  {{ training.max_participants }}/{{training._amount_enrolled -}}/
-                                                  {%- if training._amount_enrolled >= training.max_participants -%}
-                                                       <span class="text-warning">{{ training._amount_enrolled - training.max_participants}}</span>
+                                                  {{ training.max_participants }}/{{training._spots_enrolled -}}/
+                                                  {%- if training._spots_enrolled >= training.max_participants -%}
+                                                       <span class="text-warning">{{ training._spots_enrolled - training.max_participants}}</span>
                                                    {%- else -%}
                                                        <span class="text-success">0</span>
                                                    {%- endif -%}
@@ -91,9 +92,9 @@
                                                    </div>
                <div class="col-lg-1  align-self-center {{show_mobile}}">
                                                   {{_("Max participants")}}: {{ training.max_participants }}, 
-                                                  {{_("Enrolled")}}: {{training._amount_enrolled }}, {{_("Wait list")}}: 
-                                                  {%- if training._amount_enrolled >= training.max_participants %}
-                                                       <span class="text-danger fw-bold">{{ training._amount_enrolled - training.max_participants}}</span>
+                                                  {{_("Enrolled")}}: {{training._spots_enrolled }}, {{_("Wait list")}}: 
+                                                  {%- if training._spots_enrolled >= training.max_participants %}
+                                                       <span class="text-danger fw-bold">{{ training._spots_enrolled - training.max_participants}}</span>
                                                    {% else %}
                                                        <span class="text-success">0</span>
                                                    {%- endif -%}
@@ -123,7 +124,7 @@
                                                                     </a>
 
                     <a class="link-underline link-underline-opacity-0"
-                         href="{{url_for('scheduler_bp.deroll', id=training.id)}}">
+                         href="{{url_for('scheduler_bp.decline_invite', uuid=training._user_enrollment.uuid)}}">
 
                                                             <span class="fw-bold text-danger small text-nowrap" data-toggle="tooltip" 
                          data-placement="top" 
@@ -134,9 +135,10 @@
                                                                     
                                                         {% elif training._user_status == 'waitlist' %}
                                                             <span class="fw-bold text-danger small">{{_('wait list') }}</span>
-                                                        {% elif training._user_status == 'waitlist-invite-expired' %}
+                                                        {% elif training._user_status == 'waitlist-invite-expired' or
+                                                                 training._user_status == 'waitlist-declined' %}
                                                         
-                                                            <span class="fw-bold text-danger small">{{_('Expired wait list') }}
+                                                            <span class="fw-bold text-danger small">{{_('Disabled wait list') }}
                     <a class="link-underline link-underline-opacity-0"
                          href="{{url_for('scheduler_bp.enable', uuid=training._user_enrollment.uuid)}}">
 
@@ -155,9 +157,9 @@
                                                                  data-placement="top" 
                                                                  data-bs-html="true"
                                                                  title=''></i></span>
-                                                        {% elif training._amount_enrolled == training.max_participants %}
+                                                        {% elif training._spots_enrolled == training.max_participants %}
                                                             <span class="fw-bold text-success small">{{_('Max Capacity') }}</span>
-                                                        {% elif training._amount_enrolled > training.max_participants %}
+                                                        {% elif training._spots_enrolled > training.max_participants %}
                                                             <span class="fw-bold text-warning small">{{_('Training has a wait list') }}</span>
                                                         {% else %}
                                                             <span class="fw-bold text-success small">{{_('Open for enrollment.') }}</span>

@@ -16,9 +16,9 @@
      <div class="col-lg-4">
           <div class="col-lg-12 fw-semibold">{{_('Training Statistics:')}}</div>
           <div class="col-lg-12">{{_('Max Participants:')}}<span> {{training.max_participants}}</span></div>
-          <div class="col-lg-12">{{_('Current enrolled:')}}<span> {{training.trainingenrollments  | length }}</span></div>
-          <div class="col-lg-12">{{_('Current Waitlist:')}}{%- if training.trainingenrollments  | length > training.max_participants -%}
-                         <span class="fw-bold text-danger"> {{training.trainingenrollments  | length - training.max_participants}}</span>
+          <div class="col-lg-12">{{_('Current enrolled:')}}<span> {{training._spots_enrolled }}</span></div>
+          <div class="col-lg-12">{{_('Current Waitlist:')}}{%- if training._spots_waitlist_count > 0 -%}
+                         <span class="fw-bold text-danger"> {{training._spots_waitlist_count}}</span>
                          {%- else -%}
                               <span class="">0</span>
                          {%- endif %}
