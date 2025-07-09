@@ -60,14 +60,14 @@ def enroll_from_waitlist(enrollment: TrainingEnroll):
 def enroll_common(training, user):
     enrolled_user = training.enrolled(user)
     
-    if enrolled_user and enrolled_user.status != "waitlist-invite-expired":
+    if enrolled_user and enrolled_user.status != "waitlist-invite-expired" and enrolled_user.status != "waitlist-declined":
         flash(_("%(fullname)s has already enrolled for this training: %(trainingname)s", 
                 fullname=user.fullname,trainingname=training.name ),'error')
         return False
     
     training.fill_numbers(user)
     
-    waitlist = training._amount_enrolled >= training.max_participants
+    waitlist = training._spots_enrolled >= training.max_participants
     
     if enrolled_user:
         enroll = enrolled_user
