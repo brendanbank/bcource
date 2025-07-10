@@ -73,15 +73,15 @@ class BaseAutomationTask:
         self.automation_name = automation_name
         self.args = args
         self.kwags = kwags
-        logger.warning (f'Started {self.__class__.__name__} automation_name: {automation_name} args: {args} kvargs: {kwags}' )
+        logger.warning (f'Started {self.__class__.__name__} id: {id} automation_name: {automation_name} args: {args} kvargs: {kwags}' )
 
-    @classmethod
-    def query(cls):
+    @staticmethod
+    def query():
         """This method should be overridden by subclasses."""
         raise NotImplementedError("Subclasses must implement the 'query' method.")
     
-    @classmethod
-    def _get_id(cls,item):
+    @staticmethod
+    def _get_id(item):
         return item.id
     
     @classmethod
@@ -124,14 +124,14 @@ class BaseAutomationTask:
                 
         return (jobs)
 
-    @classmethod
-    def get_event_dt(cls, item):
+    @staticmethod
+    def get_event_dt(item):
         """This method should be overridden by subclasses."""
-        raise NotImplementedError(f"Subclasse {cls.__name__} must implement the 'get_event_dt' method.")
+        raise NotImplementedError(f"Subclasse must implement the 'get_event_dt' method.")
 
     def execute(self):
         """This method should be overridden by subclasses."""
-        raise NotImplementedError(f"Subclasse {cls.__name__} must implement the 'execute' method.")
+        raise NotImplementedError(f"Subclasse {self.__name__} must implement the 'execute' method.")
 
 
     def setup(self):
@@ -143,8 +143,8 @@ class BaseAutomationTask:
         pass
         
 
-    @classmethod
-    def _when(cls, automation, event_dt):
+    @staticmethod
+    def _when(automation, event_dt):
         
         dt_delta = automation.interval
         if automation.beforeafter == BeforeAfterEnum.before:
@@ -157,8 +157,8 @@ class BaseAutomationTask:
         if when < datetime.datetime.utcnow():
             logger.warning(f"job is scheduler in the past: {db_datetime_str(when)} task will be probably be ignored event_dt: {event_dt}")
             
-        # if app_scheduler.flask_app.config.get('ENVIRONMENT') == "DEVELOPMENT":
-        #     when = datetime.datetime.utcnow() + timedelta(seconds=1)
+        if app_scheduler.flask_app.config.get('ENVIRONMENT') == "DEVELOPMENT":
+            when = datetime.datetime.utcnow() + timedelta(seconds=1)
                 
         return when
     

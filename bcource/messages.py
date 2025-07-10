@@ -7,6 +7,9 @@ from bcource.helpers import db_datetime
 from bcource.helpers import config_value as cv
 import datetime as dt
 import zoneinfo
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def cleanhtml(raw_html):
@@ -103,6 +106,8 @@ class SendEmail(SystemMessage):
             msg.content_subtype = "html"
             self.process_attachment(msg)
         
+            logging.info (f'Send message ({self.CONTENT_TAG}) to {user} <{user.email}>')
+
             msg.send()
         
         super().send()
