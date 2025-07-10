@@ -130,6 +130,7 @@ def fill_trainings(select_query, per_page=current_app.config['POSTS_PER_PAGE']):
         t.fill_numbers(current_user)
         # t.in_policy = TrainingBookingPolicy(training=t,user=current_user)
         # t.in_policy.validate()
+        
         if not t.trainingtype in training_types:
             training_types.append(t.trainingtype)
 
