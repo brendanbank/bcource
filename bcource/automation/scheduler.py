@@ -15,12 +15,13 @@ jobstores = {
     'default': SQLAlchemyJobStore(url=app_config.SQLALCHEMY_DATABASE_URI)
 }
 executors = {
-    'default': ThreadPoolExecutor(20),
-    'processpool': ProcessPoolExecutor(5)
+    'default': ThreadPoolExecutor(40),
+    'processpool': ProcessPoolExecutor(4)
 }
 job_defaults = {
-    'coalesce': True,
-    'max_instances': 1
+    'coalesce': False,
+    'max_instances': 1,
+    'misfire_grace_time': None
 }
 
 
