@@ -18,9 +18,8 @@
                
               <div class="col-lg-1 {% if g.is_mobile %}py-3 {%endif%}lh-1 align-self-center">
                {% if training._user_status == 'enrolled' or training._user_status == 'waitlist' or 
-                         training._user_status == 'waitlist-invited'
-                         or training._user_status == 'waitlist-invite-expired' 
-                         or training._user_status == "waitlist-declined"%}
+                         training._user_status == 'waitlist-invited' or training._user_status == 'waitlist-declined'
+                         or training._user_status == 'waitlist-invite-expired' %}
                     {% if admin %}
                          <a class="icon-link link-body-emphasis"
                               href="{{url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url)}}"
@@ -43,16 +42,29 @@
                     {% endif %}
                {%- else -%}
                     {% if not admin %}
-                         {% if training._spots_enrolled >= training.max_participants %}
-                         <a class="icon-link link-body-emphasis"
-                              href="{{url_for("scheduler_bp.enroll", id=training.id)}}"
-                         > <i class="mb-2 fs-5 bi bi-person-fill-add text-warning" data-toggle="tooltip" 
-                              data-placement="top" 
-                              title="{{_('Add %(who)s to the wait list of this training.', who=who)}}"></i>
-                                   <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to the wait list of this training. ", who=who) }}</span>
-                         </a>
-                         {%- else -%}
-                              {% if training.in_policy.status %}
+                              {% if not training.in_policy.status %}
+                                   <span class="{{show_mobile}}">{% for error in training.in_policy %}{{error}}{% endfor %}
+                                        <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
+                                        data-placement="top" 
+                                        data-bs-html="true"
+                                        title=''></i></span>
+                                   <span class="{{hide_mobile}}">
+                                        <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
+                                        data-placement="top" 
+                                        data-bs-html="true"
+                                        title=''></i></span>
+
+                              {% else %}
+                                   {% if training._spots_enrolled >= training.max_participants %}
+                                   <a class="icon-link link-body-emphasis"
+                                        href="{{url_for("scheduler_bp.enroll", id=training.id)}}"
+                                   > <i class="mb-2 fs-5 bi bi-person-fill-add text-warning" data-toggle="tooltip" 
+                                        data-placement="top" 
+                                        title="{{_('Add %(who)s to the wait list of this training.', who=who)}}"></i>
+                                             <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to the wait list of this training. ", who=who) }}</span>
+                                   </a>
+                                   {%- else -%}
+
                               <a class="icon-link link-body-emphasis"
                                    href="{{url_for("scheduler_bp.enroll", id=training.id)}}"
                               > <i class="mb-2 fs-5 bi bi-person-fill-add text-success" data-toggle="tooltip" 
@@ -60,19 +72,8 @@
                                    title="{{_('Add %(who)s to this training.', who=who)}}"></i>
                                         <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to this training. ", who=who) }}</span>
                               </a>
-                              {% else %}
-                              <span class="{{show_mobile}}">{% for error in training.in_policy %}{{error}}{% endfor %}
-                                   <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
-                                   data-placement="top" 
-                                   data-bs-html="true"
-                                   title=''></i></span>
-                              <span class="{{hide_mobile}}">
-                                   <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
-                                   data-placement="top" 
-                                   data-bs-html="true"
-                                   title=''></i></span>
+                                   {% endif %}
                               {% endif %}
-                         {%- endif %}   
                     {% endif %}
                {%- endif %}
                </div>
@@ -135,10 +136,10 @@
                                                                     
                                                         {% elif training._user_status == 'waitlist' %}
                                                             <span class="fw-bold text-danger small">{{_('wait list') }}</span>
-                                                        {% elif training._user_status == 'waitlist-invite-expired' or
-                                                                 training._user_status == 'waitlist-declined' %}
+                                                        {% elif training._user_status == 'waitlist-invite-expired' 
+                                                        or training._user_status == 'waitlist-declined' %}
                                                         
-                                                            <span class="fw-bold text-danger small">{{_('Disabled wait list') }}
+                                                            <span class="fw-bold text-danger small">{{_('Expired wait list') }}
                     <a class="link-underline link-underline-opacity-0"
                          href="{{url_for('scheduler_bp.enable', uuid=training._user_enrollment.uuid)}}">
 
@@ -167,4 +168,4 @@
                                                         </div>
           </div>
       </div>
-          {% endfor %}
+          {% endfor %}      

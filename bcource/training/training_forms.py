@@ -91,6 +91,12 @@ class TrainingForm(FlaskForm):
                                       render_kw={"class": "position-relative form-control form-select select2-js"}, #select2-js
                                       query_factory=training_types)
     
+    apply_policies = MyBooleanField(
+        _l('Apply Policies.'),
+        divclass = "col-md-6 mt-2 pt-4 ",
+        render_kw={"class": "form-check-input"})
+
+
     trainers = MyQuerySelectMultipleField(_l("Trainers"),
                                           divclass = "col-md-12 mt-1",
                                           render_kw={"class": "position-relative form-control select2-js"}) #select2-js

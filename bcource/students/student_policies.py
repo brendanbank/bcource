@@ -3,7 +3,7 @@ from flask_babel import lazy_gettext as _l
 from bcource.policy import PolicyBase, HasData, DataIs
 from flask_security import current_user
 from bcource.models import Student, StudentStatus, StudentType, Practice, Role, User, Training, Student, TrainingEnroll,\
-    TrainingEvent, TrainingType
+    TrainingEvent, TrainingType, Trainer
 from bcource import db
 from os import environ
 from bcource.policy import PolicyBase, ValidationRule
@@ -26,13 +26,14 @@ class Bookwindow(ValidationRule):
         training = self._validator.kwargs.get('training')
         
         
-        timedelta_before = self._validator.kwargs.get('timedelta_before', BOOKWINDOW_ONE_WEEK)
-
         time_window_duration = self._validator.kwargs.get('days', BOOKWINDOW_FOUR_WEEKS)
         
         if not user or not training:
             raise(ValueError(f'kwargs "user" or "training" missing in {self._validator.__class__.__name__}'))
 
+        if not training.apply_policies:
+            return True
+        
         if not self._validator.policyactive():
             return True
 
@@ -52,7 +53,7 @@ class Bookwindow(ValidationRule):
         
 
         
-        if not check_book_window(training, student, time_window_duration, timedelta_before):
+        if not check_book_window(training, student, time_window_duration):
             
             self.msg_fail = _l(BOOK_WINDOW_VIOLATION_TXT, 
                           time_window_duration=round(time_window_duration.total_seconds() / 3600 / 24)    , trainingname=training.name , trainingtype=training.trainingtype)
@@ -67,15 +68,18 @@ class TrainingBookingPolicy(PolicyBase):
     book_window = Bookwindow(_l('Check if the student is satisfying all policies to book this training.'))
     policy_name = "max-2-sessions-4-weeks"
     
+    
     def policyactive(self):
         training = self.kwargs.get('training')
-        
-        if (self._policyactive == True or self._policyactive == False):
-            return self._policyactive
 
         if not training:
             raise(ValueError(f'kwargs "training" missing in {self.__class__.__name__}'))
 
+        if training.apply_policies == False:
+            return False
+
+        if (self._policyactive == True or self._policyactive == False):
+            return self._policyactive
 
         if self.policy_name in [item.name for item in training.trainingtype.policies]:
             return True
@@ -83,7 +87,7 @@ class TrainingBookingPolicy(PolicyBase):
             return False
                     
 
-def check_book_window(training, student, time_window_duration, timedelta_before):
+def check_book_window(training, student, time_window_duration):
     
     
     q = TrainingEvent().query.join(Training).join(TrainingEnroll).join(TrainingType).filter(
@@ -103,12 +107,6 @@ def check_book_window(training, student, time_window_duration, timedelta_before)
     existing_bookings_dates = [ d.start_time for d in q.all()]
     
     new_training_date = training.trainingevents[0].start_time
-    
-    # 5 days before start of the training ignore the rule
-    if timedelta_before != None:
-        if  (new_training_date - datetime.utcnow()) < timedelta_before:
-            return (True)
-
         
     potential_date_obj = new_training_date
     
@@ -168,25 +166,13 @@ def can_student_book_trainings(student, trainings, training_type, time_window_du
 
     existing_bookings_dates = [ b.start_time for b in existing_bookings_dates ]  
     
-      
-    potential_trainings = Training().query.with_entities(Training.id, Training.name, TrainingEvent.start_time).join(TrainingEvent).join(TrainingType).filter(
-        Training.trainingtype_id == training_type.id,
-            Training.id.in_(ids),
-        # TrainingEvent.start_time > datetime.utcnow(), # only future trainings
-        ).all()
-
-    potential_trainings = Training().query.with_entities(Training.id, Training.name, TrainingEvent.start_time).join(TrainingEvent).join(TrainingType).filter(
-        Training.trainingtype_id == training_type.id,
-            Training.id.in_(ids),
-        # TrainingEvent.start_time > datetime.utcnow(), # only future trainings
-        ).all()
-
     potential_trainings = Training().query.join(TrainingEvent).join(TrainingType).filter(
         Training.trainingtype_id == training_type.id,
-            Training.id.in_(ids),
+        Training.id.in_(ids),
+            
         # TrainingEvent.start_time > datetime.utcnow(), # only future trainings
         ).all()
-    
+        
     results = {}
 
     for training in potential_trainings:
@@ -194,7 +180,12 @@ def can_student_book_trainings(student, trainings, training_type, time_window_du
         
         policy_obj = TrainingBookingPolicy(user=student.user, training=training)
         results[training.id] = policy_obj
-                
+
+
+        if not policy_obj.policyactive():
+            policy_obj.status = True
+            continue
+        
         if policy_obj._policyactive == False:
             policy_obj.status = True
             continue
