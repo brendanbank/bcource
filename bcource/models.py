@@ -18,6 +18,8 @@ from sqlalchemy import orm
 import nh3
 from enum import Enum
 from datetime import timedelta
+import logging
+logger = logging.getLogger(__name__)
 
 from uuid import uuid4
 
@@ -252,6 +254,7 @@ class Training(db.Model):
     
     max_participants: Mapped[int] = mapped_column(Integer(), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean(), default=False)
+    apply_policies: Mapped[bool] = mapped_column(Boolean(), default=True)
 
     trainers: Mapped[List["Trainer"]] =  relationship(
         secondary=training_trainers_association, back_populates="trainings", 
@@ -267,6 +270,7 @@ class Training(db.Model):
     def __init__(self):
         self._spots_enrolled = None
         self._spots_waitlist = None
+        self._spots_avalablie = None
         self._spots_waitlist_count = None
         self.student_allowed = {}
         self._user_enrollment = None
@@ -275,6 +279,7 @@ class Training(db.Model):
     @orm.reconstructor
     def init_on_load(self):
         self._spots_enrolled = None
+        self._spots_avalablie = None
         self._spots_waitlist = None
         self._spots_waitlist_count = None
         self.student_allowed = {}
@@ -299,6 +304,7 @@ class Training(db.Model):
         self._spots_waitlist_count = len(self._spots_waitlist)
                 
         spots_avalablie = self.max_participants - self._spots_enrolled
+        self._spots_avalablie = spots_avalablie
         
         i=0
         while i < spots_avalablie and i < len(self._spots_waitlist):
@@ -306,7 +312,7 @@ class Training(db.Model):
             i += 1
             self.student_allowed[enrollment.student.id]=enrollment
             
-        print (f'_spots_enrolled: {self._spots_enrolled} _spots_waitlist: {self._spots_waitlist} _student_allowed: {self.student_allowed}'  )
+        logger.info(f'Training: "{self}" _spots_enrolled: {self._spots_enrolled} _spots_waitlist: {self._spots_waitlist} _student_allowed: {self.student_allowed} _spots_avalablie: {self._spots_avalablie}'  )
         
         
     def waitlist_enrollments_eligeble(self):
