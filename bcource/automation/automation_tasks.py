@@ -1,9 +1,11 @@
 from bcource.automation.automation_base import BaseAutomationTask, register_automation
-from bcource.models import Training, TrainingEvent, TrainingEnroll
+from bcource.models import Training, TrainingEvent, TrainingEnroll, Student,\
+    Practice, User, UserSettings
 from bcource.messages import SendEmail, EmailStudentEnrolledInTraining
 from datetime import datetime
-import logging
 from bcource.students.common import deinvite_from_waitlist, invite_from_waitlist
+import logging
+from bcource import db
 
 logger = logging.getLogger(__name__)
 
@@ -15,17 +17,17 @@ class EmailReminderIcal(EmailStudentEnrolledInTraining):
     
 
 class Reminder(BaseAutomationTask):
-    def __init__(self, id, automation_name, *args, **kwargs):
-        super().__init__(id, automation_name, *args, **kwargs)
+    def __init__(self,  *args, **kwargs):
+        super().__init__( *args, **kwargs)
         logger.warning (f'Reminder Class: {self.__class__.__name__}')
         self.template_kw= {}
 
-    @classmethod
-    def query(cls):
+    @staticmethod
+    def query():
         return Training().query.join(Training.trainingevents).filter(TrainingEvent.start_time > datetime.utcnow(), Training.active==True).all()
     
-    @classmethod
-    def get_event_dt(cls, item):
+    @staticmethod
+    def get_event_dt(item):
         return item.trainingevents[0].start_time
                 
 @register_automation(
@@ -36,6 +38,7 @@ class StudentReminderTask(Reminder):
         super().__init__(id, automation_name, *args, **kwargs)
         self.to = []
         self.enrollments = TrainingEnroll().query.join(Training).filter(TrainingEnroll.status=="enrolled", Training.id == id).all()
+        
         if not self.enrollments:
             logger.warning(f"No enrollments in training with id {id}")
             return
@@ -71,11 +74,11 @@ class TrainerReminderTask(Reminder):
             a = EmailReminder(envelop_to=[user], CONTENT_TAG=self.automation_name, taglist=['reminder'], **self.template_kw)
             a.send()
 
+
 @register_automation(
     description="Automatic Waitlist."
 )
 class AutomaticWaitList(BaseAutomationTask):
-    misfire_grace_time = 3600
     def __init__(self, id, automation_name, *args, **kwargs):  # @ReservedAssignment
         super().__init__(id, automation_name, *args, **kwargs)
         self.id = id
@@ -93,16 +96,55 @@ class AutomaticWaitList(BaseAutomationTask):
 
         return(True)
     
-    @classmethod
-    def query(cls):
+    @staticmethod
+    def query():
         return TrainingEnroll().query.filter(TrainingEnroll.status =="waitlist-invited").all()
 
-    @classmethod
-    def get_event_dt(cls, item):
+    @staticmethod
+    def get_event_dt(item):
         return item.invite_date
     
-    @classmethod
-    def _get_id(cls,item):
+    @staticmethod
+    def _get_id(item):
         return item.uuid
+
+
+@register_automation(
+    description="StudentOpenSpotReminder."
+)
+class StudentOpenSpotReminder(Reminder):
+    def __init__(self, *args, **kwargs):  # @ReservedAssignment
+        super().__init__(*args, **kwargs)
+        self.to = []
+        self.training = Training().query.get(self.id)
+        if not self.training:
+            logger.warning(f"traiing with id {self.id} is not found")
+            return
+
+        students_in_training = [enrollment.student.id for enrollment in self.training.trainingenrollments ]
+        
+        self.training._cal_enrollments()
+        if self.training._spots_avalablie > 0:
+            
+            self.to = Student().query.join(Practice).join(User).join(UserSettings).filter(
+                Practice.shortname==Practice.default_row().shortname,
+                UserSettings.msg_last_min_spots == True,
+                ~Student.id.in_(students_in_training)).all()                
+        else:
+            logging.warning(f"traing  {self.training} has no open spots")
+            self.to = []
+                 
+        self.template_kw['training'] = self.training
+
+    def execute(self):
+        self.training.apply_policies = False
+        db.session.commit()
+        
+        for student in self.to:
+            user = student.user
+            self.template_kw['user'] = user
+            self.template_kw['training'] = self.training
+            msg = EmailReminder(envelop_to=[user], CONTENT_TAG=self.automation_name, taglist=['reminder', 'openspot'], **self.template_kw)
+            msg.send()
 
 

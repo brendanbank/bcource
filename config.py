@@ -31,9 +31,9 @@ class Config:
     FLASK_APP = "wsgi.py"
     
     # url config
-    SERVER_NAME="bcourse.nl"
+    SERVER_NAME=environ.get("SERVER_NAME", "bcourse.nl")
     APPLICATION_ROOT="/"
-    PREFERRED_URL_SCHEME="https"
+    PREFERRED_URL_SCHEME=environ.get("PREFERRED_URL_SCHEME", "https")
 
     # Static Assets
     STATIC_FOLDER = "static"
