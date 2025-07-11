@@ -413,12 +413,12 @@ select#practice_selector:hover {
 /* And they are both direct children of .hover-container */
 
 
-.evendiv {background-color: rgb(244, 244, 244);}
-.odddiv {background-color: rgb(255, 255, 255);}
-.highlight:hover > * {background-color: rgb(230, 230, 230);}
+.evendiv {background-color: rgb(235, 235, 235);}
+.odddiv {background-color: rgb(245, 245, 245);}
+.highlight:hover > * {background-color: rgb(220, 220, 220);}
 
 .even_red {background-color: rgb(255, 206, 205);}
-.odd_red {background-color: rgb(255, 228, 228);}
+.odd_red {background-color: rgb(255, 255, 255);}
 .highlight_red:hover > * {background-color: rgb(255, 125, 120);}
 
 
