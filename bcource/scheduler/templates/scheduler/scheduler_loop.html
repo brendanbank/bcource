@@ -1,8 +1,21 @@
+{% macro render_link(url, tooltip, icon, text=None, text_color="text-danger", mobile_text=None, onclick=None) %}
+{% if not mobile_text %}{% set mobile_text=text %}{% endif %}
+          <a class="link-underline link-underline-opacity-0" href="{{url}}" {% if onclick %}onClick="return safeConfirm('{{onclick}}')"{%endif%}>
+               <span class="fw-bold d-flex {{text_color}} " data-toggle="tooltip" data-placement="top" title="{{tooltip}}">
+                         <i class="bi {{icon}} "></i>&nbsp;
+                         <span class="{{hide_mobile}}">{%if text %}{{text}}{% endif %}</span>
+                         <span class="{{show_mobile}} fw-semibold">{{ mobile_text }}</span>
+               </span>
+               </a>
+{%- endmacro %}
+
+
+
           {% for training in pagination -%}
           {% if training.in_policy.status or admin%}
                <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}} p-0 m-0">
            {%else%}
-                <div class="highlight_red  {{ loop.cycle('evendiv', 'odddiv')}} even_red py-0 m-0 " 
+                <div class="highlight_red  {{ loop.cycle('even_red', 'even_red')}} py-0 m-0 " 
                      data-toggle="tooltip" 
                                    data-placement="top" 
                                    data-bs-html="true"
@@ -21,24 +34,22 @@
                          training._user_status == 'waitlist-invited' or training._user_status == 'waitlist-declined'
                          or training._user_status == 'waitlist-invite-expired' %}
                     {% if admin %}
-                         <a class="icon-link link-body-emphasis"
-                              href="{{url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url)}}"
-                              onclick="return safeConfirm('{{_("Are you sure you want to remove user %(email)s from this training?", email=user.email)}}');"
-                              > 
-                              <i class="fs-5 text-danger bi bi-person-fill-dash"
-                                   data-toggle="tooltip" data-placement="top" 
-                                                                 title="{{_('Deroll user from this training.') }}"></i>
-                         <span class="{{show_mobile}} fw-semibold">{{ _(" Remove %(who)s from this training. ", who=who) }}</span>
-                          </a>
+                    {{ render_link(url=url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url),
+                              tooltip=_('Remove %(who)s from this training.', who=who), 
+                              icon="fs-5 bi-person-fill-dash text",  
+                              text_color="text-danger",
+                              onclick=_("Are you sure you want to remove user %(email)s from this training?", email=user.email),
+                              mobile_text=_(" Remove %(who)s from this training. ", who=who)) }}
+                    
                           
                     {% else %}
-                    <a class="icon-link link-body-emphasis"
-                         href="{{url_for('scheduler_bp.deroll', id=training.id)}}"
-                    > <i class="mb-2 fs-5 bi-person-fill-dash text-danger" data-toggle="tooltip" 
-                         data-placement="top" 
-                         title="{{_('Remove %(who)s from this training.', who=who)}}"></i>
-                              <span class="{{show_mobile}} fw-semibold">{{ _(" Remove %(who)s from this training. ", who=who) }}</span>
-                    </a>
+                    
+                    {{ render_link(url=url_for('scheduler_bp.deroll', id=training.id),
+                              tooltip=_('Remove %(who)s from this training.', who=who), 
+                              icon="fs-5 bi-person-fill-dash text",  
+                              text_color="text-danger",
+                              mobile_text=_(" Remove %(who)s from this training. ", who=who)) }}
+
                     {% endif %}
                {%- else -%}
                     {% if not admin %}
@@ -56,28 +67,27 @@
 
                               {% else %}
                                    {% if training._spots_enrolled >= training.max_participants %}
-                                   <a class="icon-link link-body-emphasis"
-                                        href="{{url_for("scheduler_bp.enroll", id=training.id)}}"
-                                   > <i class="mb-2 fs-5 bi bi-person-fill-add text-warning" data-toggle="tooltip" 
-                                        data-placement="top" 
-                                        title="{{_('Add %(who)s to the wait list of this training.', who=who)}}"></i>
-                                             <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to the wait list of this training. ", who=who) }}</span>
-                                   </a>
+
+                                        {{ render_link(url=url_for('scheduler_bp.enroll', id=training.id),
+                                                  tooltip=_('Remove %(who)s from this training.', who=who), 
+                                                  icon="mb-2 fs-5 bi bi-person-fill-add",  
+                                                  text_color="text-warning",
+                                                  mobile_text=_(" Add %(who)s to the wait list of this training. ", who=who)) }}
+
                                    {%- else -%}
 
-                              <a class="icon-link link-body-emphasis"
-                                   href="{{url_for("scheduler_bp.enroll", id=training.id)}}"
-                              > <i class="mb-2 fs-5 bi bi-person-fill-add text-success" data-toggle="tooltip" 
-                                   data-placement="top" 
-                                   title="{{_('Add %(who)s to this training.', who=who)}}"></i>
-                                        <span class="{{show_mobile}} fw-semibold">{{ _(" Add %(who)s to this training. ", who=who) }}</span>
-                              </a>
+                                        {{ render_link(url=url_for('scheduler_bp.enroll', id=training.id),
+                                                  tooltip=_('Remove %(who)s from this training.', who=who), 
+                                                  icon="mb-2 fs-5 bi bi-person-fill-add",  
+                                                  text_color="text-success",
+                                                  mobile_text=_(" Add %(who)s to this training. ", who=who)) }}
+
                                    {% endif %}
                               {% endif %}
                     {% endif %}
                {%- endif %}
                </div>
-               <div class="col-lg-1  align-self-center text-nowrap px-0">
+               <div class="col-lg-1  align-self-center text-nowrap">
                               <span class="{{show_mobile}} fw-semibold ">{{_("Training Type")}}: </span>
                               {{ training.trainingtype.name }}<a class="icon-link" 
                     data-bs-toggle="modal" data-bs-target="#modal_{{training.trainingtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
@@ -91,7 +101,7 @@
                                                    {%- endif -%}
                                                    
                                                    </div>
-               <div class="col-lg-1  align-self-center {{show_mobile}}">
+               <div class="col-lg-1  align-self-center small {{show_mobile}}">
                                                   {{_("Max participants")}}: {{ training.max_participants }}, 
                                                   {{_("Enrolled")}}: {{training._spots_enrolled }}, {{_("Wait list")}}: 
                                                   {%- if training._spots_enrolled >= training.max_participants %}
@@ -102,59 +112,42 @@
                                                    
                                                    </div>
 
-               <div class="col-lg-3  align-self-center {% if g.is_mobile %}pb-3 {%endif%}">
-                                                  <span class="{{show_mobile}}">{{ _('Enroll Status: ')}}</span>
-
+               <div class="col-lg-3 d-flex align-self-center {% if g.is_mobile %}pb-3 {%endif%}">
+                                                  <span class="small fw-bold {{show_mobile}}">{{ _('Enroll Status: ')}}</span>&nbsp;
                                                         {% if training._user_status == 'enrolled' %}
                                                             <span class="fw-bold text-success small">{{_('Enrolled') }}</span>
                                                         {% elif training._user_status == 'waitlist-invited' %}
                                                         
-                                                            <span class="fw-bold text-success small">
-                                                                    {{_('Invited') }}</span>
-
-                    <a class="link-underline link-underline-opacity-0"
-                         href="{{url_for('scheduler_bp.accept_invite', uuid=training._user_enrollment.uuid)}}">
-
-                                                            <span class="fw-bold text-danger small text-nowrap" data-toggle="tooltip" 
-                         data-placement="top" 
-                         title="{{_('Accept Invite for this training.')}}">
-
-                                                            <span class="fw-bold text-primary text-nowrap">
-                                                                    <i class="bi bi-check-circle "></i>
-                                                                    {{_('Accept') }}</span>
-                                                                    </a>
-
-                    <a class="link-underline link-underline-opacity-0"
-                         href="{{url_for('scheduler_bp.decline_invite', uuid=training._user_enrollment.uuid)}}">
-
-                                                            <span class="fw-bold text-danger small text-nowrap" data-toggle="tooltip" 
-                         data-placement="top" 
-                         title="{{_('Remove %(who)s from this training.', who=who)}}">
-                                                                    <i class="bi bi-check-circle"></i>
-                                                                    {{_('Decline') }}</span>
-                                                                    </a>
-                                                                    
+                                                            <span class="fw-bold small d-flex text-warning">
+                                                                    {{_('Invited') }}&nbsp;
+                                                                    {% if not admin %}
+                                                                           {{ render_link(url=url_for('scheduler_bp.accept_invite', uuid=training._user_enrollment.uuid),
+                                                                                     tooltip=_(' Accept Invite for this training.'), 
+                                                                                     icon="bi-check-circle", text=_('Accept'), 
+                                                                                     text_color="text-success") }}
+                                                                                     &nbsp;
+                                                                           {{ render_link(url=url_for('scheduler_bp.decline_invite', uuid=training._user_enrollment.uuid),
+                                                                                     tooltip=_('Decline the invite for this training.', who=who), 
+                                                                                     icon="bi-check-circle", text=_('Decline'), 
+                                                                                     text_color="text-danger") }}
+                                                                      {% endif %}
+                                                                      </span>
                                                         {% elif training._user_status == 'waitlist' %}
                                                             <span class="fw-bold text-danger small">{{_('wait list') }}</span>
                                                         {% elif training._user_status == 'waitlist-invite-expired' 
                                                         or training._user_status == 'waitlist-declined' %}
                                                         
-                                                            <span class="fw-bold text-danger small">{{_('Expired wait list') }}
-                    <a class="link-underline link-underline-opacity-0"
-                         href="{{url_for('scheduler_bp.enable', uuid=training._user_enrollment.uuid)}}">
-
-                                                            <span class="fw-bold text-danger small text-nowrap" data-toggle="tooltip" 
-                         data-placement="top" 
-                         title="{{_('Re-enable the wait list for this training.')}}">
-
-                                                            <span class="fw-bold text-primary text-nowrap">
-                                                                    <i class="bi bi-check-circle "></i>
-                                                                    {{_('Re-enable') }}</span>
-                                                                    </a>
+                                                            <span class="fw-bold small text-warning d-flex">{{_('Expired wait list') }}&nbsp;
+                                                            {% if not admin %}
+                                                            {{ render_link(url=url_for('scheduler_bp.enable', uuid=training._user_enrollment.uuid),
+                                                                      tooltip=_('Re-enable the wait list for this training.'), 
+                                                                      icon="bi-check-circle", text=_(' Re-enable'), 
+                                                                      text_color="text-danger") }}
+                                                            {% endif %}
                                                             </span>
                                                         {% elif not training.in_policy.status %}
                                                             <span class="">
-                                                                 <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
+                                                                 <i class="mb-2 lh-1 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
                                                                  data-placement="top" 
                                                                  data-bs-html="true"
                                                                  title=''></i></span>
@@ -165,7 +158,7 @@
                                                         {% else %}
                                                             <span class="fw-bold text-success small">{{_('Open for enrollment.') }}</span>
                                                         {% endif %}
-                                                        </div>
+           </div>
           </div>
       </div>
           {% endfor %}      
