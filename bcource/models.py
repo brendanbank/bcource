@@ -333,6 +333,8 @@ class Training(db.Model):
         if e:
             self._user_enrollment = e
             self._user_status = e.status
+        else:
+            self._user_status = False
             
         
 
