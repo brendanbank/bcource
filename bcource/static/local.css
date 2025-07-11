@@ -417,8 +417,8 @@ select#practice_selector:hover {
 .odddiv {background-color: rgb(245, 245, 245);}
 .highlight:hover > * {background-color: rgb(220, 220, 220);}
 
+.odd_red {background-color: rgb(255, 185, 184);}
 .even_red {background-color: rgb(255, 206, 205);}
-.odd_red {background-color: rgb(255, 255, 255);}
 .highlight_red:hover > * {background-color: rgb(255, 125, 120);}
 
 
