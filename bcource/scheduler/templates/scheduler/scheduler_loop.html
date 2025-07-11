@@ -9,8 +9,6 @@
                </a>
 {%- endmacro %}
 
-
-
           {% for training in pagination -%}
           {% if training.in_policy.status or admin%}
                <div class="highlight {{ loop.cycle('evendiv', 'odddiv')}} p-0 m-0">
@@ -30,9 +28,7 @@
                </div>
                
               <div class="col-lg-1 {% if g.is_mobile %}py-3 {%endif%}lh-1 align-self-center">
-               {% if training._user_status == 'enrolled' or training._user_status == 'waitlist' or 
-                         training._user_status == 'waitlist-invited' or training._user_status == 'waitlist-declined'
-                         or training._user_status == 'waitlist-invite-expired' %}
+               {% if training._user_status != False %}
                     {% if admin %}
                     {{ render_link(url=url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url),
                               tooltip=_('Remove %(who)s from this training.', who=who), 
