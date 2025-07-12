@@ -60,7 +60,11 @@ def enroll_from_waitlist(enrollment: TrainingEnroll):
 def enroll_common(training, user):
     enrolled_user = training.enrolled(user)
     
-    if enrolled_user and enrolled_user.status != "waitlist-invite-expired" and enrolled_user.status != "waitlist-declined":
+    if enrolled_user \
+        and enrolled_user.status != "waitlist-invite-expired" \
+            and enrolled_user.status != "waitlist-declined" \
+                and enrolled_user.status != 'force-off-waitlist':
+        
         flash(_("%(fullname)s has already enrolled for this training: %(trainingname)s", 
                 fullname=user.fullname,trainingname=training.name ),'error')
         return False
@@ -92,7 +96,7 @@ def enroll_common(training, user):
     enroll.student = student          
     enroll.training = training
     
-    if waitlist:
+    if waitlist and enroll.status != 'force-off-waitlist':
         enroll.status = "waitlist"
         flash(_("%(fullname)s has been added to the wait list of training training: %(trainingname)s", 
                 fullname=user.fullname, trainingname=training.name ))

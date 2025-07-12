@@ -76,6 +76,37 @@ def deinvite(training_id,student_id):
     
     return redirect(url)
 
+
+@training_bp.route('/training-force-waitlist/<int:training_id>/<int:student_id>',methods=['GET', 'POST'])
+def force_waitlist(training_id,student_id):
+    training=Training().query.get(training_id)
+    if not training:
+        flash(_('Training id: %s not found' % training_id), "error")
+        abort(404)
+        
+    student=Student().query.get(student_id)
+    if not training:
+        flash(_('Training id: %s not found' % training_id), "error")
+        abort(404)
+    url = get_url()
+
+    enrollment = TrainingEnroll().query.filter(TrainingEnroll.student == student, TrainingEnroll.training == training).first()
+    if not enrollment:
+        flash(_('Could not find enrollment'))
+        return redirect(url)
+
+    flash(_('Student %(fullname)s is on waiting list for %(trainingname)s. Force enrollment!', 
+            fullname=student.fullname, 
+            trainingname=training.name))
+    
+    enrollment.status='force-off-waitlist'
+    db.session.commit()
+    
+    return_acton =  enroll_common(training, student.user)
+    
+    
+    return redirect(url)
+
 @training_bp.route('/training-invite/<int:training_id>/<int:student_id>',methods=['GET', 'POST'])
 def invite(training_id,student_id):        
     training=Training().query.get(training_id)
