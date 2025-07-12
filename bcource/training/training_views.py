@@ -213,6 +213,7 @@ def make_filters():
     past_training_filter = filters.new_filter("period", _("Period"))
     past_training_filter.add_filter_item( 1, _("Past Trainings"))
 
+
     time_now = datetime.now(tz=pytz.timezone('UTC'))
     training_type_filter = filters.new_filter("training_type", _("Training Types"))
     for training_type in TrainingType().query.join(Training).join(TrainingEvent).join(Practice, Practice.id==Training.practice_id).filter(and_(
@@ -221,6 +222,9 @@ def make_filters():
                         )).all():
         training_type_filter.add_filter_item( training_type.id, training_type.name)
 
+    training_active = filters.new_filter("status", _("Training Status"))
+    training_active.add_filter_item( 1, _("Active"))
+    training_active.add_filter_item( 0, _("Inactive"))
 
 
     trainer_filter = filters.new_filter("trainers", _("Trainers"))
@@ -231,7 +235,12 @@ def make_filters():
 
 def training_query(filters, search_on_id=None):
 
-    q = Training().query
+    if filters.get_items_checked('status'):
+        q = Training().query.filter(Training.active.in_(filters.get_items_checked('status')))
+
+    else:
+        q = Training().query
+        
     time_now = datetime.now(tz=pytz.timezone('UTC'))
 
     if search_on_id:
@@ -260,8 +269,8 @@ def training_query(filters, search_on_id=None):
         future = TrainingEvent().query.filter(TrainingEvent.start_time > time_now
                         ).order_by(TrainingEvent.start_time).subquery()
     
-    
     q = q.join(future)
+    
     
     if  filters.get_items_checked('trainers'):
     

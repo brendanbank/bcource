@@ -29,7 +29,7 @@ class BaseMeta(type):
         return type.__call__(cls, *args, **kwargs)
 
 
-class PolicyBase(object, metaclass=BaseMeta):
+class   PolicyBase(object, metaclass=BaseMeta):
     
     def __init__(self, *args, **kwargs):
         
@@ -57,11 +57,15 @@ class PolicyBase(object, metaclass=BaseMeta):
     def policyactive(self):
         """ can be sub-classed """
         return (True)
-            
+        
+    def __bool__(self):
+        return (self.status)
+    
     def validate(self):
         
         if not self.policyactive():
             print (f'policy not active {self.__class__.__name__} args: {self.kwargs} kwargs: {self.kwargs}')
+            self.status = True
             return (True)
         
         if not self.pre_validate():
