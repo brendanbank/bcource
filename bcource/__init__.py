@@ -150,7 +150,6 @@ def create_app():
             return request.accept_languages.best_match(cv('LANGUAGES'))
         
         models.db_init_data(app)
-        print ("here")
                 
         return app
     
