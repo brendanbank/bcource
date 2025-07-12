@@ -123,8 +123,6 @@
           <div class="col-lg-3 pt-0 pb-0">
                 <span class="{{show_mobile}}">{{_('Enrollment Status: ')}}</span>{{ student_enrollment.status }}<span class="{{show_mobile}}"><br></span>
 
-
-
                 {% if student_enrollment.status == "waitlist-invite-expired" %}
                                           <a class="icon-link link-body-emphasis align-self-center small"
                href="{{url_for('training_bp.enable', uuid=student_enrollment.uuid, first_url=return_url)}}"
@@ -165,7 +163,23 @@
                <span class="{{show_mobile}} small fw-semibold">{{_('Invite user for this training')}}</span>
            </a>
            
-           {% endif %}</div>
+           {% endif %}
+           
+           {% if student_enrollment.status == 'waitlist' %}
+               <a class="icon-link link-body-emphasis align-self-center text-danger"
+                         href="{{url_for('training_bp.force_waitlist', training_id=training.id, student_id=student_enrollment.student.id, first_url=return_url)}}"
+                         onclick="return safeConfirm('{{_("Are you sure you force enrollment of user %(email)s on this training?", email=student_enrollment.student.email)}}');"
+                         > 
+                         <i class="bi bi-plus-square align-self-center small" 
+                              data-toggle="tooltip" data-placement="top" 
+                                                            title="{{_('Force this user on this training.') }}"></i>
+                         
+                         <span class="{{show_mobile}} small fw-semibold">{{_('Invite user for this training')}}</span></a>
+           
+           {% endif %}
+           
+           </div>
+           
 
      </div>
 
