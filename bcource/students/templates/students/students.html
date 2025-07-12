@@ -38,12 +38,12 @@
 
       {% for student in pagination.items -%}
       <div class="lh-1">
-              <div class="row highlight d-flex align-items-stretch {{ loop.cycle('evendiv', 'odddiv')}}">
+              <div class="row highlight d-flex align-items-stretch {{ loop.cycle('evendiv', 'odddiv')}} m-0"">
               <span class="{{show_mobile}} border-top border-dark-subtle pb-2"></span>
-               <div class="col-lg-3 "><span class="align-middle">
+               <div class="col-lg-3 py-1"><span class="align-middle">
                <span class="{{show_mobile}} h2">{{ student.user.fullname }}</span>
                <span class="{{hide_mobile}}">{{ student.user.fullname }}</span></div>
-               <div class="col-lg-1 p-0 m-0">
+               <div class="col-lg-1 py-1 px-0 mx-0">
                     <span class="align-middle ms-2 p-0 m-0">
                     <a class="icon-link link-body-emphasis"
                          href="{{ url_for('students_bp.student_training',id=student.user_id ) }}" data-toggle="tooltip" data-placement="top" 
@@ -73,7 +73,7 @@
                     {% endif %}
                     </span>
                </div>
-               <div class="col-lg-3 "><span class="align-middle">
+               <div class="col-lg-3 py-1"><span class="align-middle">
                <span class="{{show_mobile}}"> {{_("e-mail") }}: </span>
                {{ student.user.email | format_email | safe }}</span></div>
                <div class="col-lg-2 py-1">
@@ -107,9 +107,9 @@
                     </a>
                </span>                    
                </div>
-               <div class="col-lg-1 "><span class="mt-1 {{show_mobile}} fw-semibold"> {{_("Student Type") }}: </span>{{ student.studenttype }} 
+               <div class="col-lg-1 py-1"><span class="mt-1 {{show_mobile}} fw-semibold"> {{_("Student Type") }}: </span>{{ student.studenttype }} 
                </div>
-               <div class="col-lg-2 pb-2"><span class="mt-1 {{show_mobile}} fw-semibold"> {{_("Phone") }}: </span>{{ student.user.phone_number | format_phone_number | safe}}</div>
+               <div class="col-lg-2 py-1 pb-2"><span class="mt-1 {{show_mobile}} fw-semibold"> {{_("Phone") }}: </span>{{ student.user.phone_number | format_phone_number | safe}}</div>
           </div>
       </div>
           {% endfor %}

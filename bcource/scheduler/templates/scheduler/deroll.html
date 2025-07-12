@@ -21,11 +21,20 @@
 
           </div>
 
-
      </div>
      <div class="p-2">
           <div class="row">
-{{ get_tag('REMOVE_FROM_TRAINING') | safe }}
+{% if cancel_policy %}
+     {{ get_tag('REMOVE_FROM_TRAINING') | safe }}
+{% else %}
+     <span class="text-danger"> 
+     <p class="fw-semibold">
+     {% for error in cancel_policy %}{{error}}{% endfor %}
+     </p>
+     {{ get_tag('Cancellation Policy') |safe   }}
+     <p class="fw-semibold">{{_('Are you sure you want to derroll from this training?')}}</p>
+     </span>
+{% endif %}
           </div>
      </div>
 
@@ -39,7 +48,7 @@
 <a class="icon-link small" onclick="this.blur();" href="#" data-bs-target="#CancellationPolicyId" data-bs-toggle="modal">{{_('Cancellation Policy') }}</a>
 </div>
 
-<div class="col-6">
+<div class="col-6 text-end">
         <a onclick="this.blur();" href="{{return_url}}" id="close" type="button" class="btn btn-secondary">{{_('Close')}}</a>
         <button onclick="this.blur();" type="submit" class="btn btn-primary">{{_('Deroll  ')}}</button>
 </div>
