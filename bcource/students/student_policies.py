@@ -11,11 +11,12 @@ from datetime import datetime, timedelta
 import bisect
 
 BOOKWINDOW_ONE_WEEK = timedelta(days=7)
+BOOKWINDOW_24_HOURS = timedelta(days=1)
 BOOKWINDOW_FOUR_WEEKS = timedelta(days=28)
 MAX_BOOKINGS = 3 # max + 1!!!
 
-BOOK_WINDOW_VIOLATION_TXT = "You cannot book <strong>%(trainingname)s</strong> as you can only book 2 sessions in a %(time_window_duration)s day period!"
-
+BOOK_WINDOW_VIOLATION_TXT = _l("You cannot book <strong>%(trainingname)s</strong> as you can only book 2 sessions in a %(time_window_duration)s day period!")
+CANCEL_VIOLATION_TXT = _('This training has a 24 cancellation policy.')
 
 class Bookwindow(ValidationRule):
     def validate(self):
@@ -34,9 +35,6 @@ class Bookwindow(ValidationRule):
         if not training.apply_policies:
             return True
         
-        if not self._validator.policyactive():
-            return True
-
         student = user.student_from_practice
         if not student:
             self.msg_fail = _("User does not have Student role!")
@@ -51,8 +49,6 @@ class Bookwindow(ValidationRule):
             self.status = True
             return self.status
         
-
-        
         if not check_book_window(training, student, time_window_duration):
             
             self.msg_fail = _l(BOOK_WINDOW_VIOLATION_TXT, 
@@ -63,7 +59,42 @@ class Bookwindow(ValidationRule):
             self.status = True
                 
         return self.status
+
+class Cancelation(ValidationRule):
+    def validate(self):
+        if not self._validator.policyactive():
+            return True
+        user = self._validator.kwargs.get('user')
+        training = self._validator.kwargs.get('training')
+        if not user or not training:
+            raise(ValueError(f'kwargs "user" or "training" missing in {self._validator.__class__.__name__}'))
         
+        if not training.active:
+            self.status = True
+            return self.status
+        
+        if (datetime.utcnow() + BOOKWINDOW_24_HOURS) > training.trainingevents[0].start_time:
+            print ("Here")
+            return False
+        else:
+            return True
+
+
+class CancelationPolicy(PolicyBase):
+    policy_name = "24h-cancelation"
+    cancelation = Cancelation(_l('Check if the student is satisfying all cancellation policies to cancel this training.'), msg_fail=CANCEL_VIOLATION_TXT)
+
+    def policyactive(self):
+        training = self.kwargs.get('training')
+    
+        if not training:
+            raise(ValueError(f'kwargs "training" missing in {self.__class__.__name__}'))
+    
+        if not self.policy_name in [item.name for item in training.trainingtype.policies]:
+            return False
+    
+        return (True)
+
 class TrainingBookingPolicy(PolicyBase):
     book_window = Bookwindow(_l('Check if the student is satisfying all policies to book this training.'))
     policy_name = "max-2-sessions-4-weeks"
@@ -75,17 +106,13 @@ class TrainingBookingPolicy(PolicyBase):
         if not training:
             raise(ValueError(f'kwargs "training" missing in {self.__class__.__name__}'))
 
+        if not self.policy_name in [item.name for item in training.trainingtype.policies]:
+            return False
+        
         if training.apply_policies == False:
             return False
-
-        if (self._policyactive == True or self._policyactive == False):
-            return self._policyactive
-
-        if self.policy_name in [item.name for item in training.trainingtype.policies]:
-            return True
-        else:
-            return False
-                    
+        
+        return (True)
 
 def check_book_window(training, student, time_window_duration):
     

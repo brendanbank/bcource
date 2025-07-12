@@ -30,21 +30,21 @@
               <div class="col-lg-1 {% if g.is_mobile %}py-3 {%endif%}lh-1 align-self-center">
                {% if training._user_status != False %}
                     {% if admin %}
-                    {{ render_link(url=url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url),
-                              tooltip=_('Remove %(who)s from this training.', who=who), 
-                              icon="fs-5 bi-person-fill-dash text",  
-                              text_color="text-danger",
-                              onclick=_("Are you sure you want to remove user %(email)s from this training?", email=user.email),
-                              mobile_text=_(" Remove %(who)s from this training. ", who=who)) }}
+                         {{ render_link(url=url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url),
+                                   tooltip=_('Remove %(who)s from this training.', who=who), 
+                                   icon="fs-5 bi-person-fill-dash text",  
+                                   text_color="text-danger",
+                                   onclick=_("Are you sure you want to remove user %(email)s from this training?", email=user.email),
+                                   mobile_text=_(" Remove %(who)s from this training. ", who=who)) }}
                     
                           
                     {% else %}
                     
-                    {{ render_link(url=url_for('scheduler_bp.deroll', id=training.id),
-                              tooltip=_('Remove %(who)s from this training.', who=who), 
-                              icon="fs-5 bi-person-fill-dash text",  
-                              text_color="text-danger",
-                              mobile_text=_(" Remove %(who)s from this training. ", who=who)) }}
+                         {{ render_link(url=url_for('scheduler_bp.deroll', id=training.id),
+                                   tooltip=_('Remove %(who)s from this training.', who=who), 
+                                   icon="fs-5 bi-person-fill-dash text",  
+                                   text_color="text-danger",
+                                   mobile_text=_(" Remove %(who)s from this training. ", who=who)) }}
 
                     {% endif %}
                {%- else -%}
