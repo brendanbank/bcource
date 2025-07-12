@@ -82,7 +82,6 @@ def create_app():
     migrate.init_app(app, db)
     moment.init_app(app)
     
-     
     from bcource.models import Content, User, Role
     
     app.jinja_env.globals.update(get_tag=Content.get_tag)
@@ -95,17 +94,10 @@ def create_app():
     app.jinja_env.globals.update(hide_mobile="d-none d-lg-block d-xl-block d-xxl-block")
     app.jinja_env.globals.update(add_url_argument=add_url_argument)
     
-    
-    
     app.jinja_env.filters.update(format_phone_number=format_phone_number)
     app.jinja_env.filters.update(format_email=format_email)
     app.jinja_env.filters.update(bcourse_safe=nh3_save)
     app.jinja_env.filters.update(message_date=message_date)
-    
-    
-    
-
-    
     
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
 
@@ -162,4 +154,3 @@ def create_app():
                 
         return app
     
-

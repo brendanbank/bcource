@@ -16,7 +16,7 @@ from datetime import datetime
 import pytz, time
 from bcource.filters import Filters
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
-from bcource.students.student_policies import TrainingBookingPolicy, can_student_book_trainings
+from bcource.students.student_policies import TrainingBookingPolicy, can_student_book_trainings, CancelationPolicy
 from bcource.helper_app_context import b_pagination
 
 # Blueprint Configuration
@@ -128,8 +128,6 @@ def fill_trainings(select_query, per_page=current_app.config['POSTS_PER_PAGE']):
     training_types = []
     for t in trainings:
         t.fill_numbers(current_user)
-        # t.in_policy = TrainingBookingPolicy(training=t,user=current_user)
-        # t.in_policy.validate()
         
         if not t.trainingtype in training_types:
             training_types.append(t.trainingtype)
@@ -156,7 +154,6 @@ def mytraining():
 
     clear = request.args.getlist('submit_id')
     if clear and clear[0]=='clear':
-        
         return redirect(url_for('scheduler_bp.mytraining', show=request.args.getlist('show')))
     
     deroll_form = TrainingDerollForm()
@@ -232,13 +229,20 @@ def deroll(id):
     form = TrainingDerollForm()    
     training = Training().query.get(id)
     url = get_url(form)
+    
+    cancel_policy = CancelationPolicy(training=training, user=current_user)
+    cancel_policy.validate()
+    
+    if not cancel_policy:
+        for error in cancel_policy:
+            flash(error, 'error')
 
-    if form.validate_on_submit():
+    if form.validate_on_submit() and cancel_policy.status:
         return_acton =  deroll_common(training, current_user)
         if return_acton:
             return redirect(url)
 
-    return render_template("scheduler/deroll.html", training=training, form=form, return_url=url)
+    return render_template("scheduler/deroll.html", cancel_policy=cancel_policy, training=training, form=form, return_url=url)
 
 @scheduler_bp.route('/training/accept-invite/<string:uuid>',methods=['GET', 'POST'])
 @auth_required()

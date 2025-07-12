@@ -163,7 +163,7 @@ class Policy(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256), nullable=False)
     policy: Mapped[str] = mapped_column(Text(), nullable=True)
-
+    
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
@@ -995,7 +995,7 @@ class SystemInitValidations():
 
 
 def db_init_data (app):
-
+    
     role = security.datastore.find_or_create_role(cv('SUPER_USER_ROLE'))
     student_admin = security.datastore.find_or_create_role('student-admin')
     security.datastore.add_permissions_to_role(role, {cv('SUPER_USER_ROLE')})
