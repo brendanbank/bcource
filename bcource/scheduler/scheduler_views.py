@@ -7,7 +7,7 @@ from bcource.scheduler.scheduler_forms import SchedulerTrainingEnrollForm
 from bcource.training.training_forms import TrainingDerollForm, TrainingEnrollForm
 from bcource import menu_structure, db
 from bcource.helpers import admin_has_role, get_url
-from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent, TrainingEnroll
+from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent, TrainingEnroll, Content
 from sqlalchemy import or_, and_
 import bcource.messages as system_msg
 from bcource.students.common import deroll_common, enroll_common, enroll_from_waitlist, invite_from_waitlist
@@ -233,12 +233,20 @@ def deroll(id):
     cancel_policy = CancelationPolicy(training=training, user=current_user)
     cancel_policy.validate()
     
-    if not cancel_policy:
-        for error in cancel_policy:
-            flash(error, 'error')
+    if form.validate_on_submit() :
+        
+        if not cancel_policy.status:
+            enrollment = TrainingEnroll().query.join(Student).filter(TrainingEnroll.student_id == Student.id, Student.user_id == current_user.id).first()
 
-    if form.validate_on_submit() and cancel_policy.status:
+            system_msg.EmailStudentDerolledInTrainingOutOfPolicyTrainer(envelop_to=current_user, training=training, 
+                                                                         policy_txt=Content.get_tag('Cancellation Policy'), enrollment=enrollment ).send()
+            system_msg.EmailStudentDerolledInTrainingOutOfPolicy(
+                envelop_to=current_user, training=training, 
+                policy_txt=Content.get_tag('Cancellation Policy'
+                                            ),enrollment=enrollment ).send()
+                                           
         return_acton =  deroll_common(training, current_user)
+
         if return_acton:
             return redirect(url)
 
