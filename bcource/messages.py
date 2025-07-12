@@ -213,7 +213,7 @@ class EmailStudentEnrolledInTraining(SendEmail):
         cal.to_ical()
         
         msg.attach(f'{training.name}.ics', cal.to_ical(), 'text/calendar')
-        
+
 class EmailStudentDerolledInTraining(SendEmail):
     message_tag = "derolled"
 
@@ -268,7 +268,14 @@ class EmailStudentDerolled(SystemMessage):
 
 class EmailStudentEnrolledInTrainingInviteAccepted(EmailStudentEnrolledInTraining):
     message_tag = "enrolled"
+    
+class EmailStudentDerolledInTrainingOutOfPolicy(EmailStudentDerolledInTraining):
+    message_tag = "policy"
+    
+class EmailStudentDerolledInTrainingOutOfPolicyTrainer(SendEmail):
+    message_tag = "policy"
 
+    
 class EmailStudentEnrolledInTrainingInvited(SendEmail):
     message_tag = "invited"
 
