@@ -1,21 +1,20 @@
-from flask import (current_app, Blueprint, render_template, jsonify, abort, send_from_directory, g, 
-                   flash, url_for, redirect, render_template_string, request)
+from flask import (current_app, Blueprint, render_template, jsonify, abort, 
+                   flash, url_for, redirect, request)
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
 from flask_security import current_user, auth_required
 from bcource.scheduler.scheduler_forms import SchedulerTrainingEnrollForm
-from bcource.training.training_forms import TrainingDerollForm, TrainingEnrollForm
+from bcource.training.training_forms import TrainingDerollForm
 from bcource import menu_structure, db
 from bcource.helpers import admin_has_role, get_url
 from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent, TrainingEnroll, Content
 from sqlalchemy import or_, and_
 import bcource.messages as system_msg
 from bcource.students.common import deroll_common, enroll_common, enroll_from_waitlist, invite_from_waitlist
-from sqlalchemy.orm import joinedload
 from datetime import datetime
-import pytz, time
+import pytz
 from bcource.filters import Filters
-from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
+from bcource.user.user_status import UserProfileChecks
 from bcource.students.student_policies import TrainingBookingPolicy, can_student_book_trainings, CancelationPolicy
 from bcource.helper_app_context import b_pagination
 
@@ -224,7 +223,7 @@ def enable(uuid):
 
 @scheduler_bp.route('/training/deroll/<int:id>',methods=['GET', 'POST'])
 @auth_required()
-def deroll(id):
+def deroll(id):  # @ReservedAssignment
     
     form = TrainingDerollForm()    
     training = Training().query.get(id)
@@ -292,7 +291,7 @@ def decline_invite(uuid):
 
 @scheduler_bp.route('/training/enroll/<int:id>',methods=['GET', 'POST'])
 @auth_required()
-def enroll(id):
+def enroll(id):  # @ReservedAssignment
     
     training = Training().query.get(id)
     
