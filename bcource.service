@@ -8,6 +8,7 @@ Group=www-data
 Restart=always
 WorkingDirectory=/usr/local/bcource
 Environment="PATH=/usr/local/gbcource/venv/bin"
+ExecStartPre=/usr/local/bcource/wait_for_mysql.sh
 ExecStart=/usr/local/bcource/venv/bin/uwsgi  --ini /usr/local/bcource/bcource.ini 
 
 [Install]
