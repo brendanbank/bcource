@@ -4,9 +4,11 @@ Training Scheduling
 
 https://github.com/LJPc-solutions/Nederlandse-adressen-en-postcodes/blob/main/adressen.tar.xz
 
+mysql --local-infile=1  -p -u root postalcodes
+
 To load the NL postalcode database
 
-	LOAD DATA LOCAL INFILE '/Users/brendan/Downloads/var/www/PersonalUtils/storage/repos/postcodes/data/a' INTO TABLE bcourse.postalcodes FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 LINES;
+	LOAD DATA LOCAL INFILE 'var/www/PersonalUtils/storage/repos/postcodes/data/adressen.csv' INTO TABLE postalcodes.postalcodes FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 LINES;
 
 	CREATE TABLE postalcodes (
 		postcode VARCHAR(32) NOT NULL, 
@@ -24,3 +26,10 @@ To load the NL postalcode database
 
 # issues
 - Pagination
+
+
+	upgrade databases:
+	
+	flask db init --multidb
+	flask db migrate -m "postalcodes.v2"
+	flask db upgrade
