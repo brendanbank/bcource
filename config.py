@@ -43,6 +43,11 @@ class Config:
     DEBUG = environ.get("DEBUG")
     
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI")
+    
+    SQLALCHEMY_BINDS = {
+        'postalcodes': environ.get("SQLALCHEMY_BINDS_POSTALCODES")
+    }
+
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
