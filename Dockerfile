@@ -1,5 +1,4 @@
 FROM tiangolo/uwsgi-nginx:python3.12
-ARG BUILD_ID=
 
 ENV LISTEN_PORT=8080
 EXPOSE 8080
