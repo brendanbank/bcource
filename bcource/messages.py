@@ -47,6 +47,7 @@ class SystemMessage(object):
         if body and subject:
             self.body = body
             self.subject = subject
+            self.CONTENT_TAG = 'mail-a-form'
             
         else:
         
