@@ -4,6 +4,7 @@
 
 const postal_code_field  = document.querySelector("#postal_code");
 const house_number_field  = document.querySelector("#house_number");
+const house_number_extention  = document.querySelector("#house_number_extention");
 console.log(postal_code_field)
 
 
@@ -29,7 +30,7 @@ async function fetchAddress (event) {
 	
 	const adress_request = new Request("/api/address", {
 	  method: "POST",
-	  body: "postcode="+postal_code_field.value+"&"+"huisnummer="+house_number_field.value,
+	  body: "postcode="+postal_code_field.value+"&"+"huisnummer="+house_number_field.value+"&ext="+house_number_extention.value,
 	  headers: {
 	    "Content-type": "application/x-www-form-urlencoded",
 		'X-CSRF-TOKEN': csrf.content
@@ -59,3 +60,5 @@ postal_code_field.addEventListener("change", fetchAddress)
 postal_code_field.addEventListener("keyup", fetchAddress)
 house_number_field.addEventListener("change", fetchAddress)
 house_number_field.addEventListener("keyup", fetchAddress)
+house_number_extention.addEventListener("change", fetchAddress)
+house_number_extention.addEventListener("keyup", fetchAddress)

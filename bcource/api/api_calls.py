@@ -12,25 +12,34 @@ api_bp = Blueprint(
 
 
 def validate_adress(query):
+    
+    r = {}
+
     if query:
-        postcode = query.get("postcode")
-        huisnummer = query.get("huisnummer")
+        r["postcode"] = query.get("postcode","")
+        r["huisnummer"] = query.get("huisnummer","")
+        ext = query.get("ext")
+        
+        
+        if ext != None and ext !="":
+            r["huisnummer"] = f'{r["huisnummer"]}-{ext}'
+            
     else:
         return False
     
-    if not postcode or not huisnummer:
+    if not r["postcode"] or not r["huisnummer"]:
         return False
     
-    postcode = postcode.replace(' ','')
+    r["postcode"] = r["postcode"].replace(' ','')
     
-    if not re.search("^[0-9]{4}\w{2}", postcode):
+    if not re.search(r"^[0-9]{4}\w{2}", r["postcode"]):
         return False
-    try:
-        int(huisnummer)
-    except:
-        return False
+    # try:
+    #     int(huisnummer)
+    # except:
+    #     return False
 
-    return query
+    return r
 
 @api_bp.route('/address', methods=['POST'])
 @auth_required()
@@ -42,7 +51,7 @@ def adress():
         r.update({"status": 400, "status_message": "Address not Found"})
         return jsonify(r)
     
-    
+
     address = Postalcodes().query.filter(
         Postalcodes.postcode == query["postcode"].replace(' ',''), 
         Postalcodes.huisnummer == query["huisnummer"]).first()

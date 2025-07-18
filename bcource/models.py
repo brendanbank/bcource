@@ -889,6 +889,8 @@ class Content(db.Model):
     
 
 class Postalcodes(db.Model):
+    __bind_key__ = 'postalcodes' # This is the key from SQLALCHEMY_BINDS
+
     postcode: Mapped[str] = mapped_column(String(32), primary_key=True)
     huisnummer: Mapped[str] = mapped_column(String(32), primary_key=True)
     straat: Mapped[str] = mapped_column(String(256))
