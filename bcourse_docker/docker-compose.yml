@@ -4,7 +4,7 @@ services:
     build: ..
     ports:
       - "8081:8080" # Map port 8000 on the host to port 8000 in the container
-    env_file: ".env"
+    env_file: "../.env"
     networks:
       - external-db-network
 
