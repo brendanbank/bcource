@@ -5,6 +5,8 @@ Training Scheduling
 https://github.com/LJPc-solutions/Nederlandse-adressen-en-postcodes/blob/main/adressen.tar.xz
 
 mysql --local-infile=1  -p -u root postalcodes
+mysql> SET GLOBAL local_infile=1;
+
 
 To load the NL postalcode database
 
