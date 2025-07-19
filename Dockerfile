@@ -1,7 +1,7 @@
 FROM tiangolo/uwsgi-nginx:python3.12
 
-ENV LISTEN_PORT=8080
-EXPOSE 8080
+#ENV LISTEN_PORT=8080
+#EXPOSE 8080
 
 COPY ./requirements.txt /app/requirements.txt
 

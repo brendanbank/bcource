@@ -177,3 +177,4 @@ migrations/*
 /bcourse.dump-2025-06-23.3
 /tmp/
 attic/
+*/letsencrypt/*
