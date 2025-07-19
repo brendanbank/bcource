@@ -1,14 +1,48 @@
-services:
-  bcourse: # Define a service named 'webapp'
+version: '3.8' # Use a recent Docker Compose version
 
-    build: ..
+services:
+  traefik:
+    image: "traefik:v3.4"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+        #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.myresolver.acme.email=brendan.bank@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
     ports:
-      - "8081:8080" # Map port 8000 on the host to port 8000 in the container
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+    networks:
+      - web-network # Traefik will be on this network
+    restart: unless-stopped # Ensure Traefik restarts if it crashes or the host reboots
+
+  bcourse:
+    build: ..
+    # Remove direct port mapping, Traefik will handle routing
+    # ports:
+    #   - "8081:8080"
     env_file: "../.env"
     networks:
-      - external-db-network
+      - web-network # Connect bcourse to the same network as Traefik
+    labels:
+      - "traefik.enable=true" # Enable Traefik for this service
+        #- "traefik.http.routers.bcourse.rule=Host(`bcourse.nl`, `www.bcourse.nl`, `dev1.bgwlan.nl`)" # <--- IMPORTANT: Replace with your domain(s)
+      - "traefik.http.routers.bcourse.rule=Host(`bcourse.nl`) || Host(`www.bcourse.nl`) || Host(`dev1.bgwlan.nl`)"
+      - "traefik.http.routers.bcourse.entrypoints=websecure" # Use the HTTPS entrypoint
+      - "traefik.http.routers.bcourse.tls.certresolver=myresolver" # Use the Let's Encrypt resolver
+      - "traefik.http.services.bcourse.loadbalancer.server.port=80" # Tell Traefik the internal port of your app
 
 networks:
-  external-db-network:
-    driver: bridge
+  web-network:
+    driver: bridge # This is the network for Traefik and your web services
 
