@@ -22,7 +22,7 @@ services:
       - "--certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
       - "--certificatesresolvers.myresolver.acme.email=brendan.bank@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-    env_file: ".env"
+    env_file: "../.env"
     ports:
       - "${HTTP_PORT:-80}:80"    # HTTP - standard port 80
       - "${HTTPS_PORT:-443}:443"  # HTTPS - standard port 443
@@ -60,7 +60,7 @@ services:
     container_name: "bcourse"
     build: ..
     image: bcourse:latest
-    env_file: ".env"
+    env_file: "../.env"
     logging:
       driver: "loki"
       options:
@@ -97,7 +97,7 @@ services:
     image: mysql:8.0
     container_name: "bcourse-mysql"
     restart: unless-stopped
-    env_file: ".env"
+    env_file: "../.env"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql/init:/docker-entrypoint-initdb.d
