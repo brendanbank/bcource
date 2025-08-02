@@ -95,14 +95,9 @@ services:
 
   mysql:
     image: mysql:8.0
-    env_file: ".env"
     container_name: "bcourse-mysql"
     restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-bcourse}
-      MYSQL_USER: ${MYSQL_USER:-bcourse}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-bcoursepassword}
+    env_file: ".env"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql/init:/docker-entrypoint-initdb.d
