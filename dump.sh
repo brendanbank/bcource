@@ -7,9 +7,9 @@ cd /usr/local/bcource
 TEMPFILE=$(mktemp)
 cat <<EOF > "${TEMPFILE}"
 [client]
-password="${MYSQL_PWD}"
+password="${MYSQL_ROOT_PASSWORD}"
 EOF
 
-mysqldump --defaults-extra-file=${TEMPFILE} -u ${RDS_USER} -h ${RDS_ENDPOINT} $*
+mysqldump --defaults-extra-file=${TEMPFILE} -u root $*
 
 rm -rf ${TEMPFILE}
