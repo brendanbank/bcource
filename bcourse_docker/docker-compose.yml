@@ -20,7 +20,28 @@ services:
     volumes:
       - "./letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
+    logging:
+      driver: "loki"
+      options:
+        loki-url: "http://loki.bgwlan.nl:3100/loki/api/v1/push"
+        loki-pipeline-stages: |
+          - json:
+              expressions:
+                stream: stream
+                attrs: attrs
+                tag: attrs.tag
+                level: attrs.level
+                msg: log
+        loki-relabel-config: |
+          - action: replace
+            source_labels: ['__filename__']
+            target_label: 'job'
+          - action: replace
+            source_labels: ['container_name']
+            target_label: 'container'
+          - action: replace
+            source_labels: ['stream']
+            target_label: 'stream'
     networks:
       - web-network # Traefik will be on this network
     restart: unless-stopped # Ensure Traefik restarts if it crashes or the host reboots
@@ -33,6 +54,28 @@ services:
     # ports:
     #   - "8081:8080"
     env_file: "../.env"
+    logging:
+      driver: "loki"
+      options:
+        loki-url: "http://loki.bgwlan.nl:3100/loki/api/v1/push"
+        loki-pipeline-stages: |
+          - json:
+              expressions:
+                stream: stream
+                attrs: attrs
+                tag: attrs.tag
+                level: attrs.level
+                msg: log
+        loki-relabel-config: |
+          - action: replace
+            source_labels: ['__filename__']
+            target_label: 'job'
+          - action: replace
+            source_labels: ['container_name']
+            target_label: 'container'
+          - action: replace
+            source_labels: ['stream']
+            target_label: 'stream'
     networks:
       - web-network # Connect bcourse to the same network as Traefik
     labels:
