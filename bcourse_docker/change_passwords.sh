@@ -20,14 +20,14 @@ echo "🔐 Generating new secure passwords..."
 ROOT_PASSWORD=$(python3 -c "
 import secrets
 import string
-chars = string.ascii_letters + string.digits + '!@#$%^&*'
+chars = string.ascii_letters + string.digits 
 print(''.join(secrets.choice(chars) for _ in range(32)))
 ")
 
 USER_PASSWORD=$(python3 -c "
 import secrets
 import string
-chars = string.ascii_letters + string.digits + '!@#$%^&*'
+chars = string.ascii_letters + string.digits 
 print(''.join(secrets.choice(chars) for _ in range(24)))
 ")
 
