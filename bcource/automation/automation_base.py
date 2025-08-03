@@ -87,8 +87,10 @@ class BaseAutomationTask:
     @classmethod
     def _create_job(cls, automation, item, event_dt):
         when = cls._when(automation, event_dt)
+
+        print (f'automation: {automation.name}')
         
-        str_id = f"{cls.__name__}/{cls._get_id(item)}/{app_scheduler.flask_app.config.get('ENVIRONMENT')}"
+        str_id = f"{automation.name}/{cls._get_id(item)}/{app_scheduler.flask_app.config.get('ENVIRONMENT')}"
         
         
         job = app_scheduler.add_job(
