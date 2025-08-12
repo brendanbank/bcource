@@ -1091,3 +1091,40 @@ class SupportTicket(db.Model):
     def assign_to_admin(self, admin_user):
         self.admin_id = admin_user.id
         self.status = "in_progress"
+    
+    def update_status(self, new_status, admin_user=None):
+        """Update ticket status and optionally assign admin"""
+        self.status = new_status
+        if admin_user:
+            self.admin_id = admin_user.id
+        self.updated_date = datetime.datetime.now(datetime.timezone.utc)
+        
+        if new_status == "closed":
+            self.closed_date = datetime.datetime.now(datetime.timezone.utc)
+    
+    def get_status_display(self):
+        """Get human-readable status"""
+        status_map = {
+            "open": "Open",
+            "in_progress": "In Progress", 
+            "waiting_for_user": "Waiting for User",
+            "resolved": "Resolved",
+            "closed": "Closed"
+        }
+        return status_map.get(self.status, self.status.title())
+    
+    def get_priority_display(self):
+        """Get human-readable priority with color coding"""
+        priority_map = {
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High", 
+            "urgent": "Urgent"
+        }
+        return priority_map.get(self.priority, self.priority.title())
+    
+    def get_category_display(self):
+        """Get human-readable category"""
+        if not self.category:
+            return "General"
+        return self.category.replace('_', ' ').title()

@@ -399,9 +399,61 @@ def support():
         db.session.add(ticket)
         db.session.commit()
         
+        # Send notification message to user
+        try:
+            # Create notification message
+            notification_subject = f"Support Ticket #{ticket.id} Created"
+            notification_body = f"""
+            <p>Your support ticket has been successfully created.</p>
+            
+            <h4>Ticket Details:</h4>
+            <ul>
+                <li><strong>Ticket ID:</strong> #{ticket.id}</li>
+                <li><strong>Subject:</strong> {ticket.subject}</li>
+                <li><strong>Category:</strong> {ticket.category.replace('_', ' ').title()}</li>
+                <li><strong>Priority:</strong> {ticket.priority.title()}</li>
+                <li><strong>Created:</strong> {ticket.created_date.strftime('%B %d, %Y at %I:%M %p')}</li>
+            </ul>
+            
+            <p><strong>Description:</strong></p>
+            <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 10px 0;">
+                {ticket.description}
+            </div>
+            
+            <p>We will review your request and get back to you as soon as possible. You can track the status of your ticket through your account.</p>
+            
+            <p>Thank you for contacting support!</p>
+            """
+            
+            # Send notification using existing messaging system
+            notification = SendEmail(
+                envelop_to=[current_user],
+                envelop_from=current_app.config.get("BCOURSE_SYSTEM_USER", current_user),
+                has_content=True,
+                body=notification_body,
+                taglist=['support', 'ticket_created', 'notification'],
+                subject=notification_subject
+            )
+            
+            notification.send()
+            
+        except Exception as e:
+            # Log the error but don't fail the ticket creation
+            current_app.logger.error(f"Failed to send support ticket notification: {e}")
+        
         flash(_("Support ticket submitted successfully. We'll get back to you soon."))
         return redirect(url_for('user_bp.support'))
     
     return render_template("user/support.html", form=form, page_name=_l("Support"))
+
+
+@user_bp.route('/support/tickets', methods=['GET'])
+@auth_required()
+def my_tickets():
+    """Display user's support tickets"""
+    # Get user's tickets ordered by most recent first
+    tickets = SupportTicket.query.filter_by(user_id=current_user.id).order_by(SupportTicket.created_date.desc()).all()
+    
+    return render_template("user/my_tickets.html", tickets=tickets, page_name=_l("My Support Tickets"))
 
 
