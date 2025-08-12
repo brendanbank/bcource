@@ -1036,3 +1036,58 @@ def db_init_data (app):
 
     
     db.session.commit()
+
+class SupportTicket(db.Model):
+    """Support ticket model for user support requests"""
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    subject: Mapped[str] = mapped_column(String(256), nullable=False)
+    description: Mapped[str] = mapped_column(Text(), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), default="open", nullable=False)
+    priority: Mapped[str] = mapped_column(String(32), default="medium", nullable=False)
+    category: Mapped[str] = mapped_column(String(64), nullable=True)
+    
+    # User who created the ticket
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    user: Mapped["User"] = relationship("User", foreign_keys=[user_id], backref="support_tickets")
+    
+    # Admin who is handling the ticket (optional)
+    admin_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+    admin: Mapped["User"] = relationship("User", foreign_keys=[admin_id], backref="assigned_tickets")
+    
+    # Timestamps
+    created_date: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), 
+        server_default=func.now(),
+        nullable=False
+    )
+    updated_date: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), 
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False
+    )
+    closed_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    
+    # Practice context
+    practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id", ondelete="CASCADE"), nullable=True)
+    practice: Mapped["Practice"] = relationship("Practice", backref="support_tickets")
+    
+    def __str__(self):
+        return f"Support Ticket #{self.id}: {self.subject}"
+    
+    @property
+    def is_open(self):
+        return self.status == "open"
+    
+    @property
+    def is_closed(self):
+        return self.status == "closed"
+    
+    def close_ticket(self):
+        self.status = "closed"
+        self.closed_date = datetime.datetime.now(datetime.timezone.utc)
+    
+    def assign_to_admin(self, admin_user):
+        self.admin_id = admin_user.id
+        self.status = "in_progress"

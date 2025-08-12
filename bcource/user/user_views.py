@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for, jsonify, current_app
 from flask_babel import _
 from flask_security import current_user
-from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag, Training
+from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag, Training, SupportTicket, Practice
 from flask import current_app as app
 from flask_security import auth_required
-from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform
+from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform, SupportTicketForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from bcource.helpers import get_url, message_date
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
@@ -368,5 +368,40 @@ def settings():
         return redirect(url)
     
     return render_template("user/update-settings.html", form=form)
+
+
+@user_bp.route('/support', methods=['GET', 'POST'])
+@auth_required()
+def support():
+    form = SupportTicketForm()
+    url = get_url(form)
+    
+    if form.validate_on_submit():
+        # Get current practice from session
+        practice = None
+        if session.get('practice'):
+            try:
+                practice_id = int(session.get('practice'))
+                practice = Practice().query.get(practice_id)
+            except:
+                pass
+        
+        # Create support ticket
+        ticket = SupportTicket(
+            subject=form.subject.data,
+            description=form.description.data,
+            category=form.category.data,
+            priority=form.priority.data,
+            user=current_user,
+            practice=practice
+        )
+        
+        db.session.add(ticket)
+        db.session.commit()
+        
+        flash(_("Support ticket submitted successfully. We'll get back to you soon."))
+        return redirect(url_for('user_bp.support'))
+    
+    return render_template("user/support.html", form=form, page_name=_l("Support"))
 
 

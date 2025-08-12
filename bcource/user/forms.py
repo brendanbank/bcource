@@ -169,4 +169,50 @@ class AccountDetailsForm(FlaskForm):
     url  = MyHiddenField('url')
     id  = MyHiddenField('id')
 
+
+class SupportTicketForm(FlaskForm):
+    form_description = _l("Submit Support Request")
+    formclass = "col-md-12"
+    
+    subject = MyStringField(
+        _l('Subject'), [validators.DataRequired()],
+        divclass="col-md-12 mt-3",
+        render_kw={"class": "position-relative form-control", "placeholder": "Brief description of your issue"})
+
+    category = MySelectField(
+        _l('Category'),
+        [validators.DataRequired()],
+        choices=[
+            ("", _l("Choose a category")),
+            ("technical", _l("Technical Issue")),
+            ("billing", _l("Billing/Payment")),
+            ("training", _l("Training Related")),
+            ("account", _l("Account Access")),
+            ("general", _l("General Inquiry")),
+            ("bug", _l("Bug Report")),
+            ("feature", _l("Feature Request"))
+        ],
+        divclass="col-md-6 mt-3 me-3",
+        render_kw={"class": "position-relative form-control form-select"})
+
+    priority = MySelectField(
+        _l('Priority'),
+        [validators.DataRequired()],
+        choices=[
+            ("low", _l("Low")),
+            ("high", _l("High")),
+            ("medium", _l("Medium")),
+            ("urgent", _l("Urgent"))
+        ],
+        default="medium",
+        divclass="col-md-6 mt-3 ms-3",
+        render_kw={"class": "position-relative form-control form-select"})
+
+    description = MyTextAreaField(
+        _l('Description'), [validators.DataRequired()],
+        divclass="col-md-12 mt-3",
+        render_kw={"class": "ckeditor position-relative form-control", "rows": "6", "placeholder": "Please provide detailed information about your issue..."})
+
+    url = MyHiddenField()
+    
     

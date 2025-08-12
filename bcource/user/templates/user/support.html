@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block css_content %}
+{% include 'ckeditor-css.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">
+                    <i class="bi bi-headset me-2"></i>{{ page_name }}
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <p class="text-muted mb-5">
+                            Need help? Submit a support ticket and we'll get back to you as soon as possible.
+                        </p>
+                        
+                        <form method="POST" action="{{ url_for('user_bp.support') }}" class="needs-validation" novalidate>
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <label for="{{ form.subject.id }}" class="form-label fw-bold mb-2">{{ form.subject.label.text }}</label>
+                                    {{ form.subject }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4 g-4">
+                                <div class="col-md-6">
+                                    <label for="{{ form.category.id }}" class="form-label fw-bold mb-2">{{ form.category.label.text }}</label>
+                                    {{ form.category }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.priority.id }}" class="form-label fw-bold mb-2">{{ form.priority.label.text }}</label>
+                                    {{ form.priority }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-5">
+                                <div class="col-md-12">
+                                    <label for="{{ form.description.id }}" class="form-label fw-bold mb-2">{{ form.description.label.text }}</label>
+                                    {{ form.description }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-send me-2"></i>Submit Support Request
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="{{ url_for('user_bp.index') }}" class="btn btn-outline-secondary w-100">
+                                        <i class="bi bi-arrow-left me-2"></i>Back to Account
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Support Information -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle me-2"></i>Support Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-clock me-2"></i>Response Time</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Low Priority:</strong> Within 48 hours</li>
+                            <li><strong>Medium Priority:</strong> Within 24 hours</li>
+                            <li><strong>High Priority:</strong> Within 12 hours</li>
+                            <li><strong>Urgent:</strong> Within 4 hours</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-lightbulb me-2"></i>Tips for Better Support</h6>
+                        <ul class="list-unstyled">
+                            <li>• Be specific about your issue</li>
+                            <li>• Include relevant error messages</li>
+                            <li>• Mention your browser/device if relevant</li>
+                            <li>• Provide steps to reproduce the issue</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+{% include 'ckeditor-js.html' %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const descriptionField = document.getElementById('description');
+    
+    // Wait for CKEditor to be fully initialized
+    setTimeout(function() {
+        // Find the CKEditor instance
+        if (window.CKEDITOR && window.CKEDITOR.instances && window.CKEDITOR.instances.description) {
+            const editor = window.CKEDITOR.instances.description;
+            
+            // Sync CKEditor content with textarea before form submission
+            form.addEllventListener('submit', function(e) {
+                // Update the hidden textarea with CKEditor content
+                descriptionField.value = editor.getData();
+                
+                // Basic validation
+                if (!descriptionField.value.trim()) {
+                    e.preventDefault();
+                    alert('Please fill in the description field.');
+                    return false;
+                }
+            });
+        }
+    }, 500);
+});
+</script>
+{% endblock %}
+
+
