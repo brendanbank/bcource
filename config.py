@@ -86,10 +86,12 @@ class Config:
     SECURITY_TWO_FACTOR_RESCUE_EMAIL = False
 
     MAIL_SERVER = environ.get('MAIL_SERVER')
-    MAIL_PORT = 25
-    MAIL_USE_TLS = False
+    MAIL_PORT = environ.get('MAIL_PORT')
+    MAIL_USE_TLS = environ.get('MAIL_USE_TLS') 
     MAIL_DEFAULT_SENDER = environ.get('MAIL_DEFAULT_SENDER')
     MAIL_BACKEND = 'smtp'
+    MAIL_USERNAME = environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = environ.get('MAIL_PASSWORD')
     
     
     ## Application settings:
