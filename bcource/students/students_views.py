@@ -98,7 +98,7 @@ def orphan_users():
     practice = Practice.default_row() #@UndefinedVariable
     
     for user in orphan_user_list:
-        if user.email == "do-not-reply@bgwlan.nl":
+        if user.email == "do-not-reply@bgwlan.nl" or user.email == "not-reply@bcourse.nl":
             continue    
             
         student=Student(user=user, 

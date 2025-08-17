@@ -118,7 +118,7 @@ class Config:
     BCOURSE_LOCATION_CITY = environ.get("BCOURSE_LOCATION_CITY", "Amsterdam")
     BCOURSE_LOCATION_POSTALCODE = environ.get("BCOURSE_LOCATION_POSTALCODE", "1072 BJ")
     
-    BCOURSE_SYSTEM_USER = environ.get("BCOURSE_SYSTEM_USER", 'do-not-reply@bgwlan.nl')
+    BCOURSE_SYSTEM_USER = environ.get("BCOURSE_SYSTEM_USER", 'do-not-reply@bcourse.nl')
     BCOURSE_SYSTEM_FIRSTNAME = environ.get("BCOURSE_SYSTEM_FIRSTNAME", 'Bcource')
     BCOURSE_SYSTEM_LASTNAME = environ.get("BCOURSE_SYSTEM_LASTNAME", 'Reservation System')
 
