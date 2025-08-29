@@ -73,7 +73,7 @@
                                    {%- else -%}
 
                                         {{ render_link(url=url_for('scheduler_bp.enroll', id=training.id),
-                                                  tooltip=_('Add %(who)s from this training.', who=who), 
+                                                  tooltip=_('Add %(who)s to this training.', who=who), 
                                                   icon="mb-2 fs-5 bi bi-person-fill-add",  
                                                   text_color="text-success",
                                                   mobile_text=_(" Add %(who)s to this training. ", who=who)) }}
