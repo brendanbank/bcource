@@ -50,6 +50,7 @@
                {%- else -%}
                     {% if not admin %}
                               {% if not training.in_policy.status %}
+                              
                                    <span class="{{show_mobile}}">{% for error in training.in_policy %}{{error}}{% endfor %}
                                         <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
                                         data-placement="top" 
@@ -63,9 +64,8 @@
 
                               {% else %}
                                    {% if training._spots_enrolled >= training.max_participants %}
-
                                         {{ render_link(url=url_for('scheduler_bp.enroll', id=training.id),
-                                                  tooltip=_('Remove %(who)s from this training.', who=who), 
+                                                  tooltip=_('Add %(who)s from this training.', who=who), 
                                                   icon="mb-2 fs-5 bi bi-person-fill-add",  
                                                   text_color="text-warning",
                                                   mobile_text=_(" Add %(who)s to the wait list of this training. ", who=who)) }}
@@ -73,7 +73,7 @@
                                    {%- else -%}
 
                                         {{ render_link(url=url_for('scheduler_bp.enroll', id=training.id),
-                                                  tooltip=_('Remove %(who)s from this training.', who=who), 
+                                                  tooltip=_('Add %(who)s from this training.', who=who), 
                                                   icon="mb-2 fs-5 bi bi-person-fill-add",  
                                                   text_color="text-success",
                                                   mobile_text=_(" Add %(who)s to this training. ", who=who)) }}
