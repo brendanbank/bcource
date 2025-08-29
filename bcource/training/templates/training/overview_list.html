@@ -89,9 +89,9 @@
                <div class="col-lg-3 pt-1 ps-1 pe-0 align-self-center ">{% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
                <div class="col-lg-1 pt-1 ps-1 pe-0 align-self-center ">
                                    <span class="{{show_mobile}} fw-semibold">Max/Enrolled/Wait list: </span>
-               {{ training.max_participants }}&nbsp;/&nbsp;{{training._spots_enrolled }}&nbsp;/
-                                                  {%- if training._spots_enrolled >= training.max_participants %}
-                                                       <span class="text-danger fw-bold">{{ training._spots_enrolled - training.max_participants}}</span>
+               {{ training.max_participants }}&nbsp;/&nbsp;{% if training._spots_enrolled > training.max_participants%}<span class="text-danger">{{training._spots_enrolled }}</span>&nbsp;/{%else%}{{training._spots_enrolled }}&nbsp;/{% endif %}</span>
+                                                  {%- if training._spots_waitlist_count %}
+                                                       <span class="text-danger fw-bold">{{ training._spots_waitlist_count}}</span>
                                                    {% else %}
                                                        <span class="text-success">0</span>
                                                    {%- endif -%}

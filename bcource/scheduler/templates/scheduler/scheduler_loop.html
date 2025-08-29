@@ -90,8 +90,8 @@
                <div class="col-lg-3  align-self-center small"><span class="{{show_mobile}}">{{_("Date")}}: </span> {% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
                <div class="col-lg-1  align-self-center {{hide_mobile}}">
                                                   {{ training.max_participants }}/{{training._spots_enrolled -}}/
-                                                  {%- if training._spots_enrolled >= training.max_participants -%}
-                                                       <span class="text-warning">{{ training._spots_enrolled - training.max_participants}}</span>
+                                                  {%- if training._spots_waitlist_count -%}
+                                                       <span class="text-warning">{{ training._spots_waitlist_count}}</span>
                                                    {%- else -%}
                                                        <span class="text-success">0</span>
                                                    {%- endif -%}
@@ -101,7 +101,7 @@
                                                   {{_("Max participants")}}: {{ training.max_participants }}, 
                                                   {{_("Enrolled")}}: {{training._spots_enrolled }}, {{_("Wait list")}}: 
                                                   {%- if training._spots_enrolled >= training.max_participants %}
-                                                       <span class="text-danger fw-bold">{{ training._spots_enrolled - training.max_participants}}</span>
+                                                       <span class="text-danger fw-bold">{{ training._spots_enrolled - training.max_participants}} </span>
                                                    {% else %}
                                                        <span class="text-success">0</span>
                                                    {%- endif -%}
@@ -147,10 +147,10 @@
                                                                  data-placement="top" 
                                                                  data-bs-html="true"
                                                                  title=''></i></span>
+                                                        {% elif training._spots_waitlist_count > 0 %}
+                                                            <span class="fw-bold text-warning small">{{_('Training has a wait list') }}</span>
                                                         {% elif training._spots_enrolled == training.max_participants %}
                                                             <span class="fw-bold text-success small">{{_('Max Capacity') }}</span>
-                                                        {% elif training._spots_enrolled > training.max_participants %}
-                                                            <span class="fw-bold text-warning small">{{_('Training has a wait list') }}</span>
                                                         {% else %}
                                                             <span class="fw-bold text-success small">{{_('Open for enrollment.') }}</span>
                                                         {% endif %}
