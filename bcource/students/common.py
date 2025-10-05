@@ -69,6 +69,16 @@ def enroll_common(training, user):
                 fullname=user.fullname,trainingname=training.name ),'error')
         return False
     
+    # Check if training has already started
+    time_now = datetime.now(tz=pytz.timezone('UTC'))
+    q = Training().query.join(TrainingEnroll).join(TrainingEvent).filter(
+        and_(~Training.trainingevents.any(TrainingEvent.start_time < time_now),
+             Training.id == training.id)).first()
+    if not q:
+        flash(_("You cannot enroll %(fullname)s in this training. %(trainingname)s has already started.", 
+                fullname=user.fullname, trainingname=training.name), 'error')
+        return False
+    
     training.fill_numbers(user)
     
     waitlist = training._spots_enrolled >= training.max_participants
