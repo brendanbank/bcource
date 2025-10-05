@@ -6,6 +6,10 @@ from datetime import datetime
 from bcource.students.common import deinvite_from_waitlist, invite_from_waitlist
 import logging
 from bcource import db
+from bcource.models import BeforeAfterEnum
+from bcource.helpers import db_datetime_str
+from datetime import timedelta
+from bcource.automation.scheduler import app_scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -146,5 +150,106 @@ class StudentOpenSpotReminder(Reminder):
             self.template_kw['training'] = self.training
             msg = EmailReminder(envelop_to=[user], CONTENT_TAG=self.automation_name, taglist=['reminder', 'openspot'], **self.template_kw)
             msg.send()
+
+
+@register_automation(
+    description="Remove all students from a training and delete the training."
+)
+class DeleteTrainingTask(BaseAutomationTask):
+    def __init__(self, id, automation_name, *args, **kwargs):  # @ReservedAssignment
+        super().__init__(id, automation_name, *args, **kwargs)
+        self.training = Training().query.get(id)
+        if not self.training:
+            logger.warning(f"Training with id {id} is not found")
+            return
+        
+    @staticmethod
+    def query():
+        # Query trainings that are marked for deletion or have passed their end date
+        # This can be customized based on your specific criteria
+        return Training().query.join(Training.trainingevents).filter(TrainingEvent.start_time < datetime.utcnow()).all()
+
+#        return Training().query.all()
+
+    @staticmethod
+    def _when(automation, event_dt):
+        """
+        Calculate when a job should be scheduled.
+        
+        This method calculates the execution time for a job based on:
+        - The event datetime
+        - The automation interval (before/after)
+        - The environment (development vs production)
+        
+        Args:
+            automation: Automation configuration object.
+            event_dt (datetime): The event datetime.
+        
+        Returns:
+            datetime: The calculated execution time.
+        
+        Note:
+            - In development mode, jobs execute immediately (1 second delay)
+            - Jobs scheduled in the past are logged as warnings
+            - The interval is applied before or after the event based on configuration
+        """
+        dt_delta = automation.interval
+        if automation.beforeafter == BeforeAfterEnum.before:
+            when = event_dt - dt_delta
+        elif automation.beforeafter == BeforeAfterEnum.after:
+            when = event_dt + dt_delta
+        else:
+            when = event_dt
+                
+        if when < datetime.utcnow():
+            logger.warning(f"job is scheduler in the past: {db_datetime_str(when)} task executed immediately: {event_dt}")
+            when = datetime.utcnow() + timedelta(seconds=1)
+
+            
+        # if app_scheduler.flask_app.config.get('ENVIRONMENT') == "DEVELOPMENT":
+        #     when = datetime.utcnow() + timedelta(seconds=1)
+                
+        return when
+        
+    
+    @staticmethod
+    def get_event_dt(item):
+        # Return the datetime when the training should be deleted
+        # Using the last event's end time as the reference point
+        if item.trainingevents:
+            return item.trainingevents[-1].end_time
+        return datetime.utcnow()
+    
+    def execute(self):
+        if not self.training:
+            logger.error(f"Cannot execute DeleteTrainingTask: training with id {self.id} not found")
+            return False
+        
+        training_name = self.training.name
+        training_id = self.training.id
+        
+        try:
+            # Get all enrollments for this training
+            enrollments = TrainingEnroll().query.filter(TrainingEnroll.training_id == training_id).all()
+            
+            # Remove all students from the training
+            for enrollment in enrollments:
+                logger.info(f"Removing student {enrollment.student} from training {training_name}")
+                db.session.delete(enrollment)
+            
+            db.session.commit()
+            logger.info(f"Removed {len(enrollments)} student(s) from training {training_name}")
+            
+            # Delete the training
+            db.session.delete(self.training)
+            db.session.commit()
+            logger.info(f"Successfully deleted training: {training_name} (ID: {training_id})")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error deleting training {training_name}: {str(e)}")
+            db.session.rollback()
+            return False
 
 
