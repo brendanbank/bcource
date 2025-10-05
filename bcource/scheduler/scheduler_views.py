@@ -234,7 +234,10 @@ def deroll(id):  # @ReservedAssignment
     
     if form.validate_on_submit() :
         
-        if not cancel_policy.status:
+                                           
+        return_acton =  deroll_common(training, current_user)
+
+        if not cancel_policy.status and return_acton:
             enrollment = TrainingEnroll().query.join(Student).filter(TrainingEnroll.student_id == Student.id, Student.user_id == current_user.id).first()
 
             system_msg.EmailStudentDerolledInTrainingOutOfPolicyTrainer(envelop_to=current_user, training=training, 
@@ -243,8 +246,6 @@ def deroll(id):  # @ReservedAssignment
                 envelop_to=current_user, training=training, 
                 policy_txt=Content.get_tag('Cancellation Policy'
                                             ),enrollment=enrollment ).send()
-                                           
-        return_acton =  deroll_common(training, current_user)
 
         if return_acton:
             return redirect(url)
