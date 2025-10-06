@@ -1,7 +1,7 @@
 from bcource.automation.automation_base import BaseAutomationTask, register_automation
 from bcource.models import Training, TrainingEvent, TrainingEnroll, Student,\
     Practice, User, UserSettings
-from bcource.messages import SendEmail, EmailStudentEnrolledInTraining
+from bcource.messages import SendEmail, EmailStudentEnrolledInTraining, EmailAttendeeListReminder
 from datetime import datetime
 from bcource.students.common import deinvite_from_waitlist, invite_from_waitlist
 import logging
@@ -251,5 +251,54 @@ class DeleteTrainingTask(BaseAutomationTask):
             logger.error(f"Error deleting training {training_name}: {str(e)}")
             db.session.rollback()
             return False
+
+
+@register_automation(
+    description="Send attendee list reminder to trainers."
+)
+class SendAttendeeListTask(Reminder):
+    def __init__(self, id, automation_name, *args, **kwargs):  # @ReservedAssignment
+        super().__init__(id, automation_name, *args, **kwargs)
+        self.training = Training().query.get(id)
+        if not self.training:
+            logger.warning(f"Training with id {id} is not found")
+            return
+
+        # Get all enrolled students for this training
+        self.enrollments = TrainingEnroll().query.join(Training).filter(
+            TrainingEnroll.status == "enrolled", 
+            Training.id == id
+        ).all()
+        
+        if not self.enrollments:
+            logger.warning(f"No enrolled students found for training with id {id}")
+            return
+
+        self.to = self.training.trainer_users
+        self.template_kw['training'] = self.training
+        self.template_kw['enrollments'] = self.enrollments
+        self.template_kw['attendees'] = [enrollment.student for enrollment in self.enrollments]
+
+    def execute(self):
+        if not self.training or not self.enrollments:
+            logger.error(f"Cannot execute SendAttendeeListTask: training or enrollments not found for id {self.id}")
+            return False
+
+        for user in self.training.trainer_users:
+            self.template_kw['user'] = user
+            self.template_kw['training'] = self.training
+            self.template_kw['enrollments'] = self.enrollments
+            self.template_kw['attendees'] = [enrollment.student for enrollment in self.enrollments]
+            
+            a = EmailAttendeeListReminder(
+                envelop_to=[user], 
+                CONTENT_TAG=self.automation_name, 
+                taglist=['reminder', 'attendee_list'], 
+                **self.template_kw
+            )
+            a.send()
+            
+        logger.info(f"Sent attendee list reminder to {len(self.training.trainer_users)} trainer(s) for training {self.training.name}")
+        return True
 
 
