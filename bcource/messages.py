@@ -115,6 +115,9 @@ class SendEmail(SystemMessage):
 
     def process_attachment(self, msg):
         return(msg)
+    
+    def email_render_body(self):
+        return self.body
 
 
 class EmailAttendeeListReminder(SendEmail):
