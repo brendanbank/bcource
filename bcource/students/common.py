@@ -19,6 +19,14 @@ def deinvite_from_waitlist(enrollment: TrainingEnroll):
     
     system_msg.EmailStudentEnrolledInTrainingDeInvited(envelop_to=enrollment.student.user, 
                                                   enrollment=enrollment).send()
+    
+    # Notify trainers that the user's invitation has expired
+    system_msg.SystemMessage(
+        envelop_to=enrollment.training.trainer_users,
+        body=f"<p>The waitlist invitation for {enrollment.student.user.fullname} has expired for training: {enrollment.training.name}</p>",
+        subject=f"Waitlist Invitation Expired - {enrollment.training.name}",
+        taglist=['waitlist', 'expired']
+    ).send()
 
     db.session.commit()
     
@@ -61,6 +69,15 @@ def enroll_from_waitlist(enrollment: TrainingEnroll):
     
     system_msg.EmailStudentEnrolledInTrainingInviteAccepted(envelop_to=enrollment.student.user, 
                                                   enrollment=enrollment).send()
+    
+    # Notify trainers that the student has accepted the waitlist invitation
+    system_msg.SystemMessage(
+        envelop_to=enrollment.training.trainer_users,
+        body=f"<p>{enrollment.student.user.fullname} has accepted the waitlist invitation and is now enrolled in training: {enrollment.training.name}</p>",
+        subject=f"Waitlist Invitation Accepted - {enrollment.training.name}",
+        taglist=['waitlist', 'enrolled', 'accepted']
+    ).send()
+    
     db.session.commit()
         
     flash(_("You have successfully enrolled into training %(trainingname)s!", trainingname=enrollment.training.name))
