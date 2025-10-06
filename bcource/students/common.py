@@ -33,6 +33,14 @@ def invite_from_waitlist(enrollment: TrainingEnroll):
     
     system_msg.EmailStudentEnrolledInTrainingInvited(envelop_to=enrollment.student.user, 
                                                   enrollment=enrollment).send()
+    
+    # Notify trainers that a user has been invited from the waitlist
+    system_msg.SystemMessage(
+        envelop_to=enrollment.training.trainer_users,
+        body=f"<p>{enrollment.student.user.fullname} has been invited from the waitlist for training: {enrollment.training.name}</p>",
+        subject=f"Waitlist Invitation Sent - {enrollment.training.name}",
+        taglist=['waitlist', 'invited']
+    ).send()
 
     db.session.commit()
     logger.info(f'invited user: {enrollment.student.user} from training: {enrollment.training}')
