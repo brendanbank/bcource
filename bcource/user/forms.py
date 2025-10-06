@@ -170,3 +170,46 @@ class AccountDetailsForm(FlaskForm):
     id  = MyHiddenField('id')
 
     
+class SupportForm(FlaskForm):
+    form_description = _l("Contact Support")
+    formclass =  "col-md-10"
+    
+    subject = MyStringField(
+        _l('Subject'), [validators.DataRequired()],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control"})
+
+    body = MyTextAreaField(
+        _l('Describe your issue or question'), [validators.DataRequired()],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control", "rows": "8"})
+
+    url = MyHiddenField()
+    
+
+class PublicSupportForm(FlaskForm):
+    form_description = _l("Contact Support")
+    formclass =  "col-md-10"
+    
+    name = MyStringField(
+        _l('Your Name'), [validators.DataRequired()],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control"})
+    
+    email = MyEmailField(
+        _l('Your Email'), [validators.DataRequired(), validators.Email()],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control"})
+    
+    subject = MyStringField(
+        _l('Subject'), [validators.DataRequired()],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control"})
+
+    body = MyTextAreaField(
+        _l('Describe your issue or question'), [validators.DataRequired()],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control", "rows": "8"})
+
+    url = MyHiddenField()
+    

@@ -121,6 +121,8 @@ class Config:
     BCOURSE_SYSTEM_USER = environ.get("BCOURSE_SYSTEM_USER", 'do-not-reply@bcourse.nl')
     BCOURSE_SYSTEM_FIRSTNAME = environ.get("BCOURSE_SYSTEM_FIRSTNAME", 'Bcourse')
     BCOURSE_SYSTEM_LASTNAME = environ.get("BCOURSE_SYSTEM_LASTNAME", 'Reservation System')
+    
+    BCOURSE_SUPPORT_EMAIL = environ.get("BCOURSE_SUPPORT_EMAIL", 'support@bcourse.nl')
 
     SECURITY_AUTHORIZE_REQUEST = {'admin.index': [ BCOURSE_SUPER_USER_ROLE, 'cms-admin' ]}
     
