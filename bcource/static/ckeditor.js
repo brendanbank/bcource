@@ -25,6 +25,7 @@ const {
 	GeneralHtmlSupport,
 	Heading,
 	Highlight,
+	HtmlEmbed,
 	HorizontalLine,
 	ImageBlock,
 	ImageCaption,
@@ -66,6 +67,20 @@ const LICENSE_KEY =
 	'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NzMxODcxOTksImp0aSI6ImViZDcwOTIzLWEyNTItNGQ3My05MTM2LTk3NjA0YzFlNDYyYiIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiXSwiZmVhdHVyZXMiOlsiRFJVUCJdLCJ2YyI6IjU3NTU0NDk1In0.u0U3_mLZ3Y2xUCUdDu7cvCjrLxwcXHq6MR5LuawNbeQL7xYBnN7_nyIJQJ91T1fVjFP-hShOaP1_5cT0RTvRTg';
 	const editorConfig = {
 	height: 100,
+	htmlEmbed: {
+		sanitizeHtml: ( inputHtml ) => {
+			// Strip unsafe elements and attributes, for example:
+			// the `<script>` elements and `on*` attributes.
+			const outputHtml = sanitize( inputHtml );
+
+			return {
+				html: outputHtml,
+				// true or false depending on whether the sanitizer stripped anything.
+				hasChanged: true
+			};
+		}
+	
+	},
 	toolbar: {
 		items: [
 			'heading',
@@ -95,6 +110,7 @@ const LICENSE_KEY =
 			'highlight',
 			'blockQuote',
 			'codeBlock',
+			'htmlEmbed',
 			'|',
 			'alignment',
 			'|',
@@ -116,6 +132,7 @@ const LICENSE_KEY =
 		BlockQuote,
 		Bold,
 		Bookmark,
+		HtmlEmbed,
 		Code,
 		CodeBlock,
 		Emoji,

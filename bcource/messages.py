@@ -115,6 +115,10 @@ class SendEmail(SystemMessage):
 
     def process_attachment(self, msg):
         return(msg)
+
+
+class EmailAttendeeListReminder(SendEmail):
+    message_tag = "attendee_list_reminder"
     
     def email_render_body(self):
         if self.envelop_from == security.datastore.find_user(email=cv('SYSTEM_USER')):
