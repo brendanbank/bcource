@@ -4,9 +4,9 @@ from flask_security import current_user
 from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag, Training
 from flask import current_app as app
 from flask_security import auth_required
-from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform
+from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform, SupportForm, PublicSupportForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from bcource.helpers import get_url, message_date
+from bcource.helpers import get_url, message_date, config_value as cv
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
 from bcource import db, menu_structure
 from setuptools._vendor.jaraco.functools import except_
@@ -368,5 +368,137 @@ def settings():
         return redirect(url)
     
     return render_template("user/update-settings.html", form=form)
+
+
+@user_bp.route('/support', methods=['GET', 'POST'])
+@auth_required()
+def support():
+    form = SupportForm()
+    
+    url = get_url(form)
+    
+    if form.validate_on_submit():
+        # Find or create the support user
+        support_user = User.query.filter_by(email=cv('SUPPORT_EMAIL')).first()
+        if not support_user:
+            # Create support user if it doesn't exist
+            support_user = User(
+                email=cv('SUPPORT_EMAIL'),
+                first_name='Support',
+                last_name='Team',
+                active=True
+            )
+            db.session.add(support_user)
+            db.session.commit()
+        
+        # Send email to support
+        msg = SendEmail(
+            envelop_to=[support_user],
+            envelop_from=current_user,
+            body=f"""
+            <p><strong>Support Request from {current_user.fullname} ({current_user.email})</strong></p>
+            <hr>
+            <p><strong>Subject:</strong> {form.subject.data}</p>
+            <p><strong>Message:</strong></p>
+            <p>{form.body.data}</p>
+            """,
+            subject=f"Support Request: {form.subject.data}",
+            taglist=['support', 'email']
+        )
+        msg.send()
+        
+        # Also send a copy to the user for their records
+        confirmation_msg = SendEmail(
+            envelop_to=[current_user],
+            envelop_from=support_user,
+            body=f"""
+            <p>Thank you for contacting support. We have received your message and will respond as soon as possible.</p>
+            <hr>
+            <p><strong>Your message:</strong></p>
+            <p><strong>Subject:</strong> {form.subject.data}</p>
+            <p>{form.body.data}</p>
+            """,
+            subject=f"Support Request Received: {form.subject.data}",
+            taglist=['support', 'email']
+        )
+        confirmation_msg.send()
+        
+        flash(_("Your message has been sent to support. You will receive a response soon."), 'success')
+        return redirect(url_for('home_bp.home'))
+    
+    return render_template("user/support.html", form=form)
+
+
+@user_bp.route('/support-public', methods=['GET', 'POST'])
+def support_public():
+    """Support form for non-authenticated users"""
+    form = PublicSupportForm()
+    
+    url = get_url(form)
+    
+    if form.validate_on_submit():
+        # Find or create the support user
+        support_user = User.query.filter_by(email=cv('SUPPORT_EMAIL')).first()
+        if not support_user:
+            # Create support user if it doesn't exist
+            support_user = User(
+                email=cv('SUPPORT_EMAIL'),
+                first_name='Support',
+                last_name='Team',
+                active=True
+            )
+            db.session.add(support_user)
+            db.session.commit()
+        
+        # Create or find the sender user
+        sender_user = User.query.filter_by(email=form.email.data).first()
+        if not sender_user:
+            # Create a temporary user for tracking purposes
+            sender_user = User(
+                email=form.email.data,
+                first_name=form.name.data.split()[0] if form.name.data else 'Guest',
+                last_name=' '.join(form.name.data.split()[1:]) if form.name.data and len(form.name.data.split()) > 1 else 'User',
+                active=False  # Not an active user, just for message tracking
+            )
+            db.session.add(sender_user)
+            db.session.commit()
+        
+        # Send email to support
+        msg = SendEmail(
+            envelop_to=[support_user],
+            envelop_from=sender_user,
+            body=f"""
+            <p><strong>Support Request from {form.name.data} ({form.email.data})</strong></p>
+            <p><em>Note: This is from a non-authenticated user</em></p>
+            <hr>
+            <p><strong>Subject:</strong> {form.subject.data}</p>
+            <p><strong>Message:</strong></p>
+            <p>{form.body.data}</p>
+            """,
+            subject=f"Support Request: {form.subject.data}",
+            taglist=['support', 'email', 'public']
+        )
+        msg.send()
+        
+        # Send confirmation to the user
+        confirmation_msg = SendEmail(
+            envelop_to=[sender_user],
+            envelop_from=support_user,
+            body=f"""
+            <p>Thank you for contacting support. We have received your message and will respond to {form.email.data} as soon as possible.</p>
+            <hr>
+            <p><strong>Your message:</strong></p>
+            <p><strong>Subject:</strong> {form.subject.data}</p>
+            <p>{form.body.data}</p>
+            """,
+            subject=f"Support Request Received: {form.subject.data}",
+            taglist=['support', 'email', 'public']
+        )
+        confirmation_msg.send()
+        
+        flash(_("Your message has been sent to support. You will receive a response at the email address provided."), 'success')
+        return redirect(url_for('home_bp.home'))
+    
+    return render_template("user/support_public.html", form=form)
 
 
