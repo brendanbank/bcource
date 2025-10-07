@@ -3,7 +3,7 @@ from bcource.models import Content, Message
 from flask_mailman import EmailMessage
 from bs4 import BeautifulSoup
 from icalendar import Calendar, Event
-from bcource.helpers import db_datetime
+from bcource.helpers import db_datetime, format_phone_number
 from bcource.helpers import config_value as cv
 import datetime as dt
 import zoneinfo
@@ -124,11 +124,85 @@ class SendEmail(SystemMessage):
 class EmailAttendeeListReminder(SendEmail):
     message_tag = "attendee_list_reminder"
     
-    def email_render_body(self):
-        if self.envelop_from == security.datastore.find_user(email=cv('SYSTEM_USER')):
-            return self.body
+    def __init__(self, envelop_to=None, envelop_from=None, taglist=None, CONTENT_TAG=None, body=None, subject=None, **kwargs):
+        # Generate subject from training name
+        training = kwargs.get('training')
+        if training and not subject:
+            subject = f"Attendee List for {training.name}"
         
-        return f'{self.envelop_from} wrote:<p>{self.body}'
+        # Set a placeholder body - will be replaced in email_render_body
+        if not body:
+            body = "Attendee list placeholder"
+        
+        # Call parent constructor
+        super().__init__(envelop_to=envelop_to, envelop_from=envelop_from, taglist=taglist, 
+                        CONTENT_TAG=CONTENT_TAG, body=body, subject=subject, **kwargs)
+    
+    def email_render_body(self):
+        # Generate HTML table with student list and phone numbers
+        training = self.kwargs.get('training')
+        enrollments = self.kwargs.get('enrollments', [])
+        
+        if not training or not enrollments:
+            return "No training or enrollments found."
+        
+        # Sort enrollments by student's first name and last name
+        sorted_enrollments = sorted(enrollments, key=lambda e: (e.student.user.first_name.lower(), e.student.user.last_name.lower()))
+        
+        # Build HTML table
+        html_body = f"""
+        <h3>Attendee List for {training.name}</h3>
+        <p>Dear Trainer,</p>
+        <p>Here is the list of enrolled students for your upcoming training:</p>
+        
+        <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
+            <thead style="background-color: #f0f0f0;">
+                <tr>
+                    <th style="text-align: left; padding: 8px;">#</th>
+                    <th style="text-align: left; padding: 8px;">Name</th>
+                    <th style="text-align: left; padding: 8px;">Email</th>
+                    <th style="text-align: left; padding: 8px;">Phone Number</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+        
+        for idx, enrollment in enumerate(sorted_enrollments, 1):
+            student = enrollment.student
+            user = student.user
+            
+            # Format phone number using helper function
+            if user.phone_number:
+                phone = format_phone_number(user.phone_number, user.country)
+            else:
+                phone = 'N/A'
+            
+            # Alternate row colors
+            row_color = '#ffffff' if idx % 2 == 0 else '#f9f9f9'
+            
+            html_body += f"""
+                <tr style="background-color: {row_color};">
+                    <td style="padding: 8px;">{idx}</td>
+                    <td style="padding: 8px;">{user.fullname}</td>
+                    <td style="padding: 8px;">{user.email}</td>
+                    <td style="padding: 8px;">{phone}</td>
+                </tr>
+            """
+        
+        html_body += """
+            </tbody>
+        </table>
+        
+        <p style="margin-top: 20px;">
+            <strong>Total Enrolled:</strong> {} student(s)
+        </p>
+        
+        <p>Best regards,<br>
+        Bcourse Training System</p>
+        """.format(len(sorted_enrollments))
+        
+        self.body = html_body
+        return html_body
 
 class EmailStudentWelcomeMessage(SendEmail):
     pass
