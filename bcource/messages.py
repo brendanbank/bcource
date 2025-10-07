@@ -76,6 +76,7 @@ class SystemMessage(object):
         return self.body
         
     def send(self):
+        logging.info (f'Send message center-message ({self.CONTENT_TAG}) to {user} <{user.email}>')
         Message.create_db_message(db_session=db.session,
                                   envelop_from=self.envelop_from,
                                   envelop_to=self.envelop_to,
@@ -107,7 +108,7 @@ class SendEmail(SystemMessage):
             msg.content_subtype = "html"
             self.process_attachment(msg)
         
-            logging.info (f'Send message ({self.CONTENT_TAG}) to {user} <{user.email}>')
+            logging.info (f'Send e-mailmessage ({self.CONTENT_TAG}) to {user} <{user.email}>')
 
             msg.send()
         
