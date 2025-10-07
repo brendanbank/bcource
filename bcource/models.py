@@ -51,6 +51,9 @@ class Practice(db.Model):
     def __str__(self):
         return self.name
 
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name="{self.name}">'
+
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
@@ -104,16 +107,19 @@ class TrainingType(db.Model, GetAll):
     
     def __str__(self):
         return self.name
-    
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name="{self.name}">'
+
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
     )
-    
+
     policies: Mapped[List["Policy"]] =  relationship(
         secondary=policy_association, back_populates="trainingtypes"
     )
-    
+
     @classmethod
     def default_row(cls):
         
@@ -150,6 +156,9 @@ class TrainingEvent(db.Model):
     
     def __str__(self):
         return f'{self.start_time}/{self.location}'
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} training_id={self.training_id}>'
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
@@ -193,7 +202,7 @@ class Policy(db.Model):
         return(obj)
 
     def __repr__(self)->str:
-        return f'<{self.__class__.__name__} name = "{self.name}" practice="{self.practice}>'
+        return f'<{self.__class__.__name__} name="{self.name}" practice="{self.practice}">'
 
 
 class TrainingEnroll(db.Model):
@@ -240,7 +249,7 @@ class TrainingEnroll(db.Model):
         return self.ical_sequence
  
     def __repr__(self)->str:
-        return f'<{self.__class__.__name__} student = "{self.student}" training="{self.training} status="{self.status}">'
+        return f'<{self.__class__.__name__} student="{self.student}" training="{self.training}" status="{self.status}">'
 
 class Training(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -270,7 +279,7 @@ class Training(db.Model):
     def __init__(self):
         self._spots_enrolled = None
         self._spots_waitlist = None
-        self._spots_avalablie = None
+        self._spots_available = None
         self._spots_waitlist_count = None
         self.student_allowed = {}
         self._user_enrollment = None
@@ -279,7 +288,7 @@ class Training(db.Model):
     @orm.reconstructor
     def init_on_load(self):
         self._spots_enrolled = None
-        self._spots_avalablie = None
+        self._spots_available = None
         self._spots_waitlist = None
         self._spots_waitlist_count = None
         self.student_allowed = {}
@@ -302,26 +311,26 @@ class Training(db.Model):
                         ).order_by(TrainingEnroll.enrole_date).all()  
                                                 
         self._spots_waitlist_count = len(self._spots_waitlist)
-                
-        spots_avalablie = self.max_participants - self._spots_enrolled
-        self._spots_avalablie = spots_avalablie
-        
+
+        spots_available = self.max_participants - self._spots_enrolled
+        self._spots_available = spots_available
+
         i=0
-        while i < spots_avalablie and i < len(self._spots_waitlist):
+        while i < spots_available and i < len(self._spots_waitlist):
             enrollment = self._spots_waitlist[i]
             i += 1
             self.student_allowed[enrollment.student.id]=enrollment
-            
-        logger.info(f'Training: "{self}" _spots_enrolled: {self._spots_enrolled} _spots_waitlist: {self._spots_waitlist} _student_allowed: {self.student_allowed} _spots_avalablie: {self._spots_avalablie}'  )
+
+        logger.info(f'Training: "{self}" _spots_enrolled: {self._spots_enrolled} _spots_waitlist: {self._spots_waitlist} _student_allowed: {self.student_allowed} _spots_available: {self._spots_available}'  )
         
         
     def waitlist_enrollments_eligeble(self):
         self._cal_enrollments()
         return self.student_allowed.values()
     
-    def wait_list_spot_availabled(self, student):
+    def wait_list_spot_available(self, student):
         self._cal_enrollments()
-        
+
         if student.id in self.student_allowed.keys():
             return True
         else:
@@ -340,15 +349,18 @@ class Training(db.Model):
 
     def __str__(self):
         return self.name
-    
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name="{self.name}">'
+
     @property
     def trainer_users(self):
         users = []
         for trainer in self.trainers:
             users.append(trainer.user)
-        
+
         return(users)
-    
+
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
@@ -387,11 +399,14 @@ class Trainer(db.Model):
     
     def __str__(self):
         return f'{self.user.fullname}'
-    
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} user_id={self.user_id}>'
+
     @property
     def name(self):
         return f'{self.user.fullname}'
-    
+
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
@@ -419,6 +434,9 @@ class Location(db.Model):
 
     def __str__(self):
         return f'{self.name}, {self.street} {self.house_number}{self.house_number_extention}, {self.city}'
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name="{self.name}">'
 
     @property
     def ical_adress(self):
@@ -464,13 +482,16 @@ class StudentStatus(db.Model, GetAll):
     
     def __str__(self):
         return self.name
-    
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name="{self.name}">'
+
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
     )
 
-                                    
+
     @classmethod
     def default_row(cls):
         
@@ -493,16 +514,19 @@ class StudentType(db.Model, GetAll):
     
     def __str__(self):
         return self.name
-    
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name="{self.name}">'
+
     practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id"))
     practice: Mapped["Practice"] = relationship(backref="studenttypes")
 
-    
+
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),
         onupdate=func.now(),
     )
-    
+
 
     @classmethod
     def default_row(cls):
@@ -567,6 +591,9 @@ class Student(db.Model):
     def __str__(self):
         return self.user.fullname
 
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} user_id={self.user_id}>'
+
 class UserMessageAssociation(db.Model):
     __tablename__ = "user_message"
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"), primary_key=True)
@@ -603,7 +630,10 @@ class MessageTag(db.Model):
     
     def __str__(self):
         return self.tag
-    
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} tag="{self.tag}">'
+
     @classmethod
     def get_tag(cls,tag_name):
         tag = MessageTag().query.filter(MessageTag.tag == tag_name).first()
@@ -634,11 +664,14 @@ class Message(db.Model):
         secondary=message_tag_association, back_populates="messages", 
     )
     
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} subject="{self.shorten(self.subject)}">'
+
     @staticmethod
     def shorten(data, text_length=30):
         return (data[:text_length] + '..') if len(data) > text_length else data
-            
-    
+
+
     @classmethod
     def create_db_message(cls, db_session, envelop_from, envelop_to, subject, body, in_reply_to=None, tags=[]):
         tagobjs = []

@@ -128,7 +128,7 @@ class StudentOpenSpotReminder(Reminder):
         students_in_training = [enrollment.student.id for enrollment in self.training.trainingenrollments ]
         
         self.training._cal_enrollments()
-        if self.training._spots_avalablie > 0:
+        if self.training._spots_available > 0:
             
             self.to = Student().query.join(Practice).join(User).join(UserSettings).filter(
                 Practice.shortname==Practice.default_row().shortname,

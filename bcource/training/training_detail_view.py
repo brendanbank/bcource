@@ -121,9 +121,9 @@ def invite(training_id,student_id):
     
     url = get_url()
     
-    if not training.wait_list_spot_availabled(student):
-        flash(_('Student %(fullname)s cannot be invited for %(trainingname)s.', 
-                fullname=student.fullname, 
+    if not training.wait_list_spot_available(student):
+        flash(_('Student %(fullname)s cannot be invited for %(trainingname)s.',
+                fullname=student.fullname,
                 trainingname=training.name), "error")
         
         return redirect(url)
