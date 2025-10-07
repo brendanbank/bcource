@@ -76,7 +76,7 @@ class SystemMessage(object):
         return self.body
         
     def send(self):
-        logging.info (f'Send message center-message ({self.CONTENT_TAG}) to {user} <{user.email}>')
+        logging.info (f'Send message center-message ({self.CONTENT_TAG}) to {self.envelop_to}')
         Message.create_db_message(db_session=db.session,
                                   envelop_from=self.envelop_from,
                                   envelop_to=self.envelop_to,
