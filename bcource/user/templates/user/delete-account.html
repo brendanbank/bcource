@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> {{ _('Delete Account') }}</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('Right to be Forgotten (GDPR)') }}</h5>
+                    
+                    {% if enrollment_count > 0 %}
+                        <div class="alert alert-warning" role="alert">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-circle"></i> {{ _('Cannot Delete Account') }}</h6>
+                            <p>{{ _('You are currently enrolled in %(count)s training course(s). You must unenroll from all trainings before you can delete your account.', count=enrollment_count) }}</p>
+                            
+                            <hr>
+                            <p class="mb-0"><strong>{{ _('Active Enrollments:') }}</strong></p>
+                            <ul class="mt-2">
+                                {% for enrollment in active_enrollments %}
+                                    <li>
+                                        {{ enrollment.training.name }} - <em>{{ enrollment.status }}</em>
+                                        {% if enrollment.is_past_training %} (*){% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <p class="mt-2 mb-0"><small class="text-muted">(*) = Training has already ended. You need to wait for 3 weeks after the training ended before you can delete your account.</small></p>
+                            
+                            <div class="mt-3">
+                                <a href="{{ url_for('scheduler_bp.index') }}" class="btn btn-primary">
+                                    <i class="bi bi-calendar"></i> {{ _('View My Trainings') }}
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <a href="{{ url_for('home_bp.home') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> {{ _('Back') }}
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>{{ _('Warning:') }}</strong> {{ _('This action is permanent and cannot be undone!') }}
+                        </div>
+                        
+                        <p class="text-muted">
+                            {{ _('By deleting your account, the following data will be permanently removed:') }}
+                        </p>
+                        <ul class="text-muted">
+                            <li>{{ _('Your personal information (name, email, phone number, address)') }}</li>
+                            <li>{{ _('Your account credentials') }}</li>
+                            <li>{{ _('Your messages and communication history') }}</li>
+                            <li>{{ _('Your training history') }}</li>
+                            <li>{{ _('All other data associated with your account') }}</li>
+                        </ul>
+                        
+                        <hr>
+                        
+                        <form method="POST" action="{{ url_for('user_bp.delete_account') }}" id="deleteAccountForm">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            
+                            <div class="mb-3">
+                                <label for="confirmation" class="form-label">
+                                    <strong>{{ _('To confirm, type "DELETE" in the box below:') }}</strong>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="confirmation" 
+                                       name="confirmation" 
+                                       required
+                                       autocomplete="off"
+                                       placeholder="{{ _('Type DELETE to confirm') }}">
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('user_bp.index') }}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> {{ _('Cancel') }}
+                                </a>
+                                <button type="submit" class="btn btn-danger" id="deleteBtn" disabled>
+                                    <i class="bi bi-trash"></i> {{ _('Delete My Account Permanently') }}
+                                </button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+$(document).ready(function() {
+    // Enable/disable delete button based on confirmation input
+    $('#confirmation').on('input', function() {
+        const confirmationText = $(this).val().trim().toUpperCase();
+        const deleteBtn = $('#deleteBtn');
+        
+        if (confirmationText === 'DELETE') {
+            deleteBtn.prop('disabled', false);
+        } else {
+            deleteBtn.prop('disabled', true);
+        }
+    });
+    
+    // Add extra confirmation before form submission
+    $('#deleteAccountForm').on('submit', function(e) {
+        const confirmDelete = confirm('{{ _("Are you absolutely sure you want to delete your account? This action cannot be undone.") }}');
+        
+        if (!confirmDelete) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}
+

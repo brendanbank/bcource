@@ -376,7 +376,7 @@ class Trainer(db.Model):
     
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
     
-    user: Mapped["User"] = relationship(backref="trainers")
+    user: Mapped["User"] = relationship(backref=backref("trainers", cascade="all, delete-orphan"))
 
     practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id", ondelete="CASCADE"))
     practice: Mapped["Practice"] = relationship(backref="trainers")
@@ -526,7 +526,7 @@ class Student(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
-    user: Mapped["User"] = relationship(backref=backref("students"))
+    user: Mapped["User"] = relationship(backref=backref("students", cascade="all, delete-orphan"))
     
     practice_id: Mapped[int] = mapped_column(ForeignKey("practice.id"))
     practice: Mapped["Practice"] = relationship(backref="students")
@@ -620,8 +620,8 @@ class Message(db.Model):
     body: Mapped[str] = mapped_column((Text()), nullable=False)
     
     envelop_from_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
-    envelop_from: Mapped["User"] = relationship(backref=backref("sent_messages", uselist=False), single_parent=True)
-    envelop_to: Mapped[List["UserMessageAssociation"]] = relationship(back_populates="message")
+    envelop_from: Mapped["User"] = relationship(backref=backref("sent_messages", uselist=False, cascade="all, delete"), single_parent=True)
+    envelop_to: Mapped[List["UserMessageAssociation"]] = relationship(back_populates="message", cascade="all, delete-orphan")
     
     in_reply_to_id: Mapped[int] = mapped_column(ForeignKey("message.id"), nullable=True)
     in_reply_to: Mapped["Message"] = relationship(single_parent=True)
@@ -682,7 +682,7 @@ class User(db.Model, sqla.FsUserMixin):
     country: Mapped[str] = mapped_column(String(256), nullable=True)
     birthday: Mapped[datetime.datetime] = mapped_column(Date(), nullable=True)
     
-    messages: Mapped[List["UserMessageAssociation"]] = relationship(back_populates="user")
+    messages: Mapped[List["UserMessageAssociation"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
     @property
@@ -909,7 +909,7 @@ class UserSettings(db.Model):
     
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"), unique=True)
-    user: Mapped["User"] = relationship(backref=backref("usersettings", uselist=False), single_parent=True)
+    user: Mapped["User"] = relationship(backref=backref("usersettings", uselist=False, cascade="all, delete"), single_parent=True)
 
     # max_participants: Mapped[int] = mapped_column(Integer(), nullable=True)
     

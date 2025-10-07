@@ -100,6 +100,9 @@
                               href="{{ url_for('user_bp.message') }}">Send Message</a></li>
 #}
 						<li><hr class="dropdown-divider"></li>
+						<li><a class="dropdown-item text-danger"
+							href="{{ url_for('user_bp.delete_account') }}"><i class="bi bi-trash"></i> {{ _fsdomain("Delete Account") }}</a></li>
+						<li><hr class="dropdown-divider"></li>
 						<li><a class="dropdown-item"
 							href="{{ url_for_security('logout') }}">{{ _fsdomain("Sign
 								out") }}</a></li> {% if security.changeable -%}
