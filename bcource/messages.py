@@ -160,7 +160,6 @@ class EmailAttendeeListReminder(SendEmail):
                 <tr>
                     <th style="text-align: left; padding: 8px;">#</th>
                     <th style="text-align: left; padding: 8px;">Name</th>
-                    <th style="text-align: left; padding: 8px;">Email</th>
                     <th style="text-align: left; padding: 8px;">Phone Number</th>
                 </tr>
             </thead>
@@ -183,8 +182,7 @@ class EmailAttendeeListReminder(SendEmail):
             html_body += f"""
                 <tr style="background-color: {row_color};">
                     <td style="padding: 8px;">{idx}</td>
-                    <td style="padding: 8px;">{user.fullname}</td>
-                    <td style="padding: 8px;">{user.email}</td>
+                    <td style="padding: 8px 28px 8px 8px;">{user.fullname}</td>
                     <td style="padding: 8px;">{phone}</td>
                 </tr>
             """
