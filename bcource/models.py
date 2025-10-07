@@ -143,8 +143,8 @@ class TrainingEvent(db.Model):
     training_id: Mapped[int] = mapped_column(ForeignKey("training.id"), nullable=True)
 
     location_id: Mapped[int] = mapped_column(ForeignKey("location.id"))
-    
-    location: Mapped["Location"] = relationship(backref="locations")
+
+    location: Mapped["Location"] = relationship(backref="trainingevents")
 
 
     
