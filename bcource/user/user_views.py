@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for, jsonify, current_app
 from flask_babel import _
-from flask_security import current_user
-from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag, Training
+from flask_security import current_user, logout_user
+from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag, Training, TrainingEnroll, Student
 from flask import current_app as app
 from flask_security import auth_required
 from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform, SupportForm, PublicSupportForm
@@ -500,5 +500,108 @@ def support_public():
         return redirect(url_for('home_bp.home'))
     
     return render_template("user/support_public.html", form=form)
+
+
+@user_bp.route('/delete-account', methods=['GET', 'POST'])
+@auth_required()
+def delete_account():
+    """Allow user to delete their account (GDPR Right to be Forgotten)"""
+    
+    # Check if user has any active enrollments in trainings
+    active_enrollments = TrainingEnroll.query.join(Student).filter(
+        Student.user_id == current_user.id
+    ).all()
+    
+    # Add flag to indicate if training has ended (for display purposes)
+    current_time = datetime.now(timezone.utc)
+    for enrollment in active_enrollments:
+        if enrollment.training.trainingevents:
+            last_event = enrollment.training.trainingevents[-1]
+            # Handle both timezone-aware and naive datetimes
+            if last_event.end_time.tzinfo is None:
+                # If naive, assume UTC
+                enrollment.is_past_training = last_event.end_time.replace(tzinfo=timezone.utc) < current_time
+            else:
+                enrollment.is_past_training = last_event.end_time < current_time
+        else:
+            enrollment.is_past_training = False
+    
+    if request.method == 'POST':
+        # Check again to ensure no enrollments exist
+        if active_enrollments:
+            flash(_("You cannot delete your account while you are enrolled in training courses. Please unenroll from all trainings first."), 'error')
+            return redirect(url_for('user_bp.delete_account'))
+        
+        # Get confirmation token from form
+        confirmation = request.form.get('confirmation', '').strip().upper()
+        
+        if confirmation != 'DELETE':
+            flash(_("Please type 'DELETE' to confirm account deletion."), 'error')
+            return redirect(url_for('user_bp.delete_account'))
+        
+        # Store user info for logging before deletion
+        user_email = current_user.email
+        user_id = current_user.id
+        user_fullname = current_user.fullname
+        
+        try:
+            # Log the deletion request
+            app.logger.info(f"User account deletion requested: ID={user_id}, Email={user_email}")
+            
+            # Send notification to support before deleting
+            support_email = cv('SUPPORT_EMAIL')
+            support_user = User.query.filter_by(email=support_email).first()
+            if not support_user:
+                # Create support user if it doesn't exist
+                support_user = User(
+                    email=support_email,
+                    first_name='Support',
+                    last_name='Team',
+                    active=True
+                )
+                db.session.add(support_user)
+                db.session.commit()
+            
+            # Send notification email to support
+            notification_msg = SendEmail(
+                envelop_to=[support_user],
+                envelop_from=current_user,
+                body=f"""
+                <p><strong>User Account Deletion Notification</strong></p>
+                <hr>
+                <p>A user has deleted their account from the system.</p>
+                <p><strong>Name:</strong> {user_fullname}</p>
+                <p><strong>Email:</strong> {user_email}</p>
+                <p><strong>User ID:</strong> {user_id}</p>
+                <p><strong>Deletion Time:</strong> {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
+                """,
+                subject=f"Account Deletion: {user_fullname}",
+                taglist=['account-deletion', 'notification']
+            )
+            notification_msg.send()
+            
+            # Delete the user (cascade will handle related records)
+            user_to_delete = User.query.get(user_id)
+            
+            # Logout the user first
+            logout_user()
+            
+            # Delete the user account
+            db.session.delete(user_to_delete)
+            db.session.commit()
+            
+            flash(_("Your account has been successfully deleted. We're sorry to see you go."), 'success')
+            return redirect(url_for('home_bp.home'))
+            
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error deleting user account: {str(e)}")
+            flash(_("An error occurred while deleting your account. Please contact support."), 'error')
+            return redirect(url_for('user_bp.delete_account'))
+    
+    # GET request - show confirmation page
+    return render_template("user/delete-account.html", 
+                          active_enrollments=active_enrollments,
+                          enrollment_count=len(active_enrollments))
 
 
