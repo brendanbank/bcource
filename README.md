@@ -31,6 +31,43 @@ cd test
   - Job creation and scheduling
   - Task execution
 
+- **test_messages.py** - Tests for the messaging system (26 tests)
+  - SystemMessage base functionality
+  - SendEmail email delivery
+  - HTML sanitization and rendering
+  - iCalendar attachment generation
+  - Attendee list email generation
+  - Email templates for enrollment, waitlist, and cancellations
+
+### Test Strategies
+
+- **[WAITLIST_TEST_STRATEGY.md](test/WAITLIST_TEST_STRATEGY.md)** - Comprehensive functional test strategy for waitlist functionality
+  - 15 functional test scenarios with detailed setup and assertions
+  - 3 integration test scenarios
+  - 6 edge cases and error scenarios
+  - 3 performance test scenarios
+  - Complete test data requirements and fixtures
+  - Execution plan and success criteria
+
+## Documentation
+
+### Automation Guides
+
+- **[WAITLIST_QUICK_START.md](docs/WAITLIST_QUICK_START.md)** - Quick start guide (setup in 5 minutes)
+  - Essential setup commands
+  - Common operations
+  - Quick troubleshooting
+  - Configuration examples
+  - Reference table
+
+- **[WAITLIST_AUTOMATION_GUIDE.md](docs/WAITLIST_AUTOMATION_GUIDE.md)** - Complete automation guide
+  - How the AutomaticWaitList task works
+  - Configuration via database and Flask-Admin
+  - Testing and monitoring automation jobs
+  - Troubleshooting common issues
+  - Performance and scaling considerations
+  - Security best practices
+
 ## Database Setup
 
 ### Postal Code Database
