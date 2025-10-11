@@ -4,7 +4,6 @@ from bcource.models import User, Role, Permission, Content
 from flask_security import current_user, hash_password
 from wtforms.fields import PasswordField
 from flask import current_app, url_for, abort, redirect, request
-from flask_security import SmsSenderBaseClass
 from flask_admin.menu import MenuLink
 import uuid
 from flask_security import naive_utcnow

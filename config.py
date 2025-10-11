@@ -80,10 +80,25 @@ class Config:
     SECURITY_RECOVERABLE = True
     SECURITY_TWO_FACTOR = True
     SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator']
+#    SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator', 'sms']
     SECURITY_TWO_FACTOR_MAIL_VALIDITY = 600
     SECURITY_TOTP_SECRETS = {1: environ.get("SECURITY_TOTP_SECRETS")}
     SECURITY_TOTP_ISSUER = environ.get("SECURITY_TOTP_ISSUER")
     SECURITY_TWO_FACTOR_RESCUE_EMAIL = False
+    SECURITY_PHONE_REGION_DEFAULT = "NL"  # Default region for phone validation
+    SECURITY_SMS_SERVICE = "aws_sns"  # Use our custom AWS SNS SMS sender
+    SECURITY_TWO_FACTOR_ALWAYS_VALIDATE = False  # Don't require phone number if already set
+
+    # AWS SNS Configuration for SMS
+    AWS_REGION = environ.get("AWS_REGION", "eu-central-1")
+    AWS_ACCESS_KEY_ID = environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = environ.get("AWS_SECRET_ACCESS_KEY")
+    AWS_SNS_SENDER_ID = environ.get("AWS_SNS_SENDER_ID", "BCOURSE")
+    
+    # SMS Rate Limiting (prevent abuse)
+    SMS_RATE_LIMIT_PER_HOUR = int(environ.get("SMS_RATE_LIMIT_PER_HOUR", "5"))  # Max SMS per number per hour
+    SMS_RATE_LIMIT_PER_DAY = int(environ.get("SMS_RATE_LIMIT_PER_DAY", "10"))  # Max SMS per number per day
+    SMS_COOLDOWN_SECONDS = int(environ.get("SMS_COOLDOWN_SECONDS", "60"))  # Min seconds between SMS
 
     MAIL_SERVER = environ.get('MAIL_SERVER')
     MAIL_PORT = environ.get('MAIL_PORT')

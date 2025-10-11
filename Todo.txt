@@ -1,18 +1,2 @@
-1st
-
-* Workflow
-* Bio naar Training Type
-
-2nd
-
-* Webauth
+Nice to have
 * Sms
-* Strong Passwords
-* sendgrid email
-
-
-
-+ Role based Access rework
-+ Navigation rework
-+ Rework alert messages
-+ CDN Editor
