@@ -29,6 +29,7 @@ flask-apscheduler = "*"
 jsonschema = "*"
 qrcode = "*"
 flask-admin = "*"
+boto3 = "*"
 
 [dev-packages]
 

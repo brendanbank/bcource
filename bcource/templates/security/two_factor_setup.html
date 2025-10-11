@@ -46,7 +46,7 @@
       {% if primary_method != "none" %}
           {#{{ render_field_with_errors(subfield) }}#}
                <div class="col-lg-12" id="setup-0-ctr">
-                    <input class="form-control-item" id="setup-0" name="setup" type="checkbox" checked value="disable">
+                    <input class="form-control-item" id="setup-0" name="setup" type="checkbox" value="disable">
                  <label for="colFormLabel" class="col-form-label"><label for="setup-0">Disable two-factor authentication</label> </label>
                  </div>
       {% endif %}
@@ -71,7 +71,16 @@
     
     <div class="fs-div">
       {% if "sms" in choices %}
-        {{ render_field_with_errors(two_factor_setup_form.phone) }}
+        {% if current_user.phone_number %}
+          {# User already has a phone number - copy it to tf_phone_number field #}
+          <input type="hidden" name="phone" value="{{ current_user.phone_number }}">
+        {% elif current_user.tf_phone_number %}
+          {# User has tf_phone_number but not phone_number - keep it #}
+          <input type="hidden" name="phone" value="{{ current_user.tf_phone_number }}">
+        {% else %}
+          {# User doesn't have a phone number - show the input field #}
+          {{ render_field_with_errors(two_factor_setup_form.phone) }}
+        {% endif %}
       {% endif %}
     </div>
     <div class="fs-gap">
@@ -101,7 +110,13 @@
     {# Hide this when first setting up #}
     {# This is the fill in code part #}
     <hr class="fs-gap">
-    <div class="fs-important fw-bold text-center">{{ _fsdomain("An code was sent to your email address") }}</div>
+    {% if chosen_method == "sms" %}
+    <div class="fs-important fw-bold text-center">{{ _fsdomain("A code was sent to your phone number via SMS") }}</div>
+    {% elif chosen_method == "email" %}
+    <div class="fs-important fw-bold text-center">{{ _fsdomain("A code was sent to your email address") }}</div>
+    {% else %}
+    <div class="fs-important fw-bold text-center">{{ _fsdomain("A code was generated") }}</div>
+    {% endif %}
     <div class="fs-important fw-bold text-center">{{ _fsdomain("Enter this code to complete setup") }}</div><br>
     {% if changing %}
       {% set faction = url_for_security('two_factor_setup_validate', token=state_token) %}
