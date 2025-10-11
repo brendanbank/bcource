@@ -700,8 +700,9 @@ class Message(db.Model):
         return(message)
         
 class User(db.Model, sqla.FsUserMixin):
-    
+
     phone_number: Mapped[str] = mapped_column(String(32), unique=True, nullable=True)
+    tf_phone_number: Mapped[str] = mapped_column(String(32), nullable=True)  # Separate field for Flask-Security 2FA
     first_name: Mapped[str] = mapped_column(String(128), nullable=True)
     last_name: Mapped[str] = mapped_column(String(128), nullable=True)
     street: Mapped[str] = mapped_column(String(256), nullable=True)
@@ -716,7 +717,6 @@ class User(db.Model, sqla.FsUserMixin):
     birthday: Mapped[datetime.datetime] = mapped_column(Date(), nullable=True)
     
     messages: Mapped[List["UserMessageAssociation"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-
 
     @property
     def name(self):

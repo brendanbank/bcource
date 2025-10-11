@@ -101,8 +101,40 @@ def create_app():
     
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
 
-    security.init_app(app, user_datastore)  
-        
+    # Configure SMS sending for two-factor authentication BEFORE init_app
+    from bcource import sms_util
+    from bcource.sms_util import AwsSnsSender
+    from flask_security import SmsSenderFactory
+
+    # Register AWS SNS sender with Flask-Security
+    SmsSenderFactory.senders['aws_sns'] = AwsSnsSender
+
+    class CustomPhoneUtil:
+        """Custom phone utility for Flask-Security phone number validation"""
+
+        def __init__(self, app):
+            self.app = app
+
+        def validate_phone_number(self, phone_number):
+            """
+            Validate phone number format.
+            Called by Flask-Security during form validation.
+            Returns error message if invalid, None if valid.
+            """
+            is_valid, formatted, error = sms_util.validate_phone_number(phone_number)
+            return None if is_valid else error
+
+        def get_canonical_phone(self, phone_number):
+            """
+            Normalize phone number to E.164 format.
+            Called by Flask-Security before storing/comparing phone numbers.
+            """
+            is_valid, formatted, error = sms_util.validate_phone_number(phone_number)
+            return formatted if is_valid else phone_number
+
+    # Now initialize Flask-Security with phone utility
+    security.init_app(app, user_datastore, phone_util_cls=CustomPhoneUtil)
+
     with app.app_context():
         
         import bcource.commands
