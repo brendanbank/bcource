@@ -51,9 +51,19 @@
                  </div>
       {% endif %}
       {% if primary_method == "none" %}
-          {# {{ render_field_with_errors(subfield) }} #}
-                   <div class="text-center h6"><br>Enable two factor authentication.</div>
-          <input class="form-control" id="setup-1" name="setup" type="hidden" value="email">
+          <div class="text-center h6"><br>Enable two factor authentication.</div>
+          <div class="fs-div">
+            {% for choice in choices %}
+              {% if choice != "delete" %}
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="setup" id="setup-{{ loop.index }}" value="{{ choice }}" {% if loop.first %}checked{% endif %}>
+                  <label class="form-check-label" for="setup-{{ loop.index }}">
+                    {{ _fsdomain(choice|title) }}
+                  </label>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
       {% endif %}
 
     {# {% endfor %} #}
