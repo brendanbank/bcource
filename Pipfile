@@ -27,6 +27,8 @@ flask-mobility = "*"
 nh3 = "*"
 flask-apscheduler = "*"
 jsonschema = "*"
+qrcode = "*"
+flask-admin = "*"
 
 [dev-packages]
 
