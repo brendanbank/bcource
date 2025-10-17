@@ -109,7 +109,7 @@ def send_sms(phone_number, message):
         aws_region = current_app.config.get('AWS_REGION', 'us-east-1')
         aws_access_key = current_app.config.get('AWS_ACCESS_KEY_ID')
         aws_secret_key = current_app.config.get('AWS_SECRET_ACCESS_KEY')
-        sender_id = current_app.config.get('AWS_SNS_SENDER_ID', 'BCourse')
+        sender_id = current_app.config.get('AWS_SNS_SENDER_ID', 'BCOURSE')
 
         if not aws_access_key or not aws_secret_key:
             logger.error("AWS credentials not configured")
@@ -141,11 +141,20 @@ def send_sms(phone_number, message):
             Message=message,
             MessageAttributes=message_attributes
         )
-        
+
+        # Log the MessageId for tracking
+        message_id = response.get('MessageId', 'unknown')
+        logger.info(f"[SMS] SNS accepted message {message_id} for {phone_number}")
+
+        # Note: SNS returns 200 OK even if delivery will fail due to quota
+        # Check CloudWatch logs at: /aws/sns/<region>/<account-id>/DirectPublish
+        # for actual delivery status
+
         # Record successful attempt for rate limiting
         record_sms_attempt(phone_number)
-        
-        logger.info(f"[SMS] ✓ SMS sent successfully to {phone_number}")
+
+        logger.info(f"[SMS] SMS queued successfully to {phone_number} (MessageId: {message_id})")
+        logger.warning(f"[SMS] If delivery fails, check CloudWatch logs for MessageId: {message_id}")
         return True, None
 
     except ClientError as e:
