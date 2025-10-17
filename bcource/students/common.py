@@ -5,6 +5,7 @@ from bcource.models import Training, TrainingEnroll, TrainingEvent, Student, Pra
 from sqlalchemy import and_
 from bcource import db
 import bcource.messages as system_msg
+from bcource.sms_util import send_sms
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
 from bcource.helpers import add_url_argument
@@ -35,13 +36,24 @@ def deinvite_from_waitlist(enrollment: TrainingEnroll):
 
 
 def invite_from_waitlist(enrollment: TrainingEnroll):
-    
+
     enrollment.status="waitlist-invited"
     enrollment.invite_date = datetime.utcnow()
-    
-    system_msg.EmailStudentEnrolledInTrainingInvited(envelop_to=enrollment.student.user, 
+
+    system_msg.EmailStudentEnrolledInTrainingInvited(envelop_to=enrollment.student.user,
                                                   enrollment=enrollment).send()
-    
+
+    # Send SMS notification if user has a phone number
+    if enrollment.student.user.phone_number:
+        # Remove unicode characters to avoid SMS length limitations (70 chars for unicode vs 160 for ASCII)
+        training_name_ascii = enrollment.training.name.encode('ascii', 'ignore').decode('ascii')
+        sms_message = f"You have been invited from the waitlist for training: {training_name_ascii}. Please check your email for details."
+        success, error = send_sms(enrollment.student.user.phone_number, sms_message)
+        if success:
+            logger.info(f'SMS sent to {enrollment.student.user.fullname} for waitlist invitation')
+        else:
+            logger.error(f'Failed to send SMS to {enrollment.student.user.fullname}: {error}')
+
     # Notify trainers that a user has been invited from the waitlist
     system_msg.SystemMessage(
         envelop_to=enrollment.training.trainer_users,
