@@ -95,11 +95,19 @@ class SendEmail(SystemMessage):
 
         
         envelop_from_system = security.datastore.find_user(email=cv('SYSTEM_USER'))
-        email_from = f'{envelop_from_system.fullname} <{envelop_from_system.email}>'
+        # If system user has no name, fullname returns email - avoid duplicate email format
+        if envelop_from_system.fullname == envelop_from_system.email:
+            email_from = envelop_from_system.email
+        else:
+            email_from = f'{envelop_from_system.fullname} <{envelop_from_system.email}>'
         
         for user in self.envelop_to:
-            email_str = f'{user.fullname} <{user.email}>'
-            msg = EmailMessage(subject=self.render_subject(), 
+            # If user has no name, fullname returns email - avoid duplicate email format
+            if user.fullname == user.email:
+                email_str = user.email
+            else:
+                email_str = f'{user.fullname} <{user.email}>'
+            msg = EmailMessage(subject=self.render_subject(),
                                body=self.email_render_body(),
                                from_email=email_from,
                                to=[email_str]
