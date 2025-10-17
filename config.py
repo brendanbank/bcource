@@ -79,8 +79,8 @@ class Config:
     SECURITY_PASSWORD_COMPLEXITY_CHECKER = True
     SECURITY_RECOVERABLE = True
     SECURITY_TWO_FACTOR = True
-    SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator']
-#    SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator', 'sms']
+    # SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator']
+    SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator', 'sms']
     SECURITY_TWO_FACTOR_MAIL_VALIDITY = 600
     SECURITY_TOTP_SECRETS = {1: environ.get("SECURITY_TOTP_SECRETS")}
     SECURITY_TOTP_ISSUER = environ.get("SECURITY_TOTP_ISSUER")
