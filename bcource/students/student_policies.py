@@ -12,7 +12,7 @@ import bisect
 
 BOOKWINDOW_ONE_WEEK = timedelta(days=7)
 BOOKWINDOW_24_HOURS = timedelta(days=1)
-BOOKWINDOW_FOUR_WEEKS = timedelta(days=28)
+BOOKWINDOW_FOUR_WEEKS = timedelta(days=27, hours=22)
 MAX_BOOKINGS = 3 # max + 1!!!
 
 BOOK_WINDOW_VIOLATION_TXT = _l("You cannot book <strong>%(trainingname)s</strong> as you can only book 2 trainings in a %(time_window_duration)s day period!")
