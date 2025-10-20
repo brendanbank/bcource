@@ -101,7 +101,7 @@
                                                   {{_("Max participants")}}: {{ training.max_participants }}, 
                                                   {{_("Enrolled")}}: {{training._spots_enrolled }}, {{_("Wait list")}}: 
                                                   {%- if training._spots_enrolled >= training.max_participants %}
-                                                       <span class="text-danger fw-bold">{{ training._spots_enrolled - training.max_participants}} </span>
+                                                       <span class="text-warning fw-bold">{{ training._spots_waitlist_count}} </span>
                                                    {% else %}
                                                        <span class="text-success">0</span>
                                                    {%- endif -%}
