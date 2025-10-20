@@ -108,11 +108,12 @@ def enroll_common(training, user):
     
     # Check if training has already started
     time_now = datetime.now(tz=pytz.timezone('UTC'))
-    q = Training().query.join(TrainingEnroll).join(TrainingEvent).filter(
-        and_(~Training.trainingevents.any(TrainingEvent.start_time < time_now),
-             Training.id == training.id)).first()
-    if not q:
-        flash(_("You cannot enroll %(fullname)s in this training. %(trainingname)s has already started.", 
+    # Check if any event for this training has already started
+    has_started = db.session.query(TrainingEvent).filter(
+        and_(TrainingEvent.training_id == training.id,
+             TrainingEvent.start_time < time_now)).first() is not None
+    if has_started:
+        flash(_("You cannot enroll %(fullname)s in this training. %(trainingname)s has already started.",
                 fullname=user.fullname, trainingname=training.name), 'error')
         return False
     
@@ -183,12 +184,12 @@ def deroll_common(training, user, admin=False):
         return False
 
     time_now = datetime.now(tz=pytz.timezone('UTC'))
-
-    q = Training().query.join(TrainingEnroll).join(TrainingEvent).filter(
-        and_(~Training.trainingevents.any(TrainingEvent.start_time < time_now),
-             Training.id == training.id)).first()
-    if not q:
-        flash(_("You cannot deroll %(fullname)s from this training. %(trainingname)s has already started: ", 
+    # Check if any event for this training has already started
+    has_started = db.session.query(TrainingEvent).filter(
+        and_(TrainingEvent.training_id == training.id,
+             TrainingEvent.start_time < time_now)).first() is not None
+    if has_started:
+        flash(_("You cannot deroll %(fullname)s from this training. %(trainingname)s has already started: ",
                 fullname=user.fullname, trainingname=training.name), 'error')
         return False
     
