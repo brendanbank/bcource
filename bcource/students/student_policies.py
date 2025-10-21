@@ -8,6 +8,7 @@ from bcource import db
 from os import environ
 from bcource.policy import PolicyBase, ValidationRule
 from datetime import datetime, timedelta
+import pytz
 import bisect
 
 BOOKWINDOW_ONE_WEEK = timedelta(days=7)
@@ -72,11 +73,19 @@ class Cancelation(ValidationRule):
         if not training.active:
             self.status = True
             return self.status
-        
-        if (datetime.utcnow() + BOOKWINDOW_24_HOURS) > training.trainingevents[0].start_time:
-            print ("Here")
+
+        time_now = datetime.now(tz=pytz.timezone('UTC'))
+        training_start = training.trainingevents[0].start_time
+
+        # Database times are in UTC but may be naive, so ensure timezone-aware for comparison
+        if training_start.tzinfo is None:
+            training_start = pytz.timezone('UTC').localize(training_start)
+
+        if (time_now + BOOKWINDOW_24_HOURS) > training_start:
+            self.status = False
             return False
         else:
+            self.status = True
             return True
 
 
