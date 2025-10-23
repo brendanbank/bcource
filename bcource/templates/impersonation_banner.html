@@ -1,0 +1,48 @@
+<!-- IMPERSONATION BANNER: Checking if impersonating... -->
+{% if is_impersonating() %}
+<!-- IMPERSONATION DETECTED! Showing banner -->
+<style>
+    /* Push down the navbar when impersonation banner is visible */
+    body.impersonating .navbar.fixed-top {
+        top: 80px !important;
+    }
+    body.impersonating {
+        padding-top: 136px !important; /* navbar height (56px) + banner height (80px) */
+    }
+    .impersonation-banner {
+        height: 80px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+</style>
+<script>
+    // Add class to body to enable impersonation styles
+    document.body.classList.add('impersonating');
+</script>
+<div class="alert alert-warning alert-dismissible fade show mb-0 border-0 rounded-0 impersonation-banner" role="alert"
+     style="position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background-color: #ff6b6b; color: white; border-bottom: 3px solid #c92a2a;">
+    <div class="container d-flex align-items-center justify-content-between h-100">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-person-fill-exclamation fs-4 me-3"></i>
+            <div>
+                <strong>{% trans %}Impersonation Mode Active{% endtrans %}</strong>
+                <br>
+                <small>
+                    {% trans %}You are viewing as{% endtrans %}: <strong>{{ get_impersonated_user().fullname }}</strong> ({{ get_impersonated_user().email }})
+                    <span class="mx-2">|</span>
+                    {% trans %}Original admin{% endtrans %}: {{ get_original_user().fullname }}
+                </small>
+            </div>
+        </div>
+        <div>
+            <form method="POST" action="{{ url_for('user_bp.stop_impersonate') }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn btn-light btn-sm">
+                    <i class="bi bi-box-arrow-left me-1"></i>
+                    {% trans %}Exit Impersonation{% endtrans %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
