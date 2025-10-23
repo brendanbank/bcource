@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {% trans %}Confirm User Impersonation{% endtrans %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning" role="alert">
+                    <strong>{% trans %}Warning:{% endtrans %}</strong>
+                    {% trans %}You are about to view the application as another user. This action is logged for security purposes.{% endtrans %}
+                </div>
+
+                <h5>{% trans %}Target User Details{% endtrans %}</h5>
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th style="width: 30%;">{% trans %}Name{% endtrans %}</th>
+                            <td><strong>{{ target_user.fullname }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>{% trans %}Email{% endtrans %}</th>
+                            <td>{{ target_user.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans %}User ID{% endtrans %}</th>
+                            <td>{{ target_user.id }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans %}Roles{% endtrans %}</th>
+                            <td>
+                                {% for role in target_user.roles %}
+                                    <span class="badge bg-secondary">{{ role.name }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{% trans %}Status{% endtrans %}</th>
+                            <td>
+                                {% if target_user.active %}
+                                    <span class="badge bg-success">{% trans %}Active{% endtrans %}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{% trans %}Inactive{% endtrans %}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-info mt-3">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-info-circle me-2"></i>
+                        {% trans %}What will happen:{% endtrans %}
+                    </h6>
+                    <ul class="mb-0">
+                        <li>{% trans %}You will see the application exactly as this user sees it{% endtrans %}</li>
+                        <li>{% trans %}Your admin session will be preserved in the background{% endtrans %}</li>
+                        <li>{% trans %}A red warning banner will appear at the top of every page{% endtrans %}</li>
+                        <li>{% trans %}All actions will be logged with your admin credentials{% endtrans %}</li>
+                        <li>{% trans %}You can exit impersonation at any time by clicking "Exit Impersonation"{% endtrans %}</li>
+                    </ul>
+                </div>
+
+                <form method="POST" action="{{ url_for('user_bp.impersonate_user', user_id=target_user.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            {% trans %}Cancel{% endtrans %}
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-person-fill-gear me-1"></i>
+                            {% trans %}Confirm & Start Impersonation{% endtrans %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-3 text-muted small">
+            <i class="bi bi-shield-lock me-1"></i>
+            {% trans %}This action requires administrator privileges and two-factor authentication.{% endtrans %}
+        </div>
+    </div>
+</div>
+{% endblock %}

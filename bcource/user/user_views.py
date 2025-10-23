@@ -6,7 +6,9 @@ from flask import current_app as app
 from flask_security import auth_required
 from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform, SupportForm, PublicSupportForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from bcource.helpers import get_url, message_date, config_value as cv
+from bcource.helpers import (get_url, message_date, config_value as cv,
+                             is_impersonating, get_original_user, get_impersonated_user,
+                             start_impersonation, stop_impersonation, can_impersonate)
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
 from bcource import db, menu_structure
 from setuptools._vendor.jaraco.functools import except_
@@ -600,8 +602,73 @@ def delete_account():
             return redirect(url_for('user_bp.delete_account'))
     
     # GET request - show confirmation page
-    return render_template("user/delete-account.html", 
+    return render_template("user/delete-account.html",
                           active_enrollments=active_enrollments,
                           enrollment_count=len(active_enrollments))
+
+
+# ============================================================================
+# User Impersonation Routes
+# ============================================================================
+
+@user_bp.route('/impersonate/<int:user_id>', methods=['GET', 'POST'])
+@auth_required()
+def impersonate_user(user_id):
+    """Start impersonating a user (admin only)."""
+
+    # Security check: only admins with 2FA can impersonate
+    super_user_role = cv('SUPER_USER_ROLE')
+    if not current_user.has_role(super_user_role):
+        flash(_("You do not have permission to impersonate users."), 'error')
+        abort(403)
+
+    if not current_user.tf_primary_method:
+        flash(_("Two-factor authentication is required to impersonate users."), 'error')
+        return redirect(url_for('security.two_factor_setup'))
+
+    # For GET requests, show confirmation page
+    # For POST requests, perform the impersonation
+    if request.method == 'GET':
+        # Get the target user for confirmation
+        target_user = User.query.get(user_id)
+        if not target_user:
+            flash(_("User not found."), 'error')
+            return redirect(request.referrer or url_for('admin.index'))
+
+        # Check if we can impersonate
+        can_impersonate_user, error_msg = can_impersonate(current_user._get_current_object(), target_user)
+        if not can_impersonate_user:
+            flash(error_msg, 'error')
+            return redirect(request.referrer or url_for('admin.index'))
+
+        # Show confirmation page
+        return render_template('user/impersonate_confirm.html', target_user=target_user)
+
+    # POST request - perform impersonation
+    success, message = start_impersonation(user_id)
+
+    if success:
+        flash(message, 'success')
+        return redirect(url_for('user_bp.index'))
+    else:
+        flash(message, 'error')
+        return redirect(request.referrer or url_for('home_bp.home'))
+
+
+@user_bp.route('/stop-impersonate', methods=['POST', 'GET'])
+@auth_required()
+def stop_impersonate():
+    """Stop impersonating and return to admin account."""
+
+    # Stop impersonation
+    success, message = stop_impersonation()
+
+    if success:
+        flash(message, 'info')
+    else:
+        flash(message, 'error')
+
+    # Redirect to admin area
+    return redirect(url_for('admin.index'))
 
 

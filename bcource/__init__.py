@@ -13,8 +13,9 @@ from flask_migrate import Migrate
 from flask_security import Security, SQLAlchemySessionUserDatastore, roles_required, current_user, hash_password
 from flask_moment import Moment
 from bcource.menus import Menu
-from bcource.helpers import (MyFsModels, admin_has_role, db_datetime, db_datetime_str, 
-                             format_phone_number, format_email, nh3_save, add_url_argument, message_date)
+from bcource.helpers import (MyFsModels, admin_has_role, db_datetime, db_datetime_str,
+                             format_phone_number, format_email, nh3_save, add_url_argument, message_date,
+                             is_impersonating, get_original_user, get_impersonated_user)
 from bcource.helpers import config_value as cv
 from flask_mobility import Mobility
 
@@ -93,6 +94,9 @@ def create_app():
     app.jinja_env.globals.update(show_mobile="d-lg-none")
     app.jinja_env.globals.update(hide_mobile="d-none d-lg-block d-xl-block d-xxl-block")
     app.jinja_env.globals.update(add_url_argument=add_url_argument)
+    app.jinja_env.globals.update(is_impersonating=is_impersonating)
+    app.jinja_env.globals.update(get_original_user=get_original_user)
+    app.jinja_env.globals.update(get_impersonated_user=get_impersonated_user)
     
     app.jinja_env.filters.update(format_phone_number=format_phone_number)
     app.jinja_env.filters.update(format_email=format_email)

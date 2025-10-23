@@ -4,3 +4,8 @@
 <a class="navbar-brand" href="/">Bcourse</a>
 {% endblock %}
 
+{% block messages %}
+{%- include 'impersonation_banner.html' %}
+{{ super() }}
+{% endblock %}
+

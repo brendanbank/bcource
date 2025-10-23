@@ -3,11 +3,14 @@ from bcource import table_admin
 from bcource.models import User, Role, Permission, Content
 from flask_security import current_user, hash_password
 from wtforms.fields import PasswordField
-from flask import current_app, url_for, abort, redirect, request
+from flask import current_app, url_for, abort, redirect, request, flash
 from flask_admin.menu import MenuLink
 import uuid
 from flask_security import naive_utcnow
 from bcource.admin.helper import AuthModelView, PhoneField, CkModelView
+from bcource.helpers import can_impersonate
+from flask_admin.actions import action
+from flask_babel import lazy_gettext as _l
 from sqlalchemy import not_, func
 
 
@@ -24,7 +27,13 @@ class UserAdmin(AuthModelView):
 
     form_columns = ["email", "first_name", "last_name", "phone_number", "active", "roles"]
     column_list = ["email", "first_name", "last_name", "phone_number", "active", "roles"]
-    
+
+    # Enable search functionality
+    column_searchable_list = ['email', 'first_name', 'last_name', 'phone_number']
+
+    # Enable filtering
+    column_filters = ['active', 'roles']
+
     column_auto_select_related = True
 
     form_overrides = {
@@ -45,10 +54,38 @@ class UserAdmin(AuthModelView):
             # ... then encrypt the new password prior to storing it in the database. If the password field is blank,
             # the existing password in the database will be retained.
             model.password = hash_password(model.password2)
-            
+
         if is_created:
             model.fs_uniquifier = uuid.uuid4().hex
             model.confirmed_at = naive_utcnow()
+
+    @action('impersonate', _l('Impersonate User'), _l('Are you sure you want to impersonate the selected user?'))
+    def action_impersonate(self, ids):
+        """Action to impersonate a user from the admin list view."""
+        try:
+            # Only allow impersonating one user at a time
+            if len(ids) > 1:
+                flash(_l('You can only impersonate one user at a time.'), 'error')
+                return
+
+            user_id = ids[0]
+            target_user = User.query.get(user_id)
+
+            if not target_user:
+                flash(_l('User not found.'), 'error')
+                return
+
+            # Check if admin can impersonate this user
+            can_impersonate_user, error_msg = can_impersonate(current_user._get_current_object(), target_user)
+            if not can_impersonate_user:
+                flash(error_msg, 'error')
+                return
+
+            # Redirect to the impersonation route
+            return redirect(url_for('user_bp.impersonate_user', user_id=user_id))
+
+        except Exception as e:
+            flash(_l('Error initiating impersonation: %(error)s', error=str(e)), 'error')
 
 class RoleAdmin(AuthModelView):
     form_columns = ["name", "permissions_items", "description"]

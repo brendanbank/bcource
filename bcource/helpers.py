@@ -1,8 +1,8 @@
 from flask_security.models.sqla import FsModels
 from sqlalchemy import ForeignKey, Table, Column
-from flask import current_app as app, flash
+from flask import current_app as app, flash, session
 from flask_admin.contrib.sqla import ModelView
-from flask_security import current_user
+from flask_security import current_user, login_user as flask_security_login_user
 from flask import url_for, current_app, request, abort, redirect
 from flask_principal import Identity, Permission, RoleNeed, identity_changed
 from collections import OrderedDict
@@ -241,3 +241,176 @@ def format_phone_number(phone_number_str, user_country_code=None):
     except phonenumbers.NumberParseException:
         # Handle cases where the number string is not parsable
         return phone_number_str# Return original if invalid
+
+
+# ============================================================================
+# User Impersonation Functions
+# ============================================================================
+
+def is_impersonating():
+    """Check if the current session is impersonating another user."""
+    return '_impersonating_user_id' in session and '_original_user_id' in session
+
+
+def get_original_user():
+    """Get the original admin user when impersonating.
+
+    Returns:
+        User object or None if not impersonating
+    """
+    if not is_impersonating():
+        return None
+
+    from bcource.models import User
+    original_user_id = session.get('_original_user_id')
+    return User.query.get(original_user_id) if original_user_id else None
+
+
+def get_impersonated_user():
+    """Get the user being impersonated.
+
+    Returns:
+        User object or None if not impersonating
+    """
+    if not is_impersonating():
+        return None
+
+    from bcource.models import User
+    impersonated_user_id = session.get('_impersonating_user_id')
+    return User.query.get(impersonated_user_id) if impersonated_user_id else None
+
+
+def can_impersonate(admin_user, target_user):
+    """Check if an admin user can impersonate a target user.
+
+    Args:
+        admin_user: The admin user attempting to impersonate
+        target_user: The user to be impersonated
+
+    Returns:
+        tuple: (bool, str) - (can_impersonate, error_message)
+    """
+    super_user_role = current_app.config['BCOURSE_SUPER_USER_ROLE']
+
+    # Must be an active admin with super user role
+    if not admin_user.is_active or not admin_user.has_role(super_user_role):
+        return False, _("Only administrators can impersonate users.")
+
+    # Must have 2FA enabled
+    if not admin_user.tf_primary_method:
+        return False, _("Two-factor authentication is required to impersonate users.")
+
+    # Cannot impersonate yourself
+    if admin_user.id == target_user.id:
+        return False, _("You cannot impersonate yourself.")
+
+    # Cannot impersonate other admins (prevent privilege escalation)
+    if target_user.has_role(super_user_role):
+        return False, _("You cannot impersonate other administrators.")
+
+    # Target user must exist and be active
+    if not target_user or not target_user.is_active:
+        return False, _("Target user does not exist or is not active.")
+
+    return True, None
+
+
+def start_impersonation(target_user_id):
+    """Start impersonating a user.
+
+    Args:
+        target_user_id: The ID of the user to impersonate
+
+    Returns:
+        tuple: (bool, str) - (success, message)
+    """
+    from bcource.models import User
+
+    # Get the target user
+    target_user = User.query.get(target_user_id)
+    if not target_user:
+        return False, _("User not found.")
+
+    # Check if we can impersonate
+    can_impersonate_user, error_msg = can_impersonate(current_user._get_current_object(), target_user)
+    if not can_impersonate_user:
+        return False, error_msg
+
+    # Check if already impersonating
+    if is_impersonating():
+        return False, _("You are already impersonating a user. Please stop impersonating first.")
+
+    # Store the original user ID BEFORE logging in as target user
+    original_user_id = current_user.id
+    original_user_email = current_user.email
+
+    # Login as the target user FIRST
+    flask_security_login_user(target_user)
+
+    # Then store the impersonation data (after login to ensure session persists)
+    session['_original_user_id'] = original_user_id
+    session['_impersonating_user_id'] = target_user_id
+    session['_impersonation_start_time'] = datetime.utcnow().isoformat()
+    session.modified = True  # Force session to be saved
+
+    # Log the impersonation
+    app.logger.warning(
+        f"IMPERSONATION STARTED: Admin {original_user_email} (ID: {original_user_id}) "
+        f"is now impersonating {target_user.email} (ID: {target_user_id})"
+    )
+
+    # Notify identity change for Flask-Principal
+    identity_changed.send(
+        current_app._get_current_object(),
+        identity=Identity(target_user_id)
+    )
+
+    return True, _("Now viewing as %(name)s", name=target_user.fullname)
+
+
+def stop_impersonation():
+    """Stop impersonating and return to the original admin user.
+
+    Returns:
+        tuple: (bool, str) - (success, message)
+    """
+    if not is_impersonating():
+        return False, _("You are not currently impersonating anyone.")
+
+    from bcource.models import User
+
+    # Get the original admin user
+    original_user_id = session.get('_original_user_id')
+    original_user = User.query.get(original_user_id)
+
+    if not original_user:
+        # Clean up session if original user not found
+        session.pop('_impersonating_user_id', None)
+        session.pop('_original_user_id', None)
+        session.pop('_impersonation_start_time', None)
+        return False, _("Original user not found. Session cleared.")
+
+    impersonated_user = get_impersonated_user()
+
+    # Log the end of impersonation
+    app.logger.warning(
+        f"IMPERSONATION STOPPED: Admin {original_user.email} (ID: {original_user_id}) "
+        f"stopped impersonating {impersonated_user.email if impersonated_user else 'unknown'} "
+        f"(started at {session.get('_impersonation_start_time', 'unknown')})"
+    )
+
+    # Clean up session
+    session.pop('_impersonating_user_id', None)
+    session.pop('_original_user_id', None)
+    session.pop('_impersonation_start_time', None)
+
+    # Login back as the original user
+    flask_security_login_user(original_user)
+
+    # Notify identity change for Flask-Principal
+    identity_changed.send(
+        current_app._get_current_object(),
+        identity=Identity(original_user_id)
+    )
+
+    return True, _("Returned to your admin account.")
