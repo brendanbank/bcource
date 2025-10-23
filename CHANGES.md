@@ -1,6 +1,237 @@
 # Changes Log
 
-## [Unreleased] - 2025-10-07
+## [Unreleased] - 2025-10-23
+
+### Added - User Impersonation Feature
+
+#### New Features
+- **Admin User Impersonation**: Administrators can now view the application from a student's perspective to provide better support and troubleshoot issues
+- **Security-First Design**:
+  - Only `db-admin` role users can impersonate
+  - Two-factor authentication (2FA) required for all impersonation
+  - Cannot impersonate other administrators (prevents privilege escalation)
+  - Cannot impersonate yourself
+  - Only active users can be impersonated
+- **Visual Warning Banner**: Prominent red banner appears at the top of every page during impersonation showing:
+  - "Impersonation Mode Active" warning
+  - User being impersonated (name and email)
+  - Original admin account information
+  - Quick "Exit Impersonation" button
+- **Confirmation Workflow**: Two-step process with detailed confirmation page showing user details before impersonation
+- **Search & Filter Integration**: Enhanced User admin list with:
+  - Search functionality (email, first name, last name, phone number)
+  - Filter by active status and roles
+- **Complete Audit Trail**: All impersonation sessions logged at WARNING level with:
+  - Admin email and ID
+  - Target user email and ID
+  - Start and stop timestamps
+  - Session duration tracking
+
+#### Files Modified
+
+##### `/bcource/helpers.py`
+- **Added impersonation helper functions**:
+  - `is_impersonating()` - Check if currently impersonating
+  - `get_original_user()` - Get the admin user
+  - `get_impersonated_user()` - Get the user being viewed
+  - `can_impersonate(admin_user, target_user)` - Security validation
+  - `start_impersonation(target_user_id)` - Begin impersonation session
+  - `stop_impersonation()` - End impersonation session
+- **Session management**: Stores `_original_user_id`, `_impersonating_user_id`, `_impersonation_start_time`
+- **Security checks**: Validates admin role, 2FA enabled, prevents admin-to-admin impersonation
+
+##### `/bcource/user/user_views.py`
+- **Added routes**:
+  - `/account/impersonate/<user_id>` (GET, POST)
+    - GET: Shows confirmation page with user details
+    - POST: Starts impersonation session
+  - `/account/stop-impersonate` (GET, POST) - Ends impersonation
+- **Security**: All routes require authentication and admin role validation
+
+##### `/bcource/admin/admin_views.py`
+- **Added Flask-Admin action**: "Impersonate User" in UserAdmin list view
+- **Enhanced UserAdmin**:
+  - `column_searchable_list`: Search by email, first name, last name, phone number
+  - `column_filters`: Filter by active status and roles
+- **Action workflow**: Select user → "With selected" dropdown → Impersonate User → Submit
+
+##### `/bcource/__init__.py`
+- **Exposed to templates**: Added `is_impersonating()`, `get_original_user()`, `get_impersonated_user()` to Jinja globals
+
+##### `/bcource/templates/impersonation_banner.html` (New File)
+- **Visual warning banner** with:
+  - Fixed positioning at top of page (z-index: 9999)
+  - Red background (#ff6b6b) for high visibility
+  - Responsive Bootstrap design
+  - User information display
+  - Exit button with CSRF protection
+  - Dynamic CSS to push navbar and content down when visible
+  - Internationalization support (Flask-Babel)
+
+##### `/bcource/templates/base.html`
+- **Included impersonation banner** after navigation
+
+##### `/bcource/templates/admin/mybase.html`
+- **Included impersonation banner** in admin interface
+
+##### `/bcource/user/templates/user/impersonate_confirm.html` (New File)
+- **Confirmation page** showing:
+  - User details (name, email, ID, roles, status)
+  - Warning about action being logged
+  - Explanation of what will happen
+  - Confirm/Cancel buttons
+  - Responsive design
+
+#### Technical Details
+
+##### Security Features
+1. **Role-Based Access Control**: Only `db-admin` role (configurable via `BCOURSE_SUPER_USER_ROLE`)
+2. **2FA Enforcement**: Administrators must have `tf_primary_method` set
+3. **Admin Protection**: `can_impersonate()` prevents admin-to-admin impersonation
+4. **Session Isolation**: Original admin session preserved in `_original_user_id`
+5. **CSRF Protection**: All forms include CSRF tokens
+6. **Audit Logging**: WARNING level logs for production visibility
+
+##### Session Management Flow
+1. **Start Impersonation**:
+   - Save original admin user ID to variables
+   - Login as target user with `flask_security_login_user()`
+   - Store impersonation flags in session after login
+   - Set `session.modified = True` to force persistence
+   - Send identity change notification to Flask-Principal
+   - Log start event
+
+2. **During Impersonation**:
+   - Session contains `_original_user_id` and `_impersonating_user_id`
+   - Banner checks `is_impersonating()` on every page load
+   - All actions performed as impersonated user
+
+3. **Stop Impersonation**:
+   - Retrieve original admin user
+   - Login back as admin with `flask_security_login_user()`
+   - Clear impersonation session keys
+   - Send identity change notification
+   - Log stop event with duration
+
+##### Banner Positioning Fix
+- **Fixed position**: Banner at `top: 0` with `z-index: 9999`
+- **Navbar adjustment**: Pushes navbar down by 80px when impersonating
+- **Body padding**: Adds 136px top padding (80px banner + 56px navbar)
+- **Dynamic CSS**: Only applies when `is_impersonating()` returns true
+
+##### Database Changes
+**None required** - Feature uses session storage only
+
+#### Configuration
+
+Uses existing configuration:
+```python
+# .env or config.py
+BCOURSE_SUPER_USER_ROLE=db-admin  # Role required to impersonate
+```
+
+#### User Experience
+
+**Admin Workflow**:
+1. Navigate to Admin → Database Admin → User
+2. Search for user by name, email, or phone
+3. Select user checkbox
+4. Choose "Impersonate User" from "With selected" dropdown
+5. Review confirmation page
+6. Click "Confirm & Start Impersonation"
+7. Red banner appears - now viewing as that user
+8. Click "Exit Impersonation" when done
+
+**Visual Indicators**:
+- Red banner always visible at top
+- Shows both impersonated user and original admin
+- One-click exit button always accessible
+
+#### API / Helper Functions
+
+**Template Functions** (Jinja):
+```jinja
+{% if is_impersonating() %}
+  Currently impersonating: {{ get_impersonated_user().fullname }}
+  Original admin: {{ get_original_user().fullname }}
+{% endif %}
+```
+
+**Python Functions**:
+```python
+from bcource.helpers import (
+    is_impersonating,
+    get_original_user,
+    get_impersonated_user,
+    can_impersonate,
+    start_impersonation,
+    stop_impersonation
+)
+```
+
+#### Testing Checklist
+- [x] Admin with db-admin role and 2FA can impersonate
+- [x] Admin without 2FA is blocked with error message
+- [x] Cannot impersonate other admins
+- [x] Cannot impersonate yourself
+- [x] Search box finds users by name, email, phone
+- [x] Filter by role and active status works
+- [x] Confirmation page shows correct user details
+- [x] Red banner appears after confirmation
+- [x] Banner shows correct impersonation details
+- [x] Banner is visible above fixed navbar
+- [x] Exit button returns to admin account
+- [x] Session persists across page navigations
+- [x] Impersonation start/stop logged correctly
+- [x] Works in both main app and admin interface
+- [x] Multiple impersonation sessions prevented
+
+#### Known Issues & Fixes Applied
+- **Issue**: Banner hidden behind fixed navbar
+  - **Fix**: Added fixed positioning with z-index 9999, dynamic CSS to push navbar down
+- **Issue**: "Method Not Allowed" error
+  - **Fix**: Changed route to accept both GET (confirmation) and POST (execute)
+- **Issue**: Double prefix error (`BCOURSE_BCOURSE_SUPER_USER_ROLE`)
+  - **Fix**: Changed `cv('BCOURSE_SUPER_USER_ROLE')` to `cv('SUPER_USER_ROLE')`
+- **Issue**: Session cleared after `login_user()`
+  - **Fix**: Store impersonation data AFTER login, set `session.modified = True`
+
+#### Security Considerations
+
+**Best Practices**:
+1. Only impersonate when necessary for support
+2. Exit impersonation immediately after resolving issue
+3. Monitor audit logs regularly
+4. Document reason for impersonation (support ticket number)
+5. Do not perform sensitive actions while impersonating
+
+**GDPR/Privacy Compliance**:
+- All impersonation sessions audited
+- Legitimate interest basis: customer support
+- Can add user notification if required by jurisdiction
+- Audit logs satisfy accountability requirements
+
+#### Future Enhancements (Not Implemented)
+1. User notification email when impersonated
+2. Reason field requirement for impersonation
+3. Auto-expire sessions after timeout
+4. Read-only impersonation mode
+5. Audit dashboard in admin interface
+6. Permission-based impersonation (not just super-admin)
+
+#### Documentation
+- **Primary**: `/IMPERSONATION.md` - Comprehensive documentation with:
+  - Quick Start Guide (5-step visual process)
+  - Security features and audit trail
+  - Detailed usage instructions
+  - Troubleshooting guide
+  - API reference
+  - Testing checklist
+- ~~**Quick Start**: `/QUICK_START_IMPERSONATION.md`~~ - Merged into main documentation
+
+---
+
+## [Previous] - 2025-10-07
 
 ### Added - Delete Account Feature (GDPR Right to be Forgotten)
 
