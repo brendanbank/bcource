@@ -2,6 +2,152 @@
 
 ## [Unreleased] - 2025-10-23
 
+### Added - SMS Two-Factor Authentication & Notifications
+
+#### New Features
+- **SMS Two-Factor Authentication via AWS SNS**: Users can now enable SMS as a two-factor authentication method
+- **Custom Phone Number Validation**: International phone number validation and normalization using phonenumbers library
+- **Separate 2FA Phone Field**: New `tf_phone_number` field in User model specifically for two-factor authentication
+- **SMS Notifications for Waitlist**: Students receive SMS notifications when invited from waitlist (in addition to email)
+- **AWS SNS Integration**: Complete integration with Amazon Simple Notification Service for SMS delivery
+- **Rate Limiting & Quota Tracking**: Built-in rate limiting and delivery tracking for SMS messages
+- **Multi-Method 2FA**: Support for email, authenticator app, and SMS (configurable)
+
+#### Files Modified
+
+##### `/bcource/sms_util.py` (New File)
+- **AWS SNS SMS Sender**: Custom sender class implementing Flask-Security's SMS sender interface
+- **Phone Number Validation**:
+  - `validate_phone_number()` - Validates and formats phone numbers to E.164 format
+  - Supports international numbers with country code detection
+  - Returns formatted number and validation status
+- **SMS Sending**:
+  - `send_sms()` - Sends SMS via AWS SNS with error handling
+  - Logs message IDs for tracking
+  - Warns about potential delivery issues
+  - Supports configurable sender ID
+- **Rate Limiting**: Built-in protection against SMS abuse
+
+##### `/bcource/__init__.py`
+- **Custom Phone Utility**: Implemented `CustomPhoneUtil` class for Flask-Security
+  - `validate_phone_number()` - Form validation integration
+  - `get_canonical_phone()` - Phone number normalization before storage
+- **SMS Sender Registration**: Registered AWS SNS sender with Flask-Security's `SmsSenderFactory`
+- **Initialization**: Phone utility passed to `security.init_app()`
+
+##### `/bcource/models.py`
+- **Added field**: `tf_phone_number` (String(32), nullable) - Separate phone number for 2FA
+- Allows users to use different phone number for authentication vs. contact
+
+##### `/bcource/templates/security/two_factor_setup.html`
+- **Radio Button Selection**: Users select preferred 2FA method (email, authenticator, SMS)
+- **Dynamic Phone Input**: Phone number field appears when SMS method selected
+- **Pre-populated Data**: Uses existing `tf_phone_number` if available
+- **Improved UX**: Clear method selection with descriptions
+
+##### `/bcource/students/common.py`
+- **Waitlist SMS Notifications**: Added SMS notification when inviting users from waitlist
+- **Dual Notification**: Sends both email and SMS (if phone number provided)
+- **Error Handling**: Graceful fallback if SMS fails
+
+##### `/config.py`
+- **AWS SNS Configuration**:
+  - `SECURITY_SMS_SERVICE` = 'aws_sns'
+  - `AWS_REGION_NAME` - AWS region for SNS
+  - `AWS_SNS_SENDER_ID` - Display name for SMS sender
+- **2FA Methods**:
+  - Initially enabled: `['email', 'authenticator', 'sms']`
+  - Later disabled SMS: `['email', 'authenticator']` (commit 90fe932)
+- **Rate Limiting**: SMS rate limit configuration
+
+##### `/requirements.txt` & `/Pipfile`
+- **Added dependencies**:
+  - `boto3` - AWS SDK for Python
+  - `botocore` - AWS core functionality
+  - `jmespath` - JSON query language (boto3 dependency)
+  - `s3transfer` - Amazon S3 transfer manager (boto3 dependency)
+  - `qrcode` - QR code generation for authenticator apps
+  - `phonenumbers` - Phone number parsing and validation
+
+##### Test Files (New)
+- `/test_sms.py` - SMS functionality testing
+- `/check_sms_quota.py` - AWS SNS quota monitoring script
+
+#### Technical Details
+
+##### AWS SNS Integration
+- Uses Amazon Simple Notification Service for reliable SMS delivery
+- Configurable via environment variables (AWS credentials, region)
+- Supports international phone numbers in E.164 format
+- Logs message IDs for delivery tracking and debugging
+
+##### Phone Number Handling
+- **Validation**: Uses Google's libphonenumber for accurate validation
+- **Normalization**: Converts all numbers to E.164 format (+CCNNNNNN)
+- **Storage**: Separate field prevents contact phone number changes from affecting 2FA
+- **Display**: Formats numbers in local or international format for display
+
+##### Two-Factor Authentication Flow
+1. User navigates to Two-Factor Setup
+2. Selects preferred method via radio buttons
+3. If SMS selected:
+   - Enters phone number
+   - Number validated and normalized
+   - Stored in `tf_phone_number` field
+4. Receives verification code via selected method
+5. Enters code to enable 2FA
+
+##### SMS Notification Flow
+1. Waitlist invitation triggered
+2. System checks for user's phone number
+3. If phone exists:
+   - Sends email notification
+   - Sends SMS notification
+   - Logs both delivery attempts
+4. If phone missing:
+   - Sends email only
+
+##### Configuration Changes
+**Initial Implementation** (Oct 11):
+```python
+SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator', 'sms']
+```
+
+**Later Disabled** (Oct 17):
+```python
+SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator']  # SMS removed
+```
+
+Reason: SMS method disabled but infrastructure remains for future re-enablement
+
+#### Security Considerations
+
+**Best Practices**:
+1. Phone numbers validated before storage
+2. Separate 2FA phone prevents accidental lockouts
+3. Rate limiting prevents SMS abuse
+4. AWS credentials stored in environment variables (not in code)
+5. Message delivery tracked via AWS SNS logs
+
+**Privacy**:
+- Phone numbers encrypted at rest (database level)
+- SMS content minimal (verification codes only)
+- No phone numbers shared with third parties except AWS SNS
+
+#### Known Limitations
+- SMS method currently disabled in configuration (can be re-enabled)
+- Requires AWS account and SNS configuration
+- SMS delivery subject to AWS SNS availability
+- International SMS may have additional costs
+
+#### Future Enhancements (Not Implemented)
+1. SMS delivery status webhooks
+2. Fallback SMS provider
+3. SMS templates for other notifications
+4. Delivery rate analytics dashboard
+
+---
+
 ### Added - User Impersonation Feature
 
 #### New Features
@@ -393,6 +539,50 @@ from bcource.helpers import (
 ---
 
 ## Chronological Changes
+
+### 2025-10-23
+- `1d555c8` - Update CHANGES.md to document user impersonation feature
+- `deef9b1` - Add user impersonation functionality with security controls and visual indicators
+
+### 2025-10-20
+- `db49caf` - Revert previous changes
+- `203179a` - Refactor BOOKWINDOW_FOUR_WEEKS duration for accurate 4-week booking window
+- `ef6edde` - Enhance cancellation logic with timezone awareness for reliable booking window checks
+- `9d8f56f` - Fix BOOKWINDOW_FOUR_WEEKS duration to accurately reflect 4-week booking window
+
+### 2025-10-19
+- `351873c` - Update BOOKWINDOW_FOUR_WEEKS duration to 27 days and 22 hours for improved booking accuracy
+- `12adb0b` - Update booking violation message to clarify session limits in student_policies.py
+- `f58e790` - Update waitlist display in scheduler_loop.html to show waitlist count instead of overflow participants
+- `83d031a` - [Bug] Fix issue preventing future bookings
+
+### 2025-10-17
+- `90fe932` - Update two-factor authentication configuration by removing SMS method
+- `41943a7` - Refactor email formatting in SendEmail class to avoid duplicate email display
+- `c793068` - Update SMS notification functionality and two-factor authentication configuration
+  - Enable SMS as additional method for two-factor authentication
+  - Add SMS utility logging for message IDs and delivery tracking
+  - Integrate SMS notifications for waitlist invitations (email + SMS if phone provided)
+
+### 2025-10-11
+- `7d0f766` - Enhance two-factor authentication and integrate SMS functionality
+  - Add AWS SNS configuration for SMS two-factor authentication
+  - Implement custom phone utility for validating and normalizing phone numbers
+  - Add `tf_phone_number` field to User model for 2FA phone storage
+  - Add new dependencies: boto3, botocore, jmespath, s3transfer
+  - Update two-factor setup template for improved phone number handling
+- `5b25ed9` - Update dependencies in requirements.txt for compatibility and security
+- `378b343` - Enhance two-factor authentication setup and update dependencies
+  - Add radio button selection for 2FA method (email or authenticator)
+  - Enable 'authenticator' method in configuration
+  - Add qrcode and flask-admin dependencies
+
+### 2025-10-10
+- `943b149` - Enhance README with testing and automation documentation
+- `1f311db` - Add testing documentation and enhance database setup instructions in README
+- `47b2860` - Refactor EmailAttendeeListReminder HTML structure for improved readability
+- `c7b4d17` - Enhance model representation and fix variable naming for clarity
+- `70dfb01` - Update relationship backref in TrainingEvent model for clarity
 
 ### 2025-10-07
 - `13ef0cc` - Implement account deletion feature with confirmation and logging
