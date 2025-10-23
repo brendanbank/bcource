@@ -32,6 +32,26 @@ python run_scheduler.py
 
 The scheduler uses a socket-based lock to prevent multiple instances (host/port configured via `BCOURSE_LOCK_HOST` and `BCOURSE_LOCK_PORT`).
 
+### Running Tests
+
+```bash
+# Run all tests
+cd test
+../.venv/bin/python -m unittest discover -v
+
+# Run specific test module
+cd test
+../.venv/bin/python -m unittest test_automation -v
+
+# Run specific test class
+cd test
+../.venv/bin/python -m unittest test_automation.TestAutomationRegistry -v
+
+# Run specific test method
+cd test
+../.venv/bin/python -m unittest test_automation.TestAutomationRegistry.test_register_automation_basic -v
+```
+
 ### Database Migrations
 
 ```bash
@@ -227,12 +247,19 @@ practice = Practice.default_row()
 ```python
 from bcource.helpers import config_value as cv
 
-value = cv('BCOURSE_DEFAULT_PRACTICE')
+value = cv('DEFAULT_PRACTICE')
 ```
 
 ## Testing
 
 Tests are located in `test/` directory. The codebase currently has minimal test coverage.
+
+Test coverage:
+- **test_automation.py** - Tests for the automation system (21 tests)
+- **test_messages.py** - Tests for the messaging system (26 tests)
+
+Test strategies:
+- **WAITLIST_TEST_STRATEGY.md** - Comprehensive functional test strategy for waitlist functionality
 
 ## Deployment
 
