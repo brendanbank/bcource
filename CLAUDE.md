@@ -6,15 +6,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bcource is a Flask-based training scheduling and management system for managing training courses, student enrollments, waitlists, and automated notifications. The application uses Flask-Security for authentication, SQLAlchemy for database access (MySQL), and APScheduler for automated task execution.
 
+## Environment Setup
+
+### Python Environment
+
+The project uses Python 3.12 with pipenv for dependency management:
+
+```bash
+# Install dependencies
+pipenv install
+
+# Activate virtual environment
+pipenv shell
+
+# Or run commands directly with pipenv
+pipenv run python run.py
+```
+
+### Configuration
+
+All configuration is environment-based via a `.env` file in the project root. Copy from `.env.example` if available and configure:
+- Database connection strings (MySQL for main app and postal codes)
+- Flask settings (SECRET_KEY, SERVER_NAME, etc.)
+- Mail server settings (SMTP)
+- AWS credentials (for SMS via SNS)
+- Flask-Security settings (2FA, password policies)
+- BCourse application defaults
+
 ## Development Commands
 
 ### Running the Application
 
 ```bash
 # Development mode (uses console mail backend)
-python run.py
+pipenv run python run.py
 
-# Production mode (configure ENVIRONMENT in .env)
+# Or with activated virtualenv
 python run.py
 ```
 
@@ -22,12 +49,16 @@ The application runs on:
 - Development: `http://0.0.0.0:5001`
 - Testing with SSL: `https://0.0.0.0:5002`
 
+Environment modes:
+- `ENVIRONMENT=DEVELOPMENT` - Immediate automation execution, console email backend
+- `ENVIRONMENT=PRODUCTION` - Scheduled automation, SMTP email backend
+
 ### Running the Scheduler
 
 The scheduler must run as a separate process for automated tasks (reminders, waitlist management):
 
 ```bash
-python run_scheduler.py
+pipenv run python run_scheduler.py
 ```
 
 The scheduler uses a socket-based lock to prevent multiple instances (host/port configured via `BCOURSE_LOCK_HOST` and `BCOURSE_LOCK_PORT`).
@@ -51,6 +82,8 @@ cd test
 cd test
 ../.venv/bin/python -m unittest test_automation.TestAutomationRegistry.test_register_automation_basic -v
 ```
+
+Note: Tests reference `.venv/bin/python` directly. If using pipenv, the virtualenv is typically located at `~/.local/share/virtualenvs/bcource-*/` but a `.venv` symlink or local virtualenv may be used for testing.
 
 ### Database Migrations
 
@@ -88,10 +121,35 @@ The application follows a modular Flask blueprint architecture:
 - **run.py** - Application entry point
 - **run_scheduler.py** - Scheduler daemon entry point
 
+### Directory Structure
+
+```
+bcource/
+├── __init__.py           - Application factory and initialization
+├── models.py             - All database models
+├── helpers.py            - Utility functions and template helpers
+├── messages.py           - Email and message system
+├── sms_util.py          - SMS functionality (AWS SNS)
+├── filters.py           - Jinja template filters
+├── menus.py             - Navigation menu structure
+├── myformfields.py      - Custom form fields
+├── admin/               - Flask-Admin customization
+├── api/                 - API endpoints
+├── automation/          - Automation framework and tasks
+├── home/                - Landing pages blueprint
+├── policy/              - Policy validation framework
+├── scheduler/           - Scheduler UI and management
+├── students/            - Student management blueprint
+├── training/            - Training management blueprint
+├── user/                - User account management blueprint
+├── templates/           - Jinja templates
+└── static/              - Static assets (CSS, JS, images)
+```
+
 ### Core Modules (Blueprints)
 
 - **home** - Landing pages, privacy policy, terms
-- **user** - User profile management, account deletion
+- **user** - User profile management, account deletion, impersonation
 - **students** - Student management, enrollment views
 - **training** - Training course management, event scheduling
 - **admin** - Flask-Admin interface for database management
@@ -126,10 +184,14 @@ Rule-based validation framework using the PolicyBase metaclass pattern. Policies
 
 #### Message System (`bcource/messages.py`)
 
-Centralized messaging system for emails and internal messages:
+Centralized messaging system for emails, SMS, and internal messages:
 - **SystemMessage** - Base class for email/message composition using Content templates
 - **SendEmail** - Email delivery with iCal attachment support
 - **Content model** - Database-backed message templates with tag-based retrieval
+- **SMS Support** - AWS SNS integration via `bcource/sms_util.py` for 2FA and notifications
+  - Rate limiting per number (configurable hourly/daily limits)
+  - Cooldown period between messages
+  - Development mode uses test phone numbers
 
 ### Database Models (`bcource/models.py`)
 
@@ -259,7 +321,39 @@ Test coverage:
 - **test_messages.py** - Tests for the messaging system (26 tests)
 
 Test strategies:
-- **WAITLIST_TEST_STRATEGY.md** - Comprehensive functional test strategy for waitlist functionality
+- **test/WAITLIST_TEST_STRATEGY.md** - Comprehensive functional test strategy for waitlist functionality
+
+## Documentation
+
+Additional documentation is available in the following files:
+
+### Feature Documentation
+- **IMPERSONATION.md** - Complete user impersonation feature guide
+- **CHANGES.md** - Changelog of recent updates and features
+
+### Subsystem Documentation
+- **bcource/automation/README.md** - Detailed automation system documentation
+- **docs/WAITLIST_AUTOMATION_GUIDE.md** - Complete waitlist automation guide
+- **docs/WAITLIST_QUICK_START.md** - Quick start guide for waitlist setup (5 minutes)
+
+### Deployment Documentation
+- **bcourse_docker/PRODUCTION_DEPLOYMENT.md** - Production deployment procedures
+
+## Admin Features
+
+### User Impersonation
+
+Administrators with the `db-admin` role and 2FA enabled can view the application from a student's perspective. This feature is fully documented in `IMPERSONATION.md`.
+
+Quick access path: Admin → Database Admin → User → Select user → "Impersonate User"
+
+Key security features:
+- Requires `db-admin` role and 2FA
+- Cannot impersonate other admins
+- Full audit logging of all impersonation sessions
+- Visible red banner during impersonation with quick exit
+
+See `IMPERSONATION.md` for complete documentation.
 
 ## Deployment
 
@@ -268,11 +362,14 @@ Test strategies:
 - **bcourse.service** - systemd service for main app
 - **bcourse-scheduler.service** - systemd service for scheduler
 - **wait_for_mysql.sh** - Startup dependency script for Docker
+- **bcourse_docker/PRODUCTION_DEPLOYMENT.md** - Production deployment guide
 
 ## Security Notes
 
-- Flask-Security handles authentication with 2FA support
+- Flask-Security handles authentication with 2FA support (email, authenticator app, SMS)
 - CSRF protection enabled via Flask-WTF
 - HTML sanitization via nh3 library
 - Password hashing via argon2
 - Role-based access control for admin interface
+- SMS rate limiting and cooldown protection
+- User impersonation audit trail (see `IMPERSONATION.md`)
