@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for, jsonify, current_app
+from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for, jsonify, current_app, abort
 from flask_babel import _
 from flask_security import current_user, logout_user
-from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag, Training, TrainingEnroll, Student
+from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag, Training, TrainingEnroll, Student, WebAuthn
 from flask import current_app as app
 from flask_security import auth_required
 from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform, SupportForm, PublicSupportForm
@@ -670,5 +670,47 @@ def stop_impersonate():
 
     # Redirect to admin area
     return redirect(url_for('admin.index'))
+
+
+# ============================================================================
+# WebAuthn / Biometric Authentication Routes
+# ============================================================================
+
+@user_bp.route('/security-keys', methods=['GET'])
+@auth_required()
+def security_keys():
+    """Manage WebAuthn security keys and biometric authentication."""
+
+    # Get all registered WebAuthn credentials for the current user
+    credentials = WebAuthn.query.filter_by(user_id=current_user.id).all()
+
+    return render_template("user/security-keys.html",
+                          credentials=credentials,
+                          page_name=_l("Security Keys & Biometrics"))
+
+
+@user_bp.route('/security-keys/delete/<int:credential_id>', methods=['POST'])
+@auth_required()
+def delete_security_key(credential_id):
+    """Delete a WebAuthn credential."""
+
+    credential = WebAuthn.query.filter_by(
+        id=credential_id,
+        user_id=current_user.id
+    ).first()
+
+    if not credential:
+        flash(_("Security key not found."), 'error')
+        return redirect(url_for('user_bp.security_keys'))
+
+    # Store credential name for flash message
+    credential_name = credential.name or "Unnamed credential"
+
+    # Delete the credential
+    db.session.delete(credential)
+    db.session.commit()
+
+    flash(_("Security key '%(name)s' has been removed.", name=credential_name), 'success')
+    return redirect(url_for('user_bp.security_keys'))
 
 

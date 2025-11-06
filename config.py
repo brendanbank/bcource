@@ -79,12 +79,19 @@ class Config:
     SECURITY_PASSWORD_COMPLEXITY_CHECKER = True
     SECURITY_RECOVERABLE = True
     SECURITY_TWO_FACTOR = True
-    SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator']
+    SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator', 'webauthn']
     #SECURITY_TWO_FACTOR_ENABLED_METHODS = ['email', 'authenticator', 'sms']
     SECURITY_TWO_FACTOR_MAIL_VALIDITY = 600
     SECURITY_TOTP_SECRETS = {1: environ.get("SECURITY_TOTP_SECRETS")}
     SECURITY_TOTP_ISSUER = environ.get("SECURITY_TOTP_ISSUER")
     SECURITY_TWO_FACTOR_RESCUE_EMAIL = False
+
+    # WebAuthn Configuration
+    SECURITY_WAN_ALLOW_AS_FIRST_FACTOR = True  # Allow passwordless login
+    SECURITY_WAN_ALLOW_AS_MULTI_FACTOR = True   # Allow as 2FA
+    SECURITY_WAN_ALLOW_USER_HINTS = True        # Allow username hints during login
+    SECURITY_WAN_ALLOW_AS_VERIFY = ['first', 'secondary']  # Can be used for both first and second factor
+    SECURITY_WAN_RP_NAME = environ.get("SECURITY_WAN_RP_NAME", "BCourse Training System")
     SECURITY_PHONE_REGION_DEFAULT = "NL"  # Default region for phone validation
     SECURITY_SMS_SERVICE = "aws_sns"  # Use our custom AWS SNS SMS sender
     SECURITY_TWO_FACTOR_ALWAYS_VALIDATE = False  # Don't require phone number if already set

@@ -366,10 +366,54 @@ See `IMPERSONATION.md` for complete documentation.
 
 ## Security Notes
 
-- Flask-Security handles authentication with 2FA support (email, authenticator app, SMS)
+- Flask-Security handles authentication with 2FA support (email, authenticator app, SMS, WebAuthn)
 - CSRF protection enabled via Flask-WTF
 - HTML sanitization via nh3 library
 - Password hashing via argon2
 - Role-based access control for admin interface
 - SMS rate limiting and cooldown protection
 - User impersonation audit trail (see `IMPERSONATION.md`)
+
+### WebAuthn / Biometric Authentication
+
+The application supports WebAuthn for biometric authentication (fingerprint, Face ID, Touch ID) and hardware security keys.
+
+**Configuration** (config.py):
+- `SECURITY_TWO_FACTOR_ENABLED_METHODS`: Includes 'webauthn' for biometric auth
+- `SECURITY_WAN_ALLOW_AS_FIRST_FACTOR`: Allows passwordless login with biometrics
+- `SECURITY_WAN_ALLOW_AS_MULTI_FACTOR`: Allows biometrics as second factor (2FA)
+- `SECURITY_WAN_ALLOW_USER_HINTS`: Enables username hints during biometric login
+- `SECURITY_WAN_RP_NAME`: Relying party name shown during registration
+
+**User Routes** (bcource/user/user_views.py):
+- `/account/security-keys` - Manage registered security keys and biometric credentials
+- `/account/security-keys/delete/<id>` - Remove a security key
+
+**Flask-Security Routes** (provided by Flask-Security):
+- `/auth/wan_register` - Register a new security key or biometric credential
+- `/auth/wan_signin` - Sign in using WebAuthn (passwordless or 2FA)
+- `/auth/wan_verify` - Verify WebAuthn credential during authentication
+- `/auth/wan_delete` - Delete a WebAuthn credential
+
+**Database Model**:
+- `WebAuthn` model (models.py:864-871) - Stores WebAuthn credentials
+- Each user can have multiple WebAuthn credentials (relationship defined in User model)
+
+**JavaScript Files**:
+- `bcource/static/js/webauthn.js` - Handles WebAuthn registration and authentication
+- `bcource/static/js/base64.js` - Base64url encoding utilities for WebAuthn
+
+**Supported Devices**:
+- MacBook with Touch ID
+- Windows Hello compatible devices
+- iPhone/iPad with Face ID or Touch ID
+- Android devices with fingerprint scanner
+- Hardware security keys (YubiKey, Titan, etc.)
+
+**Setup Instructions**:
+1. Ensure database is running
+2. Create migration: `flask db migrate -m "Add WebAuthn support"`
+3. Apply migration: `flask db upgrade`
+4. Add to .env file: `SECURITY_WAN_RP_NAME="BCourse Training System"`
+5. Users can register biometrics at: `/auth/two_factor_setup` or `/account/security-keys`
+6. WebAuthn requires HTTPS in production (browsers enforce this security requirement)

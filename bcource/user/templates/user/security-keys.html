@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-shield-lock-fill"></i> {{ _('Security Keys & Biometric Authentication') }}</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        {{ _('Manage your biometric authentication methods (fingerprint, Face ID, Touch ID) and hardware security keys. These can be used for passwordless login or as a second factor for authentication.') }}
+                    </p>
+
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading"><i class="bi bi-info-circle"></i> {{ _('What are Security Keys?') }}</h6>
+                        <p class="mb-0">
+                            {{ _('Security keys provide strong authentication using your device\'s built-in biometric sensors (fingerprint, face recognition) or external hardware keys (YubiKey, etc.). They are more secure than passwords and easier to use.') }}
+                        </p>
+                    </div>
+
+                    <hr>
+
+                    <h5 class="mb-3">{{ _('Your Registered Security Keys') }}</h5>
+
+                    {% if credentials %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>{{ _('Name') }}</th>
+                                        <th>{{ _('Registered') }}</th>
+                                        <th>{{ _('Last Used') }}</th>
+                                        <th>{{ _('Actions') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for credential in credentials %}
+                                        <tr>
+                                            <td>
+                                                <i class="bi bi-fingerprint"></i>
+                                                {{ credential.name or _('Unnamed Security Key') }}
+                                            </td>
+                                            <td>{{ credential.created_at.strftime('%Y-%m-%d %H:%M') if credential.created_at else _('Unknown') }}</td>
+                                            <td>{{ credential.lastuse_datetime.strftime('%Y-%m-%d %H:%M') if credential.lastuse_datetime else _('Never') }}</td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('user_bp.delete_security_key', credential_id=credential.id) }}" class="d-inline delete-key-form">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                                    <button type="submit" class="btn btn-sm btn-danger"
+                                                            onclick="return confirm('{{ _('Are you sure you want to remove this security key?') }}')">
+                                                        <i class="bi bi-trash"></i> {{ _('Remove') }}
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> {{ _('You haven\'t registered any security keys yet.') }}
+                        </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5>{{ _('Add a New Security Key') }}</h5>
+                            <p class="text-muted mb-0">
+                                {{ _('Use your device\'s biometric sensor or a hardware security key') }}
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('security.wan_register') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> {{ _('Register Security Key') }}
+                            </a>
+                        </div>
+                    </div>
+
+                    <hr class="mt-4">
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-laptop"></i> {{ _('Supported Devices') }}</h6>
+                            <ul class="text-muted small">
+                                <li>{{ _('MacBook with Touch ID') }}</li>
+                                <li>{{ _('Windows Hello compatible devices') }}</li>
+                                <li>{{ _('iPhone/iPad with Face ID or Touch ID') }}</li>
+                                <li>{{ _('Android devices with fingerprint scanner') }}</li>
+                                <li>{{ _('Hardware security keys (YubiKey, Titan, etc.)') }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-question-circle"></i> {{ _('How to Use') }}</h6>
+                            <ul class="text-muted small">
+                                <li>{{ _('Click "Register Security Key" above') }}</li>
+                                <li>{{ _('Follow your browser\'s prompts') }}</li>
+                                <li>{{ _('Use your fingerprint, face, or security key') }}</li>
+                                <li>{{ _('Give your key a memorable name') }}</li>
+                                <li>{{ _('Use it to log in without a password') }}</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('user_bp.index') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> {{ _('Back to Account') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+$(document).ready(function() {
+    // Add visual feedback when removing keys
+    $('.delete-key-form').on('submit', function(e) {
+        const btn = $(this).find('button');
+        btn.prop('disabled', true);
+        btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> {{ _("Removing...") }}');
+    });
+});
+</script>
+{% endblock %}
