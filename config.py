@@ -23,7 +23,7 @@ class Config:
     DEVELOPMENT_EMAIL = environ.get("DEVELOPMENT_EMAIL", "admin@example.com")
     DEVELOPMENT_PHONE = environ.get("DEVELOPMENT_PHONE", "+1234567890")
     
-    POSTS_PER_PAGE = 22
+    POSTS_PER_PAGE = 24
 
     # Flask Config
     SECRET_KEY = environ.get("SECRET_KEY")
