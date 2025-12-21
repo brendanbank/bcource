@@ -16,6 +16,13 @@ def cleanhtml(raw_html):
     """Convert HTML to plain text with better formatting preservation."""
     soup = BeautifulSoup(raw_html, "html.parser")
 
+    # Convert links to include URL in plain text
+    for a in soup.find_all('a'):
+        href = a.get('href')
+        if href:
+            # Replace link with text and URL
+            a.replace_with(f'{a.get_text()} ({href})')
+
     # Add newlines before/after block elements for better readability
     for br in soup.find_all('br'):
         br.replace_with('\n')
@@ -167,7 +174,37 @@ class SendEmail(SystemMessage):
         return(msg)
 
     def email_render_body(self):
-        return self.body
+        """Render email body with professional footer."""
+        from flask import url_for
+
+        # Get the base body content
+        body = self.body
+
+        # Generate footer
+        try:
+            account_url = url_for('user_bp.index', _external=True)
+            footer = f'''
+<hr style="margin-top: 30px; border: none; border-top: 1px solid #ccc;">
+<p style="font-size: 12px; color: #666;">
+  <strong>Bcourse Training System</strong><br>
+  <br>
+  You received this email because you are registered with Bcourse Training System.<br>
+  <a href="{account_url}">Manage your account settings</a>
+</p>
+'''
+        except Exception:
+            # Fallback footer without dynamic URL
+            footer = '''
+<hr style="margin-top: 30px; border: none; border-top: 1px solid #ccc;">
+<p style="font-size: 12px; color: #666;">
+  <strong>Bcourse Training System</strong><br>
+  <br>
+  You received this email because you are registered with Bcourse Training System.<br>
+  <a href="https://bcourse.nl/account/">Manage your account settings</a>
+</p>
+'''
+
+        return body + footer
 
     def email_render_text_body(self, html_body):
         """Convert HTML body to plain text for multipart email."""
@@ -181,11 +218,9 @@ class SendEmail(SystemMessage):
         try:
             # Generate unsubscribe URL - points to user account settings
             unsubscribe_url = url_for('user_bp.index', _external=True)
-            # Generate unsubscribe email (optional alternative)
-            unsubscribe_email = f'mailto:{cv("SYSTEM_USER")}?subject=Unsubscribe'
 
             msg.extra_headers = {
-                'List-Unsubscribe': f'<{unsubscribe_url}>, <{unsubscribe_email}>',
+                'List-Unsubscribe': f'<{unsubscribe_url}>',
                 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
                 # Precedence header helps identify bulk mail
                 'Precedence': 'bulk',
