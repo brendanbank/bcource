@@ -179,8 +179,8 @@ class SendEmail(SystemMessage):
         # This allows email clients to show an "unsubscribe" button
         from flask import url_for
         try:
-            # Generate unsubscribe URL - adjust this to your actual unsubscribe endpoint
-            unsubscribe_url = url_for('user.account', _external=True)
+            # Generate unsubscribe URL - points to user account settings
+            unsubscribe_url = url_for('user_bp.index', _external=True)
             # Generate unsubscribe email (optional alternative)
             unsubscribe_email = f'mailto:{cv("SYSTEM_USER")}?subject=Unsubscribe'
 
@@ -201,8 +201,8 @@ class SendEmail(SystemMessage):
                 # Add recipient for potential personalization tracking
                 'X-Recipient-ID': f'{user.email}',
             }
-        except RuntimeError:
-            # url_for requires application context, fallback without List-Unsubscribe
+        except Exception:
+            # If url_for fails for any reason, fallback without List-Unsubscribe
             msg.extra_headers = {
                 'Precedence': 'bulk',
                 'X-Auto-Response-Suppress': 'OOF, AutoReply',
