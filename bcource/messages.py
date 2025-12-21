@@ -13,9 +13,37 @@ logger = logging.getLogger(__name__)
 
 
 def cleanhtml(raw_html):
-    # cleantext = re.sub(CLEANR, '', raw_html)
-    cleantext = BeautifulSoup(raw_html, "html.parser")
-    return cleantext.getText()
+    """Convert HTML to plain text with better formatting preservation."""
+    soup = BeautifulSoup(raw_html, "html.parser")
+
+    # Add newlines before/after block elements for better readability
+    for br in soup.find_all('br'):
+        br.replace_with('\n')
+
+    for p in soup.find_all('p'):
+        p.insert_before('\n')
+        p.insert_after('\n')
+
+    for div in soup.find_all('div'):
+        div.insert_after('\n')
+
+    for h in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
+        h.insert_before('\n')
+        h.insert_after('\n')
+
+    for li in soup.find_all('li'):
+        li.insert_before('\n  • ')
+
+    # Get text and clean up excessive whitespace
+    text = soup.get_text()
+
+    # Clean up multiple newlines but preserve paragraph structure
+    import re
+    text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)  # Max 2 consecutive newlines
+    text = re.sub(r'[ \t]+', ' ', text)  # Multiple spaces to single space
+    text = text.strip()
+
+    return text
 
 class SystemMessage(object):
     
@@ -124,6 +152,9 @@ class SendEmail(SystemMessage):
             # Attach HTML alternative
             msg.attach_alternative(html_body, "text/html")
 
+            # Add anti-spam headers
+            self.add_email_headers(msg, user)
+
             self.process_attachment(msg)
 
             logging.info (f'Send e-mailmessage ({self.CONTENT_TAG}) to {user} <{user.email}>')
@@ -141,6 +172,46 @@ class SendEmail(SystemMessage):
     def email_render_text_body(self, html_body):
         """Convert HTML body to plain text for multipart email."""
         return cleanhtml(html_body)
+
+    def add_email_headers(self, msg, user):
+        """Add headers to improve deliverability and reduce spam score."""
+        # List-Unsubscribe header (RFC 8058) - critical for bulk email
+        # This allows email clients to show an "unsubscribe" button
+        from flask import url_for
+        try:
+            # Generate unsubscribe URL - adjust this to your actual unsubscribe endpoint
+            unsubscribe_url = url_for('user.account', _external=True)
+            # Generate unsubscribe email (optional alternative)
+            unsubscribe_email = f'mailto:{cv("SYSTEM_USER")}?subject=Unsubscribe'
+
+            msg.extra_headers = {
+                'List-Unsubscribe': f'<{unsubscribe_url}>, <{unsubscribe_email}>',
+                'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                # Precedence header helps identify bulk mail
+                'Precedence': 'bulk',
+                # X-Auto-Response-Suppress prevents out-of-office replies
+                'X-Auto-Response-Suppress': 'OOF, AutoReply',
+                # X-Priority and Importance headers
+                'X-Priority': '3',
+                'Importance': 'Normal',
+                # X-Mailer identification
+                'X-Mailer': 'Bcourse Training System',
+                # Custom reference for tracking
+                'X-Entity-Ref-ID': f'{self.CONTENT_TAG}',
+                # Add recipient for potential personalization tracking
+                'X-Recipient-ID': f'{user.email}',
+            }
+        except RuntimeError:
+            # url_for requires application context, fallback without List-Unsubscribe
+            msg.extra_headers = {
+                'Precedence': 'bulk',
+                'X-Auto-Response-Suppress': 'OOF, AutoReply',
+                'X-Priority': '3',
+                'Importance': 'Normal',
+                'X-Mailer': 'Bcourse Training System',
+                'X-Entity-Ref-ID': f'{self.CONTENT_TAG}',
+                'X-Recipient-ID': f'{user.email}',
+            }
 
 
 class EmailAttendeeListReminder(SendEmail):
