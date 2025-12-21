@@ -1,6 +1,6 @@
 from bcource import db, security
 from bcource.models import Content, Message
-from flask_mailman import EmailMessage
+from flask_mailman import EmailMultiAlternatives
 from bs4 import BeautifulSoup
 from icalendar import Calendar, Event
 from bcource.helpers import db_datetime, format_phone_number
@@ -89,44 +89,58 @@ class SendEmail(SystemMessage):
     message_tag = "email"
     
     def send(self):
-        
+
         if not SendEmail.message_tag in self.taglist:
             self.taglist.append(SendEmail.message_tag)
 
-        
+
         envelop_from_system = security.datastore.find_user(email=cv('SYSTEM_USER'))
         # If system user has no name, fullname returns email - avoid duplicate email format
         if envelop_from_system.fullname == envelop_from_system.email:
             email_from = envelop_from_system.email
         else:
             email_from = f'{envelop_from_system.fullname} <{envelop_from_system.email}>'
-        
+
         for user in self.envelop_to:
             # If user has no name, fullname returns email - avoid duplicate email format
             if user.fullname == user.email:
                 email_str = user.email
             else:
                 email_str = f'{user.fullname} <{user.email}>'
-            msg = EmailMessage(subject=self.render_subject(),
-                               body=self.email_render_body(),
-                               from_email=email_from,
-                               to=[email_str]
-                               )
-            
-            msg.content_subtype = "html"
+
+            # Get HTML body
+            html_body = self.email_render_body()
+
+            # Generate plain text version from HTML
+            text_body = self.email_render_text_body(html_body)
+
+            # Create multipart message with plain text body
+            msg = EmailMultiAlternatives(subject=self.render_subject(),
+                                         body=text_body,
+                                         from_email=email_from,
+                                         to=[email_str]
+                                         )
+
+            # Attach HTML alternative
+            msg.attach_alternative(html_body, "text/html")
+
             self.process_attachment(msg)
-        
+
             logging.info (f'Send e-mailmessage ({self.CONTENT_TAG}) to {user} <{user.email}>')
 
             msg.send()
-        
+
         super().send()
 
     def process_attachment(self, msg):
         return(msg)
-    
+
     def email_render_body(self):
         return self.body
+
+    def email_render_text_body(self, html_body):
+        """Convert HTML body to plain text for multipart email."""
+        return cleanhtml(html_body)
 
 
 class EmailAttendeeListReminder(SendEmail):
