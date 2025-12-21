@@ -27,67 +27,64 @@
                              <span class="{{hide_mobile}}">{{ training.name }}</span>
                </div>
                
-              <div class="col-lg-1 {% if g.is_mobile %}py-3 {%endif%}lh-1 align-self-center">
-               {% if training._user_status != False %}
-                    {% if admin %}
-                         {{ render_link(url=url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url),
-                                   tooltip=_('Remove %(who)s from this training.', who=who), 
-                                   icon="fs-5 bi-person-fill-dash text",  
-                                   text_color="text-danger",
-                                   onclick=_("Are you sure you want to remove user %(email)s from this training?", email=user.email),
-                                   mobile_text=_(" Remove %(who)s from this training. ", who=who)) }}
-                    
-                          
-                    {% else %}
-                    
-                         {{ render_link(url=url_for('scheduler_bp.deroll', id=training.id),
-                                   tooltip=_('Remove %(who)s from this training.', who=who), 
-                                   icon="fs-5 bi-person-fill-dash text",  
-                                   text_color="text-danger",
-                                   mobile_text=_(" Remove %(who)s from this training. ", who=who)) }}
-
-                    {% endif %}
-               {%- else -%}
-                    {% if not admin %}
-                              {% if not training.in_policy.status %}
-                              
-                                   <span class="{{show_mobile}}">{% for error in training.in_policy %}{{error}}{% endfor %}
-                                        <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
-                                        data-placement="top" 
-                                        data-bs-html="true"
-                                        title=''></i></span>
-                                   <span class="{{hide_mobile}}">
-                                        <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip" 
-                                        data-placement="top" 
-                                        data-bs-html="true"
-                                        title=''></i></span>
-
+              <div class="col-lg-2 {% if g.is_mobile %}py-3 {%endif%}lh-1 align-self-center text-nowrap">
+               <div class="d-flex gap-2 align-items-center {% if g.is_mobile %}flex-column align-items-start{%else%}flex-row{%endif%}">
+                    <div class="flex-shrink-0">
+                         {% if training._user_status != False %}
+                              {% if admin %}
+                                   {{ render_link(url=url_for('students_bp.deroll', user_id=user.id, training_id=training.id, first_url=return_url),
+                                             tooltip=_('Remove %(who)s from this training.', who=who),
+                                             icon="fs-5 bi-person-fill-dash text",
+                                             text_color="text-danger",
+                                             onclick=_("Are you sure you want to remove user %(email)s from this training?", email=user.email),
+                                             mobile_text=_(" Remove %(who)s from this training. ", who=who)) }}
                               {% else %}
-                                   {% if training._spots_enrolled >= training.max_participants %}
-                                        {{ render_link(url=url_for('scheduler_bp.enroll', id=training.id),
-                                                  tooltip=_('Add %(who)s to the wait list of this training.', who=who), 
-                                                  icon="mb-2 fs-5 bi bi-person-fill-add",  
-                                                  text_color="text-warning",
-                                                  mobile_text=_(" Add %(who)s to the wait list of this training. ", who=who)) }}
-
-                                   {%- else -%}
-
-                                        {{ render_link(url=url_for('scheduler_bp.enroll', id=training.id),
-                                                  tooltip=_('Add %(who)s to this training.', who=who), 
-                                                  icon="mb-2 fs-5 bi bi-person-fill-add",  
-                                                  text_color="text-success",
-                                                  mobile_text=_(" Add %(who)s to this training. ", who=who)) }}
-
+                                   {{ render_link(url=url_for('scheduler_bp.deroll', id=training.id),
+                                             tooltip=_('Remove %(who)s from this training.', who=who),
+                                             icon="fs-5 bi-person-fill-dash text",
+                                             text_color="text-danger",
+                                             mobile_text=_(" Remove %(who)s from this training. ", who=who)) }}
+                              {% endif %}
+                         {%- else -%}
+                              {% if not admin %}
+                                   {% if not training.in_policy.status %}
+                                        <span class="{{show_mobile}}">{% for error in training.in_policy %}{{error}}{% endfor %}
+                                             <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip"
+                                             data-placement="top"
+                                             data-bs-html="true"
+                                             title=''></i></span>
+                                        <span class="{{hide_mobile}}">
+                                             <i class="mb-2 fs-5 bi bi bi-person-lock text-danger" data-toggle="tooltip"
+                                             data-placement="top"
+                                             data-bs-html="true"
+                                             title=''></i></span>
+                                   {% else %}
+                                        {% if training._spots_enrolled >= training.max_participants %}
+                                             {{ render_link(url=url_for('scheduler_bp.enroll', id=training.id),
+                                                       tooltip=_('Add %(who)s to the wait list of this training.', who=who),
+                                                       icon="mb-2 fs-5 bi bi-person-fill-add",
+                                                       text_color="text-warning",
+                                                       mobile_text=_(" Add %(who)s to the wait list of this training. ", who=who)) }}
+                                        {%- else -%}
+                                             {{ render_link(url=url_for('scheduler_bp.enroll', id=training.id),
+                                                       tooltip=_('Add %(who)s to this training.', who=who),
+                                                       icon="mb-2 fs-5 bi bi-person-fill-add",
+                                                       text_color="text-success",
+                                                       mobile_text=_(" Add %(who)s to this training. ", who=who)) }}
+                                        {% endif %}
                                    {% endif %}
                               {% endif %}
-                    {% endif %}
-               {%- endif %}
+                         {%- endif %}
+                    </div>
+                    <div class="{% if g.is_mobile %}w-100{%else%}flex-grow-1{%endif%} small">
+                         <span class="{{show_mobile}} fw-semibold ">{{_("Training Type")}}: </span>
+                         {{ training.trainingtype.name }}<a class="icon-link"
+                              data-bs-toggle="modal" data-bs-target="#modal_{{training.trainingtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a>
+                    </div>
                </div>
-               <div class="col-lg-1  align-self-center text-nowrap">
-                              <span class="{{show_mobile}} fw-semibold ">{{_("Training Type")}}: </span>
-                              {{ training.trainingtype.name }}<a class="icon-link" 
-                    data-bs-toggle="modal" data-bs-target="#modal_{{training.trainingtype.description}}" href="#"><i class="fs-6 bi bi-question"></i></a></div>
-               <div class="col-lg-3  align-self-center small"><span class="{{show_mobile}}">{{_("Date")}}: </span> {% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
+               </div>
+               <div class="col-lg-3  align-self-center small">
+                <span class="{{show_mobile}}">{{_("Date")}}: </span>{% for event in training.trainingevents %}{{ db_datetime_str(event.start_time) }}<br>{% endfor %}</div>
                <div class="col-lg-1  align-self-center {{hide_mobile}}">
                                                   {{ training.max_participants }}/{{training._spots_enrolled -}}/
                                                   {%- if training._spots_waitlist_count -%}
