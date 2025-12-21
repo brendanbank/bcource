@@ -212,41 +212,21 @@ class SendEmail(SystemMessage):
 
     def add_email_headers(self, msg, user):
         """Add headers to improve deliverability and reduce spam score."""
-        # List-Unsubscribe header (RFC 8058) - critical for bulk email
-        # This allows email clients to show an "unsubscribe" button
-        from flask import url_for
-        try:
-            # Generate unsubscribe URL - points to user account settings
-            unsubscribe_url = url_for('user_bp.index', _external=True)
-
-            msg.extra_headers = {
-                'List-Unsubscribe': f'<{unsubscribe_url}>',
-                'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-                # Precedence header helps identify bulk mail
-                'Precedence': 'bulk',
-                # X-Auto-Response-Suppress prevents out-of-office replies
-                'X-Auto-Response-Suppress': 'OOF, AutoReply',
-                # X-Priority and Importance headers
-                'X-Priority': '3',
-                'Importance': 'Normal',
-                # X-Mailer identification
-                'X-Mailer': 'Bcourse Training System',
-                # Custom reference for tracking
-                'X-Entity-Ref-ID': f'{self.CONTENT_TAG}',
-                # Add recipient for potential personalization tracking
-                'X-Recipient-ID': f'{user.email}',
-            }
-        except Exception:
-            # If url_for fails for any reason, fallback without List-Unsubscribe
-            msg.extra_headers = {
-                'Precedence': 'bulk',
-                'X-Auto-Response-Suppress': 'OOF, AutoReply',
-                'X-Priority': '3',
-                'Importance': 'Normal',
-                'X-Mailer': 'Bcourse Training System',
-                'X-Entity-Ref-ID': f'{self.CONTENT_TAG}',
-                'X-Recipient-ID': f'{user.email}',
-            }
+        msg.extra_headers = {
+            # Precedence header helps identify bulk mail
+            'Precedence': 'bulk',
+            # X-Auto-Response-Suppress prevents out-of-office replies
+            'X-Auto-Response-Suppress': 'OOF, AutoReply',
+            # X-Priority and Importance headers
+            'X-Priority': '3',
+            'Importance': 'Normal',
+            # X-Mailer identification
+            'X-Mailer': 'Bcourse Training System',
+            # Custom reference for tracking
+            'X-Entity-Ref-ID': f'{self.CONTENT_TAG}',
+            # Add recipient for potential personalization tracking
+            'X-Recipient-ID': f'{user.email}',
+        }
 
 
 class EmailAttendeeListReminder(SendEmail):
