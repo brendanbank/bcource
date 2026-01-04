@@ -270,7 +270,20 @@ If a user already exists in Grafana (created via admin/password), they need to l
 
 **"User sync failed" or "Login failed: User sync failed":**
 - This usually means the user already exists but isn't linked to Google OAuth
-- **Solution:** Log in with existing credentials, then link Google account from Profile → Authentication
+- **Solution 1 (Recommended):** Log in with existing credentials first:
+  1. Go to https://grafana.brendanbank.com
+  2. Log in with your existing username/password (NOT Google OAuth)
+  3. Click your profile icon (top right) → **Profile**
+  4. Go to **Authentication** tab
+  5. Click **Link Google account** and authorize
+  6. After linking, you can log out and use Google OAuth
+  
+- **Solution 2 (If linking doesn't work):** The user account might need to be deleted and recreated:
+  1. Admin logs in and goes to **Administration** → **Users**
+  2. Find the user `info@brendanbank.com`
+  3. Delete the user account
+  4. Log in with Google OAuth (will create new account automatically)
+  
 - Check Grafana logs: `docker compose logs grafana | grep -i 'user.sync\|oauth.*error'`
 
 **Users can't sign in:**
