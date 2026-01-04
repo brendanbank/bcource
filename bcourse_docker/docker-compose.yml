@@ -153,7 +153,7 @@ services:
       - "host.docker.internal:host-gateway"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.example.com`) || Host(`localhost`) || Host(`127.0.0.1`) || Host(`production-host`)"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.example.com`)"
       - "traefik.http.routers.grafana.entrypoints=websecure"
       # TLS configuration: Use certresolver only in production (when TRAEFIK_CERT_RESOLVER is set)
       # For development: Use docker-compose.dev.yml which omits this label to use self-signed certificates
