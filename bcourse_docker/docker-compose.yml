@@ -2,6 +2,17 @@
 # - "--certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
 # - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
 
+
+volumes:
+  mysql_data:
+
+networks:
+  web-network:
+    name: web-network
+    driver: bridge
+  grafana-network:
+    name: grafana-network
+    driver: bridge 
 services:
   traefik:
     image: "traefik:v3.4"
@@ -173,14 +184,3 @@ services:
     networks:
       - grafana-network
     restart: unless-stopped
-
-volumes:
-  mysql_data:
-
-networks:
-  web-network:
-    name: web-network
-    driver: bridge
-  grafana-network:
-    name: grafana-network
-    driver: bridge 
