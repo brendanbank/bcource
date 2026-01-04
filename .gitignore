@@ -183,3 +183,4 @@ migrations/*
 /tmp/
 attic/
 */letsencrypt/*
+*/grafana_data/*
