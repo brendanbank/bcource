@@ -230,6 +230,7 @@ docker compose restart grafana
 
 - **grafana-kubernetes-app** - Kubernetes monitoring
 - **grafana-zabbix-app** - Zabbix integration
+- **grafana-oncall-app** - Incident Response Management (OnCall) - **Installed**
 
 ### Plugin Configuration
 
@@ -420,6 +421,176 @@ After installing `grafana-clock-panel`, configure it in a dashboard:
 - **Official Catalog:** https://grafana.com/grafana/plugins/
 - **Search:** Use the Grafana UI plugin browser
 - **Documentation:** Check plugin-specific documentation for configuration details
+
+## Alerting and Incident Response Management (IRM)
+
+Grafana includes built-in **Alerting** capabilities and supports **Grafana OnCall** for comprehensive incident response management.
+
+### Grafana Alerting (Built-in)
+
+Grafana Alerting is a built-in feature (available in Grafana 8.0+) that allows you to create and manage alert rules based on your monitoring data.
+
+#### Features
+
+- **Alert Rules**: Create alert rules based on queries from any data source
+- **Contact Points**: Configure multiple notification channels (email, Slack, webhooks, etc.)
+- **Notification Policies**: Route alerts to appropriate contact points based on labels
+- **Alert Groups**: Group related alerts together
+- **Silences**: Temporarily silence alerts for maintenance
+
+#### Getting Started with Alerting
+
+1. **Access Alerting:**
+   - Log into Grafana at https://grafana.brendanbank.com
+   - Navigate to **Alerts & IRM** → **Alerting** in the main menu
+
+2. **Create a Contact Point:**
+   - Go to **Alerting** → **Contact points**
+   - Click **+ Add contact point**
+   - Configure notification method (Email, Slack, webhook, etc.)
+   - Test the contact point to verify it works
+
+3. **Create an Alert Rule:**
+   - Go to **Alerting** → **Alert rules**
+   - Click **+ New alert rule**
+   - Define the query and conditions that trigger the alert
+   - Set evaluation interval and for how long the condition must be true
+   - Assign a contact point for notifications
+
+4. **Configure Notification Policies:**
+   - Go to **Alerting** → **Notification policies**
+   - Set up routing rules based on labels
+   - Configure group-by settings and timing
+
+#### Alerting Configuration
+
+Alerting is configured via `grafana.ini`:
+
+```ini
+[unified_alerting]
+# Enable unified alerting (default: true in Grafana 9.0+)
+enabled = true
+
+# Alert evaluation interval
+evaluation_timeout_seconds = 30
+
+# Default contact point
+default_contact_point = email
+```
+
+#### SMTP Configuration for Email Alerts
+
+Email notifications use the SMTP configuration already set up in `grafana.ini`:
+
+```ini
+[smtp]
+enabled = true
+host = 172.17.0.1:25
+from_address = admin@grafana.brendanbank.com
+```
+
+See the [SMTP Configuration](#smtp-connection-issues) section for troubleshooting.
+
+#### Alerting Resources
+
+- [Grafana Alerting Documentation](https://grafana.com/docs/grafana/latest/alerting/)
+- [Get Started with Alerting Tutorial](https://grafana.com/tutorials/alerting-get-started/)
+- [Alert Rule Best Practices](https://grafana.com/docs/grafana/latest/alerting/fundamentals/alert-rules/)
+
+### Grafana OnCall (Plugin)
+
+Grafana OnCall is an incident response management plugin that provides on-call scheduling, alert routing, and incident management workflows.
+
+#### Features
+
+- **On-Call Schedules**: Create rotating on-call schedules
+- **Escalation Chains**: Define multi-level escalation policies
+- **Alert Routing**: Route alerts to the right on-call person
+- **Incident Management**: Track and manage incidents
+- **Integration**: Integrate with Grafana Alerting and other alert sources
+
+#### Installation
+
+Grafana OnCall is already installed via the `grafana-oncall-app` plugin. It's configured in your `.env`:
+
+```bash
+GRAFANA_PLUGINS=grafana-clock-panel,grafana-piechart-panel,grafana-oncall-app
+```
+
+#### Getting Started with OnCall
+
+1. **Access OnCall:**
+   - Log into Grafana at https://grafana.brendanbank.com
+   - Navigate to **Apps** → **OnCall** in the main menu
+   - Or go to **Alerts & IRM** → **OnCall**
+
+2. **Initial Setup:**
+   - Create an on-call schedule
+   - Add team members and their contact information
+   - Set up escalation chains
+   - Configure integrations with alert sources
+
+3. **Create Integrations:**
+   - Go to **Integrations** in OnCall
+   - Add integrations for Grafana Alerting, Prometheus, etc.
+   - Configure alert templates and routing rules
+
+4. **Set Up Schedules:**
+   - Go to **Schedules**
+   - Create on-call rotations
+   - Assign team members to rotations
+   - Configure time zones and shift patterns
+
+5. **Configure Escalation Chains:**
+   - Go to **Escalation chains**
+   - Define escalation steps
+   - Set timeouts and notification methods
+
+#### OnCall Configuration
+
+OnCall can be configured via environment variables or through the UI. For advanced configuration, see the [OnCall Documentation](https://grafana.com/docs/oncall/latest/).
+
+#### OnCall Resources
+
+- [Grafana OnCall Documentation](https://grafana.com/docs/oncall/latest/)
+- [OnCall Setup Guide](https://grafana.com/docs/oncall/latest/get-started/)
+- [OnCall Integrations](https://grafana.com/docs/oncall/latest/integrations/)
+
+### Integrating Alerting with OnCall
+
+To integrate Grafana Alerting with OnCall:
+
+1. **In Grafana Alerting:**
+   - Create a contact point of type **OnCall**
+   - Configure it to point to your OnCall instance
+
+2. **In OnCall:**
+   - Go to **Integrations** → **Grafana Alerting**
+   - Add a new integration
+   - Configure alert templates and routing
+
+3. **Set Up Routing:**
+   - Configure notification policies in Alerting to route to OnCall
+   - Set up escalation chains in OnCall for different alert severities
+
+### Best Practices
+
+1. **Alert Rules:**
+   - Use meaningful alert names and descriptions
+   - Add labels for better routing and grouping
+   - Set appropriate evaluation intervals
+   - Use "for" duration to reduce false positives
+
+2. **OnCall:**
+   - Create clear escalation chains
+   - Set up multiple notification methods per person
+   - Regularly review and update schedules
+   - Test alert routing regularly
+
+3. **Integration:**
+   - Use consistent labeling between Alerting and OnCall
+   - Document alert routing policies
+   - Regularly review incident response times
 
 ## Data Persistence
 
