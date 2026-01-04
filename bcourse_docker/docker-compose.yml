@@ -188,6 +188,12 @@ services:
       - GF_SMTP_HOST=${GRAFANA_SMTP_HOST:-host.docker.internal}
       # Port will be parsed from GF_SMTP_HOST if included, otherwise defaults to 25
       - GF_SMTP_PORT=${GRAFANA_SMTP_PORT:-25}
+      # Google OAuth configuration (for @google.com users)
+      # Get credentials from: https://console.cloud.google.com/apis/credentials
+      - GF_AUTH_GOOGLE_ENABLED=true
+      - GF_AUTH_GOOGLE_CLIENT_ID=${GRAFANA_GOOGLE_CLIENT_ID:-}
+      - GF_AUTH_GOOGLE_CLIENT_SECRET=${GRAFANA_GOOGLE_CLIENT_SECRET:-}
+      - GF_AUTH_GOOGLE_ALLOWED_DOMAINS=google.com
     networks:
       - grafana-network
     restart: unless-stopped
