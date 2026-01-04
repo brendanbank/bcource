@@ -232,9 +232,9 @@ By default, **all Google accounts** are allowed. To restrict access to specific 
 #### Invite-Only Sign-Up (Recommended)
 
 Grafana is configured for **invite-only sign-up**:
-- Open registration is disabled (`allow_sign_up = false`)
-- Only users with valid invite links can create accounts
-- Invited users can sign up using Google OAuth
+- Users need an invite link to create accounts
+- Invited users can sign up using Google OAuth (no password required)
+- The invite acceptance page shows a **Sign in with Google** button
 
 **How to invite users:**
 
@@ -249,16 +249,23 @@ Grafana is configured for **invite-only sign-up**:
 
 2. **User accepts invite:**
    - User clicks the invite link in their email
-   - They'll be taken to Grafana's sign-up page
-   - They can click **Sign in with Google**
-   - After authenticating with Google, their account is created
+   - They'll be taken to Grafana's invite acceptance page
+   - **Important:** On the invite page, they should click **Sign in with Google** button (usually shown at the top or bottom of the form)
+   - After authenticating with Google, their account is created automatically
    - They're automatically added to the organization with the assigned role
+   - **No password needed** - Google OAuth handles authentication
+
+**If Google OAuth button doesn't appear on invite page:**
+- Make sure Google OAuth is enabled (`enabled = true` in `[auth.google]`)
+- Check that `allow_sign_up = true` in both `[users]` and `[auth.google]` sections
+- The Google OAuth button should appear on the login page - users can go there instead
+- After signing in with Google using the invited email, they'll be added to the organization
 
 **Benefits:**
-- Only invited users can create accounts
-- No open registration
-- Users authenticate with their Google account
+- Only users with invite links can create accounts
+- Users authenticate with their Google account (no password to remember)
 - Admin controls who has access
+- Streamlined sign-up process
 
 **Note:** The invite link is valid for a limited time. If it expires, admin can resend the invite.
 
