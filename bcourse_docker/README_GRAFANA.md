@@ -239,22 +239,42 @@ By default, **all Google accounts** are allowed. To restrict access to specific 
 
 #### Linking Existing Users to Google OAuth
 
-If a user already exists in Grafana (created via admin/password), they need to link their Google account:
+If a user already exists in Grafana (created via admin/password), they need to link their Google account. **Note:** The Authentication tab may not be visible in all Grafana versions or may require admin access.
+
+**Option 1: Delete and Recreate User (Easiest)**
+
+If the user doesn't have important data/dashboards:
+
+1. **Admin deletes the existing user:**
+   - Admin logs in to Grafana
+   - Go to **Administration** (gear icon) → **Users and access** → **Users**
+   - Find the user `info@brendanbank.com`
+   - Click on the user → **Delete user**
+
+2. **User logs in with Google OAuth:**
+   - Go to https://grafana.brendanbank.com
+   - Click **Sign in with Google**
+   - Grafana will create a new account automatically
+
+**Option 2: Link via Profile (If Available)**
 
 1. **Log in with existing credentials:**
    - Go to https://grafana.brendanbank.com
    - Log in with the existing username/password
 
-2. **Link Google account:**
+2. **Try to find Authentication settings:**
    - Click on your profile icon (top right) → **Profile**
-   - Go to **Authentication** tab
-   - Click **Link Google account**
-   - Authorize the connection
-   - Your Google account is now linked
+   - Look for **Authentication**, **Connected accounts**, or **Account settings** tab
+   - If you see a **Link Google account** option, click it and authorize
 
-3. **Use Google OAuth:**
-   - After linking, you can log out and log back in using **Sign in with Google**
-   - The existing account will be used (no new user created)
+3. **Alternative locations to check:**
+   - Profile → **Preferences** → Look for authentication options
+   - Profile → **Security** → Look for connected accounts
+   - **Administration** → **Authentication** (admin only)
+
+**Option 3: Admin Links Account via API (Advanced)**
+
+If you have admin access, you can link accounts via Grafana API (requires technical knowledge).
 
 **Note:** After linking, users can use either their password or Google OAuth to log in.
 
