@@ -1,17 +1,36 @@
 apiVersion: 1
 
 apps:
-  - type: grafana-oncall-app
-    org_id: 1
-    enabled: true
-    jsonData:
-      # Stack ID - this will be set when OnCall backend is configured
-      # For now, this is a placeholder. You'll need to set up the OnCall backend
-      # or use Grafana Cloud OnCall to get the actual stackId
-      stackId: 1
-      orgId: 1
-      # OnCall API URL - point to your OnCall backend service
-      # If using self-hosted OnCall backend, this should be the backend URL
-      # If using Grafana Cloud OnCall, use your Cloud OnCall URL
-      onCallApiUrl: http://oncall-engine:8080
+  # Grafana OnCall plugin configuration
+  # 
+  # IMPORTANT: OnCall requires a backend service to function.
+  # 
+  # Option 1: Use Grafana Cloud OnCall
+  #   - Sign up at https://grafana.com/auth/sign-up/create-user
+  #   - Get your OnCall URL and Stack ID from Cloud settings
+  #   - Update the jsonData below with your Cloud credentials
+  #   - Uncomment and configure:
+  #
+  # - type: grafana-oncall-app
+  #   org_id: 1
+  #   enabled: true
+  #   jsonData:
+  #     stackId: <your-cloud-stack-id>
+  #     orgId: 1
+  #     onCallApiUrl: https://<your-instance>.grafana.net
+  #
+  # Option 2: Self-hosted OnCall backend
+  #   - Requires PostgreSQL, Redis, and OnCall engine
+  #   - See: https://grafana.com/docs/oncall/latest/open-source/
+  #   - Update onCallApiUrl to point to your backend service
+  #
+  # Option 3: Use Grafana Alerting (built-in, no backend required)
+  #   - Access via: Alerts & IRM → Alerting
+  #   - Provides alert rules, contact points, notification policies
+  #   - Sufficient for most use cases
+  #
+  # Currently disabled - uncomment and configure when backend is ready
+  # - type: grafana-oncall-app
+  #   org_id: 1
+  #   enabled: false
 
