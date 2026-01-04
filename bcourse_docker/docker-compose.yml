@@ -55,7 +55,6 @@ services:
             target_label: 'stream'
     networks:
       - web-network
-      - grafana-network
     restart: unless-stopped
 
   bcourse:
@@ -63,6 +62,13 @@ services:
     build: ..
     image: bcourse:latest
     env_file: "../.env"
+    environment:
+      - MYSQL_HOSTNAME=bcourse-mysql
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@bcourse-mysql/${MYSQL_DATABASE:-bcourse}
+      - SQLALCHEMY_BINDS_POSTALCODES=mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@bcourse-mysql/postalcodes
+    depends_on:
+      mysql:
+        condition: service_healthy
     logging:
       driver: "loki"
       options:
@@ -93,6 +99,7 @@ services:
       - "traefik.http.routers.bcourse.entrypoints=web,websecure"
       - "traefik.http.routers.bcourse.tls.certresolver=myresolver"
       - "traefik.http.services.bcourse.loadbalancer.server.port=80"
+      - "traefik.docker.network=web-network"
     restart: unless-stopped
 
   mysql:
@@ -137,55 +144,10 @@ services:
             target_label: 'stream'
     command: --default-authentication-plugin=caching_sha2_password
 
-  grafana:
-    image: "grafana/grafana:latest"
-    container_name: "grafana"
-    restart: unless-stopped
-    env_file: "../.env"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
-      - GF_SERVER_ROOT_URL=https://grafana.brendanbank.com
-      - GF_SERVER_SERVE_FROM_SUB_PATH=false
-    volumes:
-      - "./grafana_data:/var/lib/grafana"
-    networks:
-      - grafana-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.brendanbank.com`)"
-      - "traefik.http.routers.grafana.entrypoints=web,websecure"
-      - "traefik.http.routers.grafana.tls.certresolver=myresolver"
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-      - "traefik.docker.network=grafana-network"
-    logging:
-      driver: "loki"
-      options:
-        loki-url: "http://loki.bgwlan.nl:3100/loki/api/v1/push"
-        loki-pipeline-stages: |
-          - json:
-              expressions:
-                stream: stream
-                attrs: attrs
-                tag: attrs.tag
-                level: attrs.level
-                msg: log
-        loki-relabel-config: |
-          - action: replace
-            source_labels: ['__filename__']
-            target_label: 'job'
-          - action: replace
-            source_labels: ['container_name']
-            target_label: 'container'
-          - action: replace
-            source_labels: ['stream']
-            target_label: 'stream'
-
 volumes:
   mysql_data:
 
 networks:
   web-network:
-    driver: bridge
-  grafana-network:
+    name: web-network
     driver: bridge 
