@@ -426,9 +426,9 @@ After installing `grafana-clock-panel`, configure it in a dashboard:
 
 Grafana includes built-in **Alerting** capabilities and supports **Grafana OnCall** for comprehensive incident response management.
 
-### Grafana Alerting (Built-in)
+### Grafana Alerting (Built-in) ✅ Recommended
 
-Grafana Alerting is a built-in feature (available in Grafana 8.0+) that allows you to create and manage alert rules based on your monitoring data.
+Grafana Alerting is a built-in feature (available in Grafana 8.0+) that allows you to create and manage alert rules based on your monitoring data. **This is the recommended solution** as it requires no backend setup and provides comprehensive alerting capabilities.
 
 #### Features
 
@@ -437,30 +437,72 @@ Grafana Alerting is a built-in feature (available in Grafana 8.0+) that allows y
 - **Notification Policies**: Route alerts to appropriate contact points based on labels
 - **Alert Groups**: Group related alerts together
 - **Silences**: Temporarily silence alerts for maintenance
+- **No Backend Required**: Works out of the box with your existing Grafana installation
 
 #### Getting Started with Alerting
 
-1. **Access Alerting:**
-   - Log into Grafana at https://grafana.brendanbank.com
-   - Navigate to **Alerts & IRM** → **Alerting** in the main menu
+**Step 1: Access Alerting**
+- Log into Grafana at https://grafana.brendanbank.com
+- Navigate to **Alerts & IRM** → **Alerting** in the main menu
 
-2. **Create a Contact Point:**
-   - Go to **Alerting** → **Contact points**
-   - Click **+ Add contact point**
-   - Configure notification method (Email, Slack, webhook, etc.)
-   - Test the contact point to verify it works
+**Step 2: Create a Contact Point (Email is already configured!)**
+- Go to **Alerting** → **Contact points**
+- You'll see a default email contact point using your SMTP configuration
+- Click **+ Add contact point** to add more channels (Slack, webhook, etc.)
+- Test the contact point to verify it works
 
-3. **Create an Alert Rule:**
-   - Go to **Alerting** → **Alert rules**
-   - Click **+ New alert rule**
-   - Define the query and conditions that trigger the alert
-   - Set evaluation interval and for how long the condition must be true
-   - Assign a contact point for notifications
+**Step 3: Create an Alert Rule**
+- Go to **Alerting** → **Alert rules**
+- Click **+ New alert rule**
+- **Define the query:**
+  - Select your data source (Prometheus, MySQL, etc.)
+  - Write a query that returns metrics you want to monitor
+- **Set conditions:**
+  - Define when the alert should fire (e.g., value > threshold)
+  - Set evaluation interval (how often to check)
+  - Set "for" duration (how long condition must be true before alerting)
+- **Configure notifications:**
+  - Assign contact points
+  - Add labels for routing
+  - Set alert summary and description
 
-4. **Configure Notification Policies:**
-   - Go to **Alerting** → **Notification policies**
-   - Set up routing rules based on labels
-   - Configure group-by settings and timing
+**Step 4: Configure Notification Policies (Optional)**
+- Go to **Alerting** → **Notification policies**
+- Set up routing rules based on labels
+- Configure group-by settings and timing
+- Define when to send notifications (immediately, after delay, etc.)
+
+#### Quick Example: Create Your First Alert
+
+1. **Go to Alerting → Alert rules → + New alert rule**
+
+2. **Set up the query:**
+   ```
+   Data source: Your data source (e.g., Prometheus, MySQL)
+   Query: SELECT avg(cpu_usage) FROM metrics WHERE time > now() - 5m
+   ```
+
+3. **Set conditions:**
+   ```
+   Condition: When avg(cpu_usage) > 80
+   Evaluate every: 1m
+   For: 5m (alert only if condition persists for 5 minutes)
+   ```
+
+4. **Configure notifications:**
+   ```
+   Contact point: Email (default)
+   Summary: High CPU usage detected
+   Description: CPU usage is {{ $values.A.Value }}%, exceeding threshold of 80%
+   ```
+
+5. **Add labels (optional):**
+   ```
+   severity: warning
+   team: infrastructure
+   ```
+
+6. **Save and test** - The alert will start evaluating immediately!
 
 #### Alerting Configuration
 
@@ -555,15 +597,22 @@ Setting up a self-hosted OnCall backend requires:
 
 This is complex and typically requires multiple Docker containers. See the [OnCall Self-Hosted Documentation](https://grafana.com/docs/oncall/latest/open-source/) for full setup instructions.
 
-#### Option 3: Use Grafana Alerting Instead (Simpler Alternative)
+#### Option 3: Use Grafana Alerting Instead ✅ Recommended
 
-For most use cases, **Grafana Alerting** (built-in) provides sufficient functionality:
+**Grafana Alerting** (built-in) is recommended and provides sufficient functionality for most use cases:
 - Alert rules and notifications
 - Contact points (email, Slack, webhooks)
 - Notification policies
 - Alert grouping
+- No backend services required
 
-You can use Alerting without any additional backend services. See the [Alerting section](#grafana-alerting-built-in) above.
+See the [Alerting section](#grafana-alerting-built-in) above for setup instructions.
+
+**Note:** If you're using Grafana Alerting, you can optionally remove the OnCall plugin from your `.env` file to avoid confusion:
+```bash
+# Remove grafana-oncall-app from GRAFANA_PLUGINS in .env
+GRAFANA_PLUGINS=grafana-clock-panel,grafana-piechart-panel
+```
 
 #### Getting Started with OnCall (After Backend is Configured)
 
