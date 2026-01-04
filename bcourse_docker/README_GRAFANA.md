@@ -80,6 +80,12 @@ GRAFANA_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
 GRAFANA_SMTP_HOST=host.docker.internal  # or 172.17.0.1 or your SMTP server IP
 GRAFANA_SMTP_PORT=25
 
+# Google OAuth Configuration (for @google.com users)
+# Get credentials from: https://console.cloud.google.com/apis/credentials
+# See "Authentication" section below for setup instructions
+GRAFANA_GOOGLE_CLIENT_ID=your_google_client_id_here
+GRAFANA_GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+
 # Optional: Traefik Certificate Resolver (defaults to myresolver)
 TRAEFIK_CERT_RESOLVER=myresolver
 ```
@@ -155,12 +161,73 @@ For local development, Grafana is also accessible via:
 
 **Note:** Grafana is configured to only accept HTTPS connections in production. For local development, you may need to adjust Traefik configuration or use the development override file.
 
-## Default Credentials
+## Authentication
+
+Grafana supports multiple authentication methods:
+
+### Default Login
 
 - **Username:** `admin` (or value from `GRAFANA_ADMIN_USER`)
 - **Password:** Value from `GRAFANA_ADMIN_PASSWORD` environment variable
 
 **⚠️ Security:** Change the default password immediately after first login!
+
+### Google OAuth (for @google.com users)
+
+Google OAuth is configured to allow users with `@google.com` email addresses to sign in with their Google accounts.
+
+#### Setup Instructions
+
+1. **Create Google OAuth Credentials:**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select an existing one
+   - Navigate to **APIs & Services** → **Credentials**
+   - Click **+ Create Credentials** → **OAuth client ID**
+   - Choose **Web application**
+   - Configure:
+     - **Name:** Grafana (or your preferred name)
+     - **Authorized JavaScript origins:** `https://grafana.brendanbank.com`
+     - **Authorized redirect URIs:** `https://grafana.brendanbank.com/login/google`
+   - Click **Create**
+   - Copy the **Client ID** and **Client Secret**
+
+2. **Add Credentials to `.env` File:**
+   ```bash
+   GRAFANA_GOOGLE_CLIENT_ID=your_client_id_here.apps.googleusercontent.com
+   GRAFANA_GOOGLE_CLIENT_SECRET=your_client_secret_here
+   ```
+
+3. **Restart Grafana:**
+   ```bash
+   cd bcourse_docker
+   docker compose restart grafana
+   ```
+
+4. **Test Login:**
+   - Go to https://grafana.brendanbank.com
+   - Click **Sign in with Google**
+   - Users with `@google.com` email addresses can now sign in
+
+#### Security Notes
+
+- Only users with `@google.com` email addresses can sign in via Google OAuth
+- First-time users will be automatically created in Grafana
+- Users can still use the default admin login if needed
+- Google OAuth credentials are stored securely in environment variables
+
+#### Troubleshooting
+
+**"Invalid redirect URI" error:**
+- Ensure the redirect URI in Google Console matches exactly: `https://grafana.brendanbank.com/login/google`
+- Check that your domain matches `grafana.brendanbank.com`
+
+**"Access blocked" error:**
+- Verify the authorized JavaScript origin is set to: `https://grafana.brendanbank.com`
+- Check that OAuth consent screen is configured in Google Console
+
+**Users can't sign in:**
+- Verify `allowed_domains = google.com` in `grafana.ini`
+- Check Grafana logs: `docker compose logs grafana | grep -i google`
 
 ## Plugins
 
