@@ -1,0 +1,17 @@
+apiVersion: 1
+
+apps:
+  - type: grafana-oncall-app
+    org_id: 1
+    enabled: true
+    jsonData:
+      # Stack ID - this will be set when OnCall backend is configured
+      # For now, this is a placeholder. You'll need to set up the OnCall backend
+      # or use Grafana Cloud OnCall to get the actual stackId
+      stackId: 1
+      orgId: 1
+      # OnCall API URL - point to your OnCall backend service
+      # If using self-hosted OnCall backend, this should be the backend URL
+      # If using Grafana Cloud OnCall, use your Cloud OnCall URL
+      onCallApiUrl: http://oncall-engine:8080
+

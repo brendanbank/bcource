@@ -501,6 +501,13 @@ See the [SMTP Configuration](#smtp-connection-issues) section for troubleshootin
 
 Grafana OnCall is an incident response management plugin that provides on-call scheduling, alert routing, and incident management workflows.
 
+#### ⚠️ Important: OnCall Requires a Backend Service
+
+**Grafana OnCall requires a separate backend service to function.** The plugin alone is not sufficient. You have two options:
+
+1. **Grafana Cloud OnCall** (Easiest) - Use Grafana Cloud's managed OnCall service
+2. **Self-Hosted OnCall Backend** (Complex) - Set up your own OnCall backend with PostgreSQL, Redis, etc.
+
 #### Features
 
 - **On-Call Schedules**: Create rotating on-call schedules
@@ -511,13 +518,54 @@ Grafana OnCall is an incident response management plugin that provides on-call s
 
 #### Installation
 
-Grafana OnCall is already installed via the `grafana-oncall-app` plugin. It's configured in your `.env`:
+Grafana OnCall plugin is already installed via the `grafana-oncall-app` plugin. It's configured in your `.env`:
 
 ```bash
 GRAFANA_PLUGINS=grafana-clock-panel,grafana-piechart-panel,grafana-oncall-app
 ```
 
-#### Getting Started with OnCall
+However, **the plugin requires backend configuration** before it can be used.
+
+#### Option 1: Using Grafana Cloud OnCall (Recommended for Most Users)
+
+If you have a Grafana Cloud account:
+
+1. **Get Your OnCall URL and Stack ID:**
+   - Log into Grafana Cloud
+   - Navigate to your OnCall instance
+   - Get your OnCall API URL and Stack ID from the settings
+
+2. **Update Provisioning Configuration:**
+   - Edit `grafana/provisioning/plugins/oncall.yaml`
+   - Set `onCallApiUrl` to your Grafana Cloud OnCall URL
+   - Set `stackId` to your Cloud stack ID
+
+3. **Restart Grafana:**
+   ```bash
+   docker compose restart grafana
+   ```
+
+#### Option 2: Self-Hosted OnCall Backend
+
+Setting up a self-hosted OnCall backend requires:
+- PostgreSQL database
+- Redis cache
+- OnCall engine service
+- Additional configuration
+
+This is complex and typically requires multiple Docker containers. See the [OnCall Self-Hosted Documentation](https://grafana.com/docs/oncall/latest/open-source/) for full setup instructions.
+
+#### Option 3: Use Grafana Alerting Instead (Simpler Alternative)
+
+For most use cases, **Grafana Alerting** (built-in) provides sufficient functionality:
+- Alert rules and notifications
+- Contact points (email, Slack, webhooks)
+- Notification policies
+- Alert grouping
+
+You can use Alerting without any additional backend services. See the [Alerting section](#grafana-alerting-built-in) above.
+
+#### Getting Started with OnCall (After Backend is Configured)
 
 1. **Access OnCall:**
    - Log into Grafana at https://grafana.brendanbank.com
@@ -548,7 +596,27 @@ GRAFANA_PLUGINS=grafana-clock-panel,grafana-piechart-panel,grafana-oncall-app
 
 #### OnCall Configuration
 
-OnCall can be configured via environment variables or through the UI. For advanced configuration, see the [OnCall Documentation](https://grafana.com/docs/oncall/latest/).
+OnCall is configured via provisioning file at `grafana/provisioning/plugins/oncall.yaml`:
+
+```yaml
+apiVersion: 1
+
+apps:
+  - type: grafana-oncall-app
+    org_id: 1
+    enabled: true
+    jsonData:
+      stackId: 1          # Your OnCall stack ID (from Cloud or self-hosted)
+      orgId: 1            # Your Grafana organization ID
+      onCallApiUrl: http://oncall-engine:8080  # Your OnCall backend URL
+```
+
+**Current Configuration:**
+- The provisioning file is set up at `grafana/provisioning/plugins/oncall.yaml`
+- It's mounted into Grafana at `/etc/grafana/provisioning`
+- Update the `stackId` and `onCallApiUrl` based on your OnCall backend setup
+
+For advanced configuration, see the [OnCall Documentation](https://grafana.com/docs/oncall/latest/).
 
 #### OnCall Resources
 
@@ -782,6 +850,42 @@ If you're trying to connect Grafana to an external database:
 3. **Check firewall:** Ensure ports are accessible
 
 **Note:** Grafana cannot directly connect to MySQL in the `web-network` due to network isolation. Use `host.docker.internal` if MySQL is exposed on the host.
+
+### OnCall Plugin Connection Issues
+
+If you see errors like "Plugin is not connected" or "jsonData.stackId is not set":
+
+**Problem:** OnCall plugin requires a backend service to be configured and running.
+
+**Solution Options:**
+
+1. **Use Grafana Cloud OnCall:**
+   - Sign up for Grafana Cloud (if not already)
+   - Get your OnCall URL and Stack ID from Cloud settings
+   - Update `grafana/provisioning/plugins/oncall.yaml` with your Cloud credentials
+   - Restart Grafana
+
+2. **Set Up Self-Hosted OnCall Backend:**
+   - Requires PostgreSQL, Redis, and OnCall engine services
+   - See [OnCall Self-Hosted Documentation](https://grafana.com/docs/oncall/latest/open-source/)
+   - Update `onCallApiUrl` in provisioning file to point to your backend
+
+3. **Use Grafana Alerting Instead:**
+   - Grafana Alerting is built-in and doesn't require a backend
+   - Provides alert rules, contact points, and notification policies
+   - Sufficient for most use cases without complex on-call scheduling
+
+**Check Provisioning Configuration:**
+```bash
+# Verify provisioning file exists
+cat grafana/provisioning/plugins/oncall.yaml
+
+# Check if provisioning directory is mounted
+docker compose exec grafana ls -la /etc/grafana/provisioning/plugins/
+
+# Restart Grafana after configuration changes
+docker compose restart grafana
+```
 
 ## Security Best Practices
 
