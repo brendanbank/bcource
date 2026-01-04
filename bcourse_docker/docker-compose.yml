@@ -89,7 +89,7 @@ services:
       - web-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.bcourse.rule=Host(`${TRAEFIK_HOST1:-bcourse.nl}`) || Host(`${TRAEFIK_HOST2:-www.bcourse.nl}`)"
+      - "traefik.http.routers.bcourse.rule=Host(`${TRAEFIK_HOST1:-bcourse.nl}`) || Host(`${TRAEFIK_HOST2:-www.bcourse.nl}`) ||  Host(`${TRAEFIK_HOST3:-bcourse-app.bgwlan.nl}`)"
       - "traefik.http.routers.bcourse.entrypoints=web,websecure"
       - "traefik.http.routers.bcourse.tls.certresolver=myresolver"
       - "traefik.http.services.bcourse.loadbalancer.server.port=80"
