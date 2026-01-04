@@ -181,6 +181,8 @@ services:
       - GF_INSTALL_PLUGINS=${GRAFANA_PLUGINS:-}
       - GF_SERVER_ROOT_URL=https://grafana.brendanbank.com/
       - GF_SERVER_DOMAIN=grafana.brendanbank.com
+      - GF_SMTP_HOST=${GRAFANA_SMTP_HOST:-host.docker.internal}
+      - GF_SMTP_PORT=${GRAFANA_SMTP_PORT:-25}
     networks:
       - grafana-network
     restart: unless-stopped
