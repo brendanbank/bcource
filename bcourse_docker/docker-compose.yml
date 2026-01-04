@@ -181,9 +181,11 @@ services:
       - GF_INSTALL_PLUGINS=${GRAFANA_PLUGINS:-}
       - GF_SERVER_ROOT_URL=https://grafana.brendanbank.com/
       - GF_SERVER_DOMAIN=grafana.brendanbank.com
-      # SMTP configuration - explicitly set both host and port to avoid parsing issues
-      # Can be overridden via .env file: GRAFANA_SMTP_HOST and GRAFANA_SMTP_PORT
+      # SMTP configuration - host can include port (e.g., "172.17.0.1:25")
+      # If host includes port, Grafana will parse it from the host string
+      # Can be overridden via .env file: GRAFANA_SMTP_HOST
       - GF_SMTP_HOST=${GRAFANA_SMTP_HOST:-host.docker.internal}
+      # Port will be parsed from GF_SMTP_HOST if included, otherwise defaults to 25
       - GF_SMTP_PORT=${GRAFANA_SMTP_PORT:-25}
     networks:
       - grafana-network
