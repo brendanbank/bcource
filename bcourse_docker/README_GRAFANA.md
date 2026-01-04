@@ -448,7 +448,13 @@ Grafana Alerting is a built-in feature (available in Grafana 8.0+) that allows y
 **Step 2: Create a Contact Point (Email is already configured!)**
 - Go to **Alerting** → **Contact points**
 - You'll see a default email contact point using your SMTP configuration
-- Click **+ Add contact point** to add more channels (Slack, webhook, etc.)
+- Click **+ Add contact point** to add more channels:
+  - **Pushover** - Push notifications to your phone (recommended for mobile)
+  - **Telegram** - Telegram bot notifications
+  - **Slack** - Slack notifications (can forward to mobile)
+  - **PagerDuty** - Incident management with mobile app
+  - **OpsGenie** - Alerting with mobile app
+  - **Webhook** - Custom integrations
 - Test the contact point to verify it works
 
 **Step 3: Create an Alert Rule**
@@ -533,11 +539,83 @@ from_address = admin@grafana.brendanbank.com
 
 See the [SMTP Configuration](#smtp-connection-issues) section for troubleshooting.
 
+#### Mobile Push Notifications
+
+Grafana Alerting supports several ways to get push notifications on your phone:
+
+**Option 1: Pushover (Recommended - Easiest)**
+1. Sign up for Pushover at https://pushover.net (free trial, then $5 one-time per platform)
+2. Install Pushover app on your phone (iOS/Android)
+3. Get your User Key from Pushover dashboard
+4. Create a new Application in Pushover to get an API Token
+5. In Grafana: **Alerting** → **Contact points** → **+ Add contact point**
+   - Type: **Pushover**
+   - User key: Your Pushover user key
+   - API token: Your Pushover application token
+   - Priority: High (for important alerts)
+6. Add this contact point to your alert rules
+
+**Option 2: Telegram**
+1. Create a Telegram bot via @BotFather
+2. Get your chat ID (send message to bot, then visit `https://api.telegram.org/bot<token>/getUpdates`)
+3. In Grafana: **Alerting** → **Contact points** → **+ Add contact point**
+   - Type: **Telegram**
+   - Bot token: Your Telegram bot token
+   - Chat ID: Your Telegram chat ID
+
+**Option 3: Slack (with mobile app)**
+1. Create a Slack webhook URL
+2. In Grafana: **Alerting** → **Contact points** → **+ Add contact point**
+   - Type: **Slack**
+   - Webhook URL: Your Slack webhook URL
+3. Install Slack mobile app to receive push notifications
+
+**Option 4: PagerDuty or OpsGenie**
+- Professional incident management platforms with mobile apps
+- More features but requires account setup
+- Good for teams and on-call rotations
+
+**Quick Setup Example - Pushover:**
+```bash
+# 1. Sign up at pushover.net and install app
+# 2. Get User Key and create Application for API Token
+# 3. In Grafana UI:
+#    - Alerting → Contact points → + Add contact point
+#    - Select "Pushover"
+#    - Enter User Key and API Token
+#    - Set Priority: High
+#    - Save and test
+# 4. Add this contact point to your alert rules
+```
+
+#### Do You Need Prometheus Alertmanager?
+
+**No, you don't need an external Alertmanager for Grafana Alerting.**
+
+Grafana Alerting is **self-contained** and handles everything:
+- Alert rule evaluation
+- Alert routing and grouping
+- Notification delivery
+- Alert state management
+
+**When you might use Alertmanager:**
+- If you're using Prometheus and want Prometheus-native alerting
+- If you want to route Prometheus alerts through Alertmanager first
+- If you have existing Alertmanager configurations you want to keep
+
+**Grafana Alerting can integrate with Alertmanager:**
+- You can configure Grafana Alerting to send alerts to Prometheus Alertmanager
+- Or use Alertmanager as a contact point in Grafana Alerting
+- This is optional - Grafana Alerting works perfectly fine standalone
+
+**For your setup:** Since you're using Grafana Alerting, you don't need Alertmanager unless you have specific requirements to integrate with Prometheus Alertmanager.
+
 #### Alerting Resources
 
 - [Grafana Alerting Documentation](https://grafana.com/docs/grafana/latest/alerting/)
 - [Get Started with Alerting Tutorial](https://grafana.com/tutorials/alerting-get-started/)
 - [Alert Rule Best Practices](https://grafana.com/docs/grafana/latest/alerting/fundamentals/alert-rules/)
+- [Integrating with Prometheus Alertmanager](https://grafana.com/docs/grafana/latest/alerting/set-up/migrating-alerts/)
 
 ### Grafana OnCall (Plugin)
 
