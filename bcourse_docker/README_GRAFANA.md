@@ -229,11 +229,44 @@ By default, **all Google accounts** are allowed. To restrict access to specific 
    docker compose restart grafana
    ```
 
+#### Invite-Only Sign-Up (Recommended)
+
+Grafana is configured for **invite-only sign-up**:
+- Open registration is disabled (`allow_sign_up = false`)
+- Only users with valid invite links can create accounts
+- Invited users can sign up using Google OAuth
+
+**How to invite users:**
+
+1. **Admin sends invite:**
+   - Log in as admin
+   - Go to **Administration** (gear icon) → **Users and access** → **Users**
+   - Click **Invite user**
+   - Enter the user's email address (e.g., `user@example.com`)
+   - Select their role (Viewer, Editor, or Admin)
+   - Click **Send invite**
+   - The user will receive an email with an invite link
+
+2. **User accepts invite:**
+   - User clicks the invite link in their email
+   - They'll be taken to Grafana's sign-up page
+   - They can click **Sign in with Google**
+   - After authenticating with Google, their account is created
+   - They're automatically added to the organization with the assigned role
+
+**Benefits:**
+- Only invited users can create accounts
+- No open registration
+- Users authenticate with their Google account
+- Admin controls who has access
+
+**Note:** The invite link is valid for a limited time. If it expires, admin can resend the invite.
+
 #### Security Notes
 
-- **By default, any Google account can sign in** (Gmail, Google Workspace, custom domains)
-- To restrict to specific domains, set `GRAFANA_GOOGLE_ALLOWED_DOMAINS` in `.env`
-- First-time users will be automatically created in Grafana
+- **Invite-only sign-up is enabled** - only users with valid invite links can create accounts
+- Invited users can sign up using Google OAuth
+- To restrict Google OAuth to specific domains, set `GRAFANA_GOOGLE_ALLOWED_DOMAINS` in `.env`
 - Users can still use the default admin login if needed
 - Google OAuth credentials are stored securely in environment variables
 
