@@ -182,8 +182,9 @@ services:
       - GF_SERVER_ROOT_URL=https://grafana.brendanbank.com/
       - GF_SERVER_DOMAIN=grafana.brendanbank.com
       # SMTP configuration - explicitly set both host and port to avoid parsing issues
-      - GF_SMTP_HOST=host.docker.internal
-      - GF_SMTP_PORT=25
+      # Can be overridden via .env file: GRAFANA_SMTP_HOST and GRAFANA_SMTP_PORT
+      - GF_SMTP_HOST=${GRAFANA_SMTP_HOST:-host.docker.internal}
+      - GF_SMTP_PORT=${GRAFANA_SMTP_PORT:-25}
     networks:
       - grafana-network
     restart: unless-stopped
