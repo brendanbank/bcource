@@ -55,6 +55,7 @@ services:
             target_label: 'stream'
     networks:
       - web-network
+      - grafana-network
     restart: unless-stopped
 
   bcourse:
@@ -144,10 +145,41 @@ services:
             target_label: 'stream'
     command: --default-authentication-plugin=caching_sha2_password
 
+  grafana:
+    image: "grafana/grafana:latest"
+    container_name: "grafana"
+    extra_hosts:
+      # Allow access to host machine from container
+      - "host.docker.internal:host-gateway"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.brendanbank.com`) || Host(`localhost`) || Host(`127.0.0.1`) || Host(`bcourse-app.bgwlan.nl`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      # TLS configuration: Use certresolver only in production (when TRAEFIK_CERT_RESOLVER is set)
+      # For development: Use docker-compose.dev.yml which omits this label to use self-signed certificates
+      - "traefik.http.routers.grafana.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-myresolver}"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.docker.network=grafana-network"
+    volumes:
+      - "./grafana/grafana.ini:/etc/grafana/grafana.ini"
+      - "./grafana/data:/var/lib/grafana"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_INSTALL_PLUGINS=${GRAFANA_PLUGINS:-}
+      - GF_SERVER_ROOT_URL=https://grafana.brendanbank.com/
+      - GF_SERVER_DOMAIN=grafana.brendanbank.com
+    networks:
+      - grafana-network
+    restart: unless-stopped
+
 volumes:
   mysql_data:
 
 networks:
   web-network:
     name: web-network
+    driver: bridge
+  grafana-network:
+    name: grafana-network
     driver: bridge 
