@@ -172,9 +172,12 @@ Grafana supports multiple authentication methods:
 
 **⚠️ Security:** Change the default password immediately after first login!
 
-### Google OAuth (for @google.com users)
+### Google OAuth (for any Google account)
 
-Google OAuth is configured to allow users with `@google.com` email addresses to sign in with their Google accounts.
+Google OAuth is configured to allow **any Google account** to sign in, including:
+- Gmail accounts (@gmail.com)
+- Google Workspace accounts (@google.com)
+- Custom domain Google Workspace accounts (e.g., @brendanbank.com, @example.com)
 
 #### Setup Instructions
 
@@ -206,11 +209,30 @@ Google OAuth is configured to allow users with `@google.com` email addresses to 
 4. **Test Login:**
    - Go to https://grafana.brendanbank.com
    - Click **Sign in with Google**
-   - Users with `@google.com` email addresses can now sign in
+   - Any Google account (Gmail, Google Workspace, custom domains) can now sign in
+
+#### Domain Restrictions (Optional)
+
+By default, **all Google accounts** are allowed. To restrict access to specific domains:
+
+1. **Add to `.env` file:**
+   ```bash
+   # Allow only specific domains (comma-separated)
+   GRAFANA_GOOGLE_ALLOWED_DOMAINS=gmail.com,google.com,brendanbank.com
+   
+   # Or leave empty/unset to allow all Google accounts
+   # GRAFANA_GOOGLE_ALLOWED_DOMAINS=
+   ```
+
+2. **Restart Grafana:**
+   ```bash
+   docker compose restart grafana
+   ```
 
 #### Security Notes
 
-- Only users with `@google.com` email addresses can sign in via Google OAuth
+- **By default, any Google account can sign in** (Gmail, Google Workspace, custom domains)
+- To restrict to specific domains, set `GRAFANA_GOOGLE_ALLOWED_DOMAINS` in `.env`
 - First-time users will be automatically created in Grafana
 - Users can still use the default admin login if needed
 - Google OAuth credentials are stored securely in environment variables
