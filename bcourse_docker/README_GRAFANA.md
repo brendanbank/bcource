@@ -75,6 +75,11 @@ GRAFANA_ADMIN_USER=admin
 GRAFANA_ADMIN_PASSWORD=your_secure_grafana_password_here
 GRAFANA_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
 
+# SMTP Configuration (if host.docker.internal doesn't work)
+# Find your Docker bridge gateway IP: docker network inspect bridge --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}'
+GRAFANA_SMTP_HOST=host.docker.internal  # or 172.17.0.1 or your SMTP server IP
+GRAFANA_SMTP_PORT=25
+
 # Optional: Traefik Certificate Resolver (defaults to myresolver)
 TRAEFIK_CERT_RESOLVER=myresolver
 ```
@@ -502,6 +507,101 @@ Grafana is configured with `host.docker.internal:host-gateway` to access the hos
 
 If this doesn't work, verify Docker version (requires Docker 20.10+) or configure manually.
 
+### SMTP Connection Issues
+
+If you see errors like `dial tcp 172.17.0.1:25: connect: connection refused`:
+
+**Problem:** `host.docker.internal` resolves to the Docker bridge gateway IP (`172.17.0.1`), but your SMTP server is likely only listening on `127.0.0.1` (localhost).
+
+**Solution 1: Configure SMTP Server to Listen on Docker Bridge**
+
+Make your SMTP server listen on the Docker bridge interface:
+
+```bash
+# For Postfix (common SMTP server)
+# Edit /etc/postfix/main.cf
+inet_interfaces = all  # or inet_interfaces = 127.0.0.1, 172.17.0.1
+
+# Restart Postfix
+sudo systemctl restart postfix
+```
+
+**Solution 2: Use Docker Bridge Gateway IP**
+
+Find the Docker bridge gateway IP and use it directly:
+
+```bash
+# Find the gateway IP
+ip addr show docker0 | grep inet
+
+# Or check the network gateway
+docker network inspect bridge --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}'
+```
+
+Then set in your `.env` file:
+```bash
+GRAFANA_SMTP_HOST=172.17.0.1  # Replace with actual gateway IP
+```
+
+**Solution 3: Use Host's Public IP**
+
+If your SMTP server is accessible via the host's public IP:
+
+```bash
+# Find host IP
+hostname -I | awk '{print $1}'
+
+# Set in .env
+GRAFANA_SMTP_HOST=<host-ip>
+```
+
+**Solution 4: Use Host Network Mode (Not Recommended)**
+
+As a last resort, you can use host network mode, but this reduces security isolation:
+
+```yaml
+# In docker-compose.yml (not recommended)
+grafana:
+  network_mode: "host"
+```
+
+**Verify SMTP Server is Running:**
+
+```bash
+# Check if SMTP server is listening
+sudo netstat -tlnp | grep :25
+# or
+sudo ss -tlnp | grep :25
+
+# Test SMTP connection from host
+telnet localhost 25
+```
+
+**Test SMTP from Grafana Container:**
+
+```bash
+# Test connection from Grafana container
+docker compose exec grafana telnet host.docker.internal 25
+
+# Or test with the gateway IP
+docker compose exec grafana telnet 172.17.0.1 25
+```
+
+**Update Configuration:**
+
+After determining the correct SMTP host, update your `.env` file:
+
+```bash
+# Add to .env
+GRAFANA_SMTP_HOST=172.17.0.1  # or your SMTP server IP
+GRAFANA_SMTP_PORT=25
+```
+
+Then restart Grafana:
+```bash
+docker compose restart grafana
+```
+
 ### Database Connection Issues
 
 If you're trying to connect Grafana to an external database:
@@ -571,6 +671,8 @@ rm -rf grafana/data/*
 | `GRAFANA_ADMIN_USER` | `admin` | Grafana admin username |
 | `GRAFANA_ADMIN_PASSWORD` | `admin` | Grafana admin password (change this!) |
 | `GRAFANA_PLUGINS` | (empty) | Comma-separated list of plugins to install |
+| `GRAFANA_SMTP_HOST` | `host.docker.internal` | SMTP server hostname (use Docker bridge gateway IP if host.docker.internal doesn't work) |
+| `GRAFANA_SMTP_PORT` | `25` | SMTP server port |
 | `TRAEFIK_CERT_RESOLVER` | `myresolver` | Traefik certificate resolver name |
 
 ### Volume Mounts
