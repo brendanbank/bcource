@@ -172,12 +172,11 @@ Grafana supports multiple authentication methods:
 
 **⚠️ Security:** Change the default password immediately after first login!
 
-### Google OAuth (for any Google account)
+### Google OAuth (Disabled)
 
-Google OAuth is configured to allow **any Google account** to sign in, including:
-- Gmail accounts (@gmail.com)
-- Google Workspace accounts (@google.com)
-- Custom domain Google Workspace accounts (e.g., @brendanbank.com, @example.com)
+Google OAuth authentication is currently **disabled**. Only invited users can create accounts with passwords.
+
+To enable Google OAuth in the future, see the configuration sections below.
 
 #### Setup Instructions
 
@@ -229,12 +228,12 @@ By default, **all Google accounts** are allowed. To restrict access to specific 
    docker compose restart grafana
    ```
 
-#### Invite-Only Sign-Up (Recommended)
+#### Invite-Only Sign-Up
 
 Grafana is configured for **invite-only sign-up**:
-- Users need an invite link to create accounts
-- Invited users can sign up using Google OAuth (no password required)
-- The invite acceptance page shows a **Sign in with Google** button
+- Open registration is disabled (`allow_sign_up = false`)
+- Only users with valid invite links can create accounts
+- Invited users must set a password when accepting the invite
 
 **How to invite users:**
 
@@ -250,32 +249,25 @@ Grafana is configured for **invite-only sign-up**:
 2. **User accepts invite:**
    - User clicks the invite link in their email
    - They'll be taken to Grafana's invite acceptance page
-   - **Important:** On the invite page, they should click **Sign in with Google** button (usually shown at the top or bottom of the form)
-   - After authenticating with Google, their account is created automatically
-   - They're automatically added to the organization with the assigned role
-   - **No password needed** - Google OAuth handles authentication
-
-**If Google OAuth button doesn't appear on invite page:**
-- Make sure Google OAuth is enabled (`enabled = true` in `[auth.google]`)
-- Check that `allow_sign_up = true` in both `[users]` and `[auth.google]` sections
-- The Google OAuth button should appear on the login page - users can go there instead
-- After signing in with Google using the invited email, they'll be added to the organization
+   - User fills in their information (email, name, username)
+   - User sets a password
+   - User clicks **Sign up**
+   - Their account is created and they're added to the organization with the assigned role
 
 **Benefits:**
 - Only users with invite links can create accounts
-- Users authenticate with their Google account (no password to remember)
+- No open registration
 - Admin controls who has access
-- Streamlined sign-up process
+- Users authenticate with username/password
 
 **Note:** The invite link is valid for a limited time. If it expires, admin can resend the invite.
 
 #### Security Notes
 
 - **Invite-only sign-up is enabled** - only users with valid invite links can create accounts
-- Invited users can sign up using Google OAuth
-- To restrict Google OAuth to specific domains, set `GRAFANA_GOOGLE_ALLOWED_DOMAINS` in `.env`
-- Users can still use the default admin login if needed
-- Google OAuth credentials are stored securely in environment variables
+- Open registration is disabled - no one can sign up without an invite
+- Users authenticate with username/password (Google OAuth is disabled)
+- Admin controls who has access through the invite system
 
 #### Linking Existing Users to Google OAuth
 

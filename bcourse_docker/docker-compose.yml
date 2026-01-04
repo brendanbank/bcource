@@ -188,16 +188,12 @@ services:
       - GF_SMTP_HOST=${GRAFANA_SMTP_HOST:-host.docker.internal}
       # Port will be parsed from GF_SMTP_HOST if included, otherwise defaults to 25
       - GF_SMTP_PORT=${GRAFANA_SMTP_PORT:-25}
-      # Google OAuth configuration (allows any Google account)
-      # Get credentials from: https://console.cloud.google.com/apis/credentials
-      - GF_AUTH_GOOGLE_ENABLED=true
-      - GF_AUTH_GOOGLE_CLIENT_ID=${GRAFANA_GOOGLE_CLIENT_ID:-}
-      - GF_AUTH_GOOGLE_CLIENT_SECRET=${GRAFANA_GOOGLE_CLIENT_SECRET:-}
-      # Allow any Google account (Gmail, Google Workspace, custom domains)
-      # To restrict to specific domains, set GRAFANA_GOOGLE_ALLOWED_DOMAINS in .env
-      # Example: GRAFANA_GOOGLE_ALLOWED_DOMAINS=gmail.com,google.com,example.com
-      # Leave empty/unset to allow all Google accounts
-      - GF_AUTH_GOOGLE_ALLOWED_DOMAINS=${GRAFANA_GOOGLE_ALLOWED_DOMAINS:-}
+      # Google OAuth is disabled - only invited users can sign up with password
+      # To enable Google OAuth, uncomment and configure:
+      # - GF_AUTH_GOOGLE_ENABLED=true
+      # - GF_AUTH_GOOGLE_CLIENT_ID=${GRAFANA_GOOGLE_CLIENT_ID:-}
+      # - GF_AUTH_GOOGLE_CLIENT_SECRET=${GRAFANA_GOOGLE_CLIENT_SECRET:-}
+      # - GF_AUTH_GOOGLE_ALLOWED_DOMAINS=${GRAFANA_GOOGLE_ALLOWED_DOMAINS:-}
     networks:
       - grafana-network
     restart: unless-stopped
