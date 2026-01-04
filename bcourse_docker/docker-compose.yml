@@ -193,7 +193,11 @@ services:
       - GF_AUTH_GOOGLE_ENABLED=true
       - GF_AUTH_GOOGLE_CLIENT_ID=${GRAFANA_GOOGLE_CLIENT_ID:-}
       - GF_AUTH_GOOGLE_CLIENT_SECRET=${GRAFANA_GOOGLE_CLIENT_SECRET:-}
-      - GF_AUTH_GOOGLE_ALLOWED_DOMAINS=google.com
+      # Allow both @gmail.com and @google.com domains
+      # To restrict to only @gmail.com: gmail.com
+      # To restrict to only @google.com: google.com
+      # To allow all Google accounts: leave empty
+      - GF_AUTH_GOOGLE_ALLOWED_DOMAINS=${GRAFANA_GOOGLE_ALLOWED_DOMAINS:-gmail.com, google.com}
     networks:
       - grafana-network
     restart: unless-stopped
