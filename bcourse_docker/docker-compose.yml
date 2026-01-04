@@ -148,6 +148,7 @@ services:
   grafana:
     image: "grafana/grafana:latest"
     container_name: "grafana"
+    user: "472:472"
     extra_hosts:
       # Allow access to host machine from container
       - "host.docker.internal:host-gateway"
