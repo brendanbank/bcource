@@ -237,6 +237,27 @@ By default, **all Google accounts** are allowed. To restrict access to specific 
 - Users can still use the default admin login if needed
 - Google OAuth credentials are stored securely in environment variables
 
+#### Linking Existing Users to Google OAuth
+
+If a user already exists in Grafana (created via admin/password), they need to link their Google account:
+
+1. **Log in with existing credentials:**
+   - Go to https://grafana.brendanbank.com
+   - Log in with the existing username/password
+
+2. **Link Google account:**
+   - Click on your profile icon (top right) → **Profile**
+   - Go to **Authentication** tab
+   - Click **Link Google account**
+   - Authorize the connection
+   - Your Google account is now linked
+
+3. **Use Google OAuth:**
+   - After linking, you can log out and log back in using **Sign in with Google**
+   - The existing account will be used (no new user created)
+
+**Note:** After linking, users can use either their password or Google OAuth to log in.
+
 #### Troubleshooting
 
 **"Invalid redirect URI" error:**
@@ -247,8 +268,13 @@ By default, **all Google accounts** are allowed. To restrict access to specific 
 - Verify the authorized JavaScript origin is set to: `https://grafana.brendanbank.com`
 - Check that OAuth consent screen is configured in Google Console
 
+**"User sync failed" or "Login failed: User sync failed":**
+- This usually means the user already exists but isn't linked to Google OAuth
+- **Solution:** Log in with existing credentials, then link Google account from Profile → Authentication
+- Check Grafana logs: `docker compose logs grafana | grep -i 'user.sync\|oauth.*error'`
+
 **Users can't sign in:**
-- Verify `allowed_domains = google.com` in `grafana.ini`
+- Verify `allowed_domains` is empty (or includes their domain) in `grafana.ini`
 - Check Grafana logs: `docker compose logs grafana | grep -i google`
 
 ## Plugins
