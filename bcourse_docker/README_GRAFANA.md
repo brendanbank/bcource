@@ -213,7 +213,7 @@ Type: {{ .Labels.type }}
 
 If you need OnCall:
 1. **Grafana Cloud:** Get OnCall URL and Stack ID, update `grafana/provisioning/plugins/oncall.yaml`
-2. **Self-Hosted:** See [OnCall Documentation](https://grafana.com/docs/oncall/latest/open-source/)
+2. **Self-Hosted:** See [OnCall Documentation](https://grafana.com/docs/oncall/latest/open-source/) [Deprecated in the summer of 2025]
 
 ## Data Persistence
 
