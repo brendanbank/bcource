@@ -7,6 +7,15 @@ http:
         - websecure
       tls:
         certResolver: myresolver
+      middlewares:
+        - grafana-headers
+
+  middlewares:
+    grafana-headers:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+          X-Forwarded-Host: "grafana.brendanbank.com"
 
   services:
     grafana-service:
@@ -14,4 +23,10 @@ http:
         servers:
           - url: "https://srv6.bgwlan.nl:3000"
         passHostHeader: true
+        # Disable SSL verification - backend uses invalid/self-signed certificate
+        serverTransport:
+          insecureSkipVerify: true
+        # Increase timeouts
+        responseForwarding:
+          flushInterval: 100ms
 
