@@ -4,7 +4,15 @@
 set -e
 
 echo "=== Deploying Grafana Proxy Updates ==="
-cd /usr/local/bcourse/bcourse_docker
+# Detect if we're on production server or local
+if [ -d "/usr/local/bcourse/bcourse_docker" ]; then
+    cd /usr/local/bcourse/bcourse_docker
+else
+    # Assume we're in the bcourse_docker directory or parent
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    cd "$SCRIPT_DIR"
+fi
+echo "Working directory: $(pwd)"
 
 echo "1. Pulling latest changes..."
 git pull
