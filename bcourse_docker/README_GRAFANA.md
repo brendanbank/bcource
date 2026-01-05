@@ -8,61 +8,66 @@ Access via proxy: **https://grafana.brendanbank.com** (proxies to srv6.bgwlan.nl
 
 ## Proxy Configuration
 
-The `grafana.brendanbank.com` domain is configured using Traefik's file provider to proxy requests directly to the external Grafana server. This means the URL stays as `grafana.brendanbank.com` in the browser.
+The `grafana.brendanbank.com` domain is configured using an nginx proxy container that forwards requests to the external Grafana server. This means the URL stays as `grafana.brendanbank.com` in the browser.
 
-### Traefik File Provider Configuration
+### Architecture
 
-Traefik is configured with a file provider that watches `traefik/dynamic/` for configuration files. The Grafana proxy is defined in `traefik/dynamic/grafana.yml`:
+```
+Client → Traefik (HTTPS) → nginx-proxy (HTTP) → Grafana (HTTPS)
+```
+
+### Docker Compose Configuration
+
+The `grafana-proxy` service uses nginx to proxy requests:
 
 ```yaml
-http:
-  routers:
-    grafana:
-      rule: "Host(`grafana.brendanbank.com`)"
-      service: grafana-service
-      entryPoints:
-        - websecure
-      tls:
-        certResolver: myresolver
-
-  services:
-    grafana-service:
-      loadBalancer:
-        servers:
-          - url: "https://srv6.bgwlan.nl:3000"
-        passHostHeader: true
-        serversTransport: grafana-transport
-
-  serversTransports:
-    grafana-transport:
-      insecureSkipVerify: true
+grafana-proxy:
+  image: "nginx:alpine"
+  container_name: "grafana-proxy"
+  volumes:
+    - "./grafana/nginx-proxy.conf:/etc/nginx/conf.d/default.conf:ro"
+  labels:
+    - "traefik.http.routers.grafana-proxy.rule=Host(`grafana.brendanbank.com`)"
+    - "traefik.http.routers.grafana-proxy.entrypoints=websecure"
+    - "traefik.http.routers.grafana-proxy.tls.certresolver=myresolver"
 ```
+
+### Nginx Proxy Configuration
+
+The nginx configuration (`grafana/nginx-proxy.conf`) proxies all requests to `https://srv6.bgwlan.nl:3000` while:
+- Preserving the original host header (`grafana.brendanbank.com`)
+- Forwarding client IP addresses and headers
+- Supporting WebSocket connections (for Grafana live features)
+- Disabling SSL verification (`proxy_ssl_verify off`) for self-signed certificates
+- Setting timeouts to 300s for long-running requests
+- Handling streaming responses properly
 
 This configuration:
 - Routes requests for `grafana.brendanbank.com` to the external Grafana server
-- Preserves the original host header (`passHostHeader: true`)
-- Uses automatic SSL certificate management via Let's Encrypt for the frontend
+- Uses automatic SSL certificate management via Let's Encrypt for the frontend (Traefik)
 - Connects to Grafana over HTTPS for encrypted connections (passwords are encrypted in transit)
-- Disables SSL certificate verification (`insecureSkipVerify: true`) since Grafana uses a self-signed certificate
-- Automatically watches for configuration changes
-
-### Docker Compose Changes
-
-Traefik has been configured with:
-- File provider enabled: `--providers.file.directory=/etc/traefik/dynamic`
-- File watching enabled: `--providers.file.watch=true`
-- Volume mount: `./traefik/dynamic:/etc/traefik/dynamic:ro`
+- Disables SSL certificate verification since Grafana uses a self-signed certificate
 
 ## Management
 
-To reload Traefik configuration (after editing `traefik/dynamic/grafana.yml`):
+To restart the proxy service:
 
 ```bash
 cd bcourse_docker
-docker compose restart traefik
+docker compose restart grafana-proxy
 ```
 
-Or Traefik will automatically reload when files change (file watching is enabled).
+To reload nginx configuration (after editing `grafana/nginx-proxy.conf`):
+
+```bash
+docker compose exec grafana-proxy nginx -s reload
+```
+
+To view proxy logs:
+
+```bash
+docker compose logs grafana-proxy
+```
 
 To view Traefik logs:
 
@@ -153,12 +158,18 @@ If you get timeout errors:
    docker compose logs traefik | grep -i "file\|grafana"
    ```
 
-2. **Verify the configuration file exists:**
+2. **Verify the nginx configuration:**
    ```bash
-   cat bcourse_docker/traefik/dynamic/grafana.yml
+   docker compose exec grafana-proxy nginx -t
+   cat bcourse_docker/grafana/nginx-proxy.conf
    ```
 
-3. **Reload Traefik:**
+3. **Reload nginx:**
    ```bash
-   docker compose restart traefik
+   docker compose exec grafana-proxy nginx -s reload
+   ```
+
+4. **Restart the proxy:**
+   ```bash
+   docker compose restart grafana-proxy
    ```
