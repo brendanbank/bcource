@@ -79,143 +79,44 @@ docker compose logs traefik | grep grafana
 
 ### Redirect Issues
 
-If you're being redirected instead of proxied:
+If you're being redirected to `srv6.bgwlan.nl` instead of staying on `grafana.brendanbank.com`:
 
-**First, identify where the redirect is coming from:**
+1. **Clear browser cache** - This is often the cause. Use incognito/private mode or clear cache for the site.
 
-1. **Check HTTP response headers:**
+2. **Check Grafana configuration** on srv6 - Ensure `grafana.ini` has:
+   ```ini
+   [server]
+   root_url = https://grafana.brendanbank.com/
+   domain = grafana.brendanbank.com
+   enforce_domain = false
+   ```
+
+3. **Test the proxy:**
    ```bash
    curl -I https://grafana.brendanbank.com
    ```
-   Look for `Location:` header - this shows where you're being redirected.
 
-2. **Check nginx logs:**
+### Connection Issues
+
+If you experience timeouts or connection errors:
+
+1. **Check container status:**
    ```bash
-   docker compose exec grafana-proxy tail -f /var/log/nginx/grafana-access.log
-   docker compose exec grafana-proxy tail -f /var/log/nginx/grafana-error.log
+   docker compose ps grafana-proxy
    ```
 
-3. **Check Traefik logs:**
+2. **Check logs:**
    ```bash
+   docker compose logs grafana-proxy
    docker compose logs traefik | grep grafana
    ```
 
-4. **Test direct connection to Grafana:**
-   ```bash
-   curl -I -k https://srv6.bgwlan.nl:3000
-   ```
-   This shows if Grafana itself is redirecting.
-
-**Common causes:**
-
-- **Grafana redirecting:** If Grafana's `root_url` doesn't match the proxy domain
-  - **Solution:** Update Grafana's `grafana.ini` on srv6:
-    ```ini
-    [server]
-    root_url = https://grafana.brendanbank.com/
-    domain = grafana.brendanbank.com
-    enforce_domain = false
-    ```
-
-- **Traefik redirecting:** If Traefik is configured to redirect
-  - **Solution:** Check Traefik labels in `docker-compose.yml` - should not have redirect middleware
-
-- **nginx redirecting:** If nginx is following redirects incorrectly
-  - **Solution:** The `proxy_redirect` rules should rewrite redirects (already configured)
-
-### TLS Handshake Errors on Grafana Server
-
-If you see errors like `tls: unknown certificate` in Grafana logs on srv6:
-
-**The issue:** Grafana is rejecting TLS connections from nginx. This is usually because Grafana is configured to require client certificates or has strict TLS validation.
-
-**Solution:** Configure Grafana on srv6 to accept connections from nginx:
-
-1. **Check Grafana's TLS configuration** in `grafana.ini`:
-   ```ini
-   [server]
-   protocol = https
-   cert_file = /path/to/cert.pem
-   cert_key = /path/to/key.pem
-   
-   # Make sure these are NOT set (they enable mutual TLS):
-   # client_auth = require
-   # client_ca = /path/to/ca.pem
-   ```
-
-2. **If Grafana requires client certificates**, you have two options:
-   - **Option A (Recommended):** Disable client certificate requirement in Grafana's config
-   - **Option B:** Configure nginx to present a client certificate (more complex)
-
-3. **Verify Grafana accepts connections:**
-   ```bash
-   # From Traefik server, test connection
-   curl -k https://srv6.bgwlan.nl:3000
-   ```
-
-### Gateway Timeout / Client Timeouts
-
-If you get timeout errors:
-
-1. **Test connectivity from Traefik container:**
-   ```bash
-   # Test if Traefik can reach Grafana
-   docker compose exec traefik wget -O- --no-check-certificate --timeout=10 https://srv6.bgwlan.nl:3000
-   ```
-
-2. **Check Traefik logs for errors:**
-   ```bash
-   docker compose logs traefik | grep -i "grafana\|timeout\|error\|handshake"
-   ```
-
-3. **Verify backend is accessible from host:**
-   ```bash
-   # From the host machine
-   curl -k --max-time 10 https://srv6.bgwlan.nl:3000
-   ```
-
-4. **Check Grafana health endpoint:**
+3. **Test connectivity:**
    ```bash
    curl -k https://srv6.bgwlan.nl:3000/api/health
    ```
 
-5. **Check Traefik dashboard:**
-   Visit `http://localhost:8080` (or your `TRAEFIK_DASHBOARD_PORT`) to see if the Grafana router and service are registered correctly.
-
-6. **Verify timeout settings:**
-   The configuration includes:
-   - Entrypoint timeouts: 300s (read/write/idle)
-   - Health check: 30s interval, 10s timeout
-   - These can be adjusted in `docker-compose.yml` and `traefik/dynamic/grafana.yml` if needed
-
-7. **If SSL verification is needed:**
-   Edit `traefik/dynamic/grafana.yml` and comment out the `serversTransport` section:
-   ```yaml
-   # serversTransports:
-   #   grafana-transport:
-   #     insecureSkipVerify: true
-   ```
-
-### Other Issues
-
-1. **Check Traefik configuration:**
-   ```bash
-   docker compose exec traefik traefik version
-   docker compose logs traefik | grep -i "file\|grafana"
-   ```
-
-2. **Verify the nginx configuration:**
-   ```bash
-   docker compose exec grafana-proxy nginx -t
-   cat bcourse_docker/grafana/nginx-proxy.conf
-   ```
-
-3. **Reload nginx:**
+4. **Reload nginx configuration:**
    ```bash
    docker compose exec grafana-proxy nginx -s reload
-   ```
-
-4. **Restart the proxy:**
-   ```bash
-   docker compose restart grafana-proxy
    ```
