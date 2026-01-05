@@ -23,10 +23,11 @@ http:
         servers:
           - url: "https://srv6.bgwlan.nl:3000"
         passHostHeader: true
-        # Disable SSL verification - backend uses invalid/self-signed certificate
-        serverTransport:
-          insecureSkipVerify: true
-        # Increase timeouts
+        serversTransport: grafana-transport
         responseForwarding:
           flushInterval: 100ms
+
+  serversTransports:
+    grafana-transport:
+      insecureSkipVerify: true
 
