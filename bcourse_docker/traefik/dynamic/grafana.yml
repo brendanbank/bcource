@@ -1,0 +1,17 @@
+http:
+  routers:
+    grafana:
+      rule: "Host(`grafana.brendanbank.com`)"
+      service: grafana-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+  services:
+    grafana-service:
+      loadBalancer:
+        servers:
+          - url: "https://srv6.bgwlan.nl:3000"
+        passHostHeader: true
+

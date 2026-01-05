@@ -19,6 +19,8 @@ services:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--providers.file.watch=true"
       - "--entrypoints.web.address=:80"
 
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
@@ -39,6 +41,7 @@ services:
     volumes:
       - "./letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/dynamic:/etc/traefik/dynamic:ro"
     logging:
       driver: "loki"
       options:
@@ -152,20 +155,3 @@ services:
             target_label: 'stream'
     command: --default-authentication-plugin=caching_sha2_password
 
-  grafana-redirect:
-    image: "traefik/whoami:latest"
-    container_name: "grafana-redirect"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana-redirect.rule=Host(`grafana.brendanbank.com`)"
-      - "traefik.http.routers.grafana-redirect.entrypoints=websecure"
-      - "traefik.http.routers.grafana-redirect.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-myresolver}"
-      - "traefik.http.middlewares.grafana-redirect.redirectregex.regex=^https://grafana\\.brendanbank\\.com(.*)"
-      - "traefik.http.middlewares.grafana-redirect.redirectregex.replacement=https://srv6.bgwlan.nl:3000$$1"
-      - "traefik.http.middlewares.grafana-redirect.redirectregex.permanent=true"
-      - "traefik.http.routers.grafana-redirect.middlewares=grafana-redirect"
-      - "traefik.http.services.grafana-redirect.loadbalancer.server.port=80"
-      - "traefik.docker.network=web-network"
-    networks:
-      - web-network
-    restart: unless-stopped
