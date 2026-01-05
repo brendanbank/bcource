@@ -81,24 +81,47 @@ docker compose logs traefik | grep grafana
 
 If you're being redirected instead of proxied:
 
-**The issue:** Grafana's `root_url` configuration doesn't match the proxy domain, causing redirects.
+**First, identify where the redirect is coming from:**
 
-**Solution:** Configure Grafana on srv6 to use the proxy domain:
-
-1. **Update Grafana's configuration** on srv6 (`grafana.ini`):
-   ```ini
-   [server]
-   root_url = https://grafana.brendanbank.com/
-   domain = grafana.brendanbank.com
-   enforce_domain = false
-   ```
-
-2. **Restart Grafana** on srv6 after making changes.
-
-3. **Verify the nginx proxy is sending correct headers:**
+1. **Check HTTP response headers:**
    ```bash
-   docker compose exec grafana-proxy cat /etc/nginx/conf.d/default.conf
+   curl -I https://grafana.brendanbank.com
    ```
+   Look for `Location:` header - this shows where you're being redirected.
+
+2. **Check nginx logs:**
+   ```bash
+   docker compose exec grafana-proxy tail -f /var/log/nginx/grafana-access.log
+   docker compose exec grafana-proxy tail -f /var/log/nginx/grafana-error.log
+   ```
+
+3. **Check Traefik logs:**
+   ```bash
+   docker compose logs traefik | grep grafana
+   ```
+
+4. **Test direct connection to Grafana:**
+   ```bash
+   curl -I -k https://srv6.bgwlan.nl:3000
+   ```
+   This shows if Grafana itself is redirecting.
+
+**Common causes:**
+
+- **Grafana redirecting:** If Grafana's `root_url` doesn't match the proxy domain
+  - **Solution:** Update Grafana's `grafana.ini` on srv6:
+    ```ini
+    [server]
+    root_url = https://grafana.brendanbank.com/
+    domain = grafana.brendanbank.com
+    enforce_domain = false
+    ```
+
+- **Traefik redirecting:** If Traefik is configured to redirect
+  - **Solution:** Check Traefik labels in `docker-compose.yml` - should not have redirect middleware
+
+- **nginx redirecting:** If nginx is following redirects incorrectly
+  - **Solution:** The `proxy_redirect` rules should rewrite redirects (already configured)
 
 ### TLS Handshake Errors on Grafana Server
 
