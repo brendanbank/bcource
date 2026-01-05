@@ -2,7 +2,7 @@
 
 **⚠️ Grafana has been moved to a separate server.**
 
-Grafana is now hosted at: **https://srv6.bgwlan.nl:3000**
+Grafana is now hosted at: **https://srv6.bgwlan.nl:3000** (HTTPS for encrypted connections)
 
 Access via proxy: **https://grafana.brendanbank.com** (proxies to srv6.bgwlan.nl:3000)
 
@@ -31,13 +31,19 @@ http:
         servers:
           - url: "https://srv6.bgwlan.nl:3000"
         passHostHeader: true
+        serversTransport: grafana-transport
+
+  serversTransports:
+    grafana-transport:
+      insecureSkipVerify: true
 ```
 
 This configuration:
 - Routes requests for `grafana.brendanbank.com` to the external Grafana server
 - Preserves the original host header (`passHostHeader: true`)
 - Uses automatic SSL certificate management via Let's Encrypt for the frontend
-- Disables SSL verification for the backend (`insecureSkipVerify: true`) since the backend uses an invalid certificate
+- Connects to Grafana over HTTPS for encrypted connections (passwords are encrypted in transit)
+- Disables SSL certificate verification (`insecureSkipVerify: true`) since Grafana uses a self-signed certificate
 - Automatically watches for configuration changes
 
 ### Docker Compose Changes
@@ -66,36 +72,77 @@ docker compose logs traefik | grep grafana
 
 ## Troubleshooting
 
-### Gateway Timeout
+### TLS Handshake Errors on Grafana Server
 
-If you get a Gateway Timeout error:
+If you see errors like `tls: unknown certificate` in Grafana logs on srv6:
 
-1. **Check if SSL verification is the issue:**
-   The configuration has `insecureSkipVerify: true` enabled by default. If you're still getting timeouts, verify:
-   ```bash
-   # Test connectivity from Traefik container
-   docker compose exec traefik wget -O- --no-check-certificate https://srv6.bgwlan.nl:3000
+**The issue:** Grafana is rejecting TLS connections from Traefik. This is usually because Grafana is configured to require client certificates or has strict TLS validation.
+
+**Solution:** Configure Grafana on srv6 to accept connections from Traefik:
+
+1. **Check Grafana's TLS configuration** in `grafana.ini`:
+   ```ini
+   [server]
+   protocol = https
+   cert_file = /path/to/cert.pem
+   cert_key = /path/to/key.pem
+   
+   # Make sure these are NOT set (they enable mutual TLS):
+   # client_auth = require
+   # client_ca = /path/to/ca.pem
    ```
 
-2. **Check Traefik logs:**
-   ```bash
-   docker compose logs traefik | grep -i "grafana\|timeout\|error"
-   ```
+2. **If Grafana requires client certificates**, you have two options:
+   - **Option A (Recommended):** Disable client certificate requirement in Grafana's config
+   - **Option B:** Configure Traefik to present a client certificate (more complex)
 
-3. **Verify backend is accessible:**
+3. **Verify Grafana accepts connections:**
    ```bash
-   # From the host machine
+   # From Traefik server, test connection
    curl -k https://srv6.bgwlan.nl:3000
    ```
 
-4. **Check Traefik dashboard:**
+### Gateway Timeout / Client Timeouts
+
+If you get timeout errors:
+
+1. **Test connectivity from Traefik container:**
+   ```bash
+   # Test if Traefik can reach Grafana
+   docker compose exec traefik wget -O- --no-check-certificate --timeout=10 https://srv6.bgwlan.nl:3000
+   ```
+
+2. **Check Traefik logs for errors:**
+   ```bash
+   docker compose logs traefik | grep -i "grafana\|timeout\|error\|handshake"
+   ```
+
+3. **Verify backend is accessible from host:**
+   ```bash
+   # From the host machine
+   curl -k --max-time 10 https://srv6.bgwlan.nl:3000
+   ```
+
+4. **Check Grafana health endpoint:**
+   ```bash
+   curl -k https://srv6.bgwlan.nl:3000/api/health
+   ```
+
+5. **Check Traefik dashboard:**
    Visit `http://localhost:8080` (or your `TRAEFIK_DASHBOARD_PORT`) to see if the Grafana router and service are registered correctly.
 
-5. **If SSL verification is needed:**
-   Edit `traefik/dynamic/grafana.yml` and comment out the `serverTransport` section:
+6. **Verify timeout settings:**
+   The configuration includes:
+   - Entrypoint timeouts: 300s (read/write/idle)
+   - Health check: 30s interval, 10s timeout
+   - These can be adjusted in `docker-compose.yml` and `traefik/dynamic/grafana.yml` if needed
+
+7. **If SSL verification is needed:**
+   Edit `traefik/dynamic/grafana.yml` and comment out the `serversTransport` section:
    ```yaml
-   # serverTransport:
-   #   insecureSkipVerify: true
+   # serversTransports:
+   #   grafana-transport:
+   #     insecureSkipVerify: true
    ```
 
 ### Other Issues

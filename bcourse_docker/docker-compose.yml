@@ -28,11 +28,15 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
 
       - "--entryPoints.websecure.address=:443"
+      - "--entrypoints.websecure.transport.respondingTimeouts.readTimeout=300s"
+      - "--entrypoints.websecure.transport.respondingTimeouts.writeTimeout=300s"
+      - "--entrypoints.websecure.transport.respondingTimeouts.idleTimeout=300s"
       - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
       # Use production or dev Let's Encrypt server
       - "--certificatesresolvers.myresolver.acme.caserver=${ACME_CASERVER}"
       - "--certificatesresolvers.myresolver.acme.email=${ACME_ACCOUNT}"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      
     env_file: "../.env"
     ports:
       - "${HTTP_PORT:-80}:80"    # HTTP - standard port 80
