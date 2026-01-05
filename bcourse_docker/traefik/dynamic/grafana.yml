@@ -1,0 +1,17 @@
+http:
+  routers:
+    grafana:
+      rule: "Host(`grafana.example.com`)"
+      service: grafana-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+  services:
+    grafana-service:
+      loadBalancer:
+        servers:
+          - url: "https://grafana-upstream:3000"
+        passHostHeader: true
+
