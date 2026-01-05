@@ -26,8 +26,13 @@ http:
         serversTransport: grafana-transport
         responseForwarding:
           flushInterval: 100ms
+        healthCheck:
+          path: /api/health
+          interval: 30s
+          timeout: 10s
 
   serversTransports:
     grafana-transport:
       insecureSkipVerify: true
+      maxIdleConnsPerHost: 10
 
