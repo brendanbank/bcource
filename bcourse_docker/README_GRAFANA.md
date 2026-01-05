@@ -77,13 +77,36 @@ docker compose logs traefik | grep grafana
 
 ## Troubleshooting
 
+### Redirect Issues
+
+If you're being redirected instead of proxied:
+
+**The issue:** Grafana's `root_url` configuration doesn't match the proxy domain, causing redirects.
+
+**Solution:** Configure Grafana on srv6 to use the proxy domain:
+
+1. **Update Grafana's configuration** on srv6 (`grafana.ini`):
+   ```ini
+   [server]
+   root_url = https://grafana.brendanbank.com/
+   domain = grafana.brendanbank.com
+   enforce_domain = false
+   ```
+
+2. **Restart Grafana** on srv6 after making changes.
+
+3. **Verify the nginx proxy is sending correct headers:**
+   ```bash
+   docker compose exec grafana-proxy cat /etc/nginx/conf.d/default.conf
+   ```
+
 ### TLS Handshake Errors on Grafana Server
 
 If you see errors like `tls: unknown certificate` in Grafana logs on srv6:
 
-**The issue:** Grafana is rejecting TLS connections from Traefik. This is usually because Grafana is configured to require client certificates or has strict TLS validation.
+**The issue:** Grafana is rejecting TLS connections from nginx. This is usually because Grafana is configured to require client certificates or has strict TLS validation.
 
-**Solution:** Configure Grafana on srv6 to accept connections from Traefik:
+**Solution:** Configure Grafana on srv6 to accept connections from nginx:
 
 1. **Check Grafana's TLS configuration** in `grafana.ini`:
    ```ini
@@ -99,7 +122,7 @@ If you see errors like `tls: unknown certificate` in Grafana logs on srv6:
 
 2. **If Grafana requires client certificates**, you have two options:
    - **Option A (Recommended):** Disable client certificate requirement in Grafana's config
-   - **Option B:** Configure Traefik to present a client certificate (more complex)
+   - **Option B:** Configure nginx to present a client certificate (more complex)
 
 3. **Verify Grafana accepts connections:**
    ```bash
