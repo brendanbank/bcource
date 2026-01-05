@@ -159,3 +159,19 @@ services:
             target_label: 'stream'
     command: --default-authentication-plugin=caching_sha2_password
 
+  grafana-proxy:
+    image: "nginx:alpine"
+    container_name: "grafana-proxy"
+    volumes:
+      - "./grafana/nginx-proxy.conf:/etc/nginx/conf.d/default.conf:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana-proxy.rule=Host(`grafana.brendanbank.com`)"
+      - "traefik.http.routers.grafana-proxy.entrypoints=websecure"
+      - "traefik.http.routers.grafana-proxy.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-myresolver}"
+      - "traefik.http.services.grafana-proxy.loadbalancer.server.port=80"
+      - "traefik.docker.network=web-network"
+    networks:
+      - web-network
+    restart: unless-stopped
+
