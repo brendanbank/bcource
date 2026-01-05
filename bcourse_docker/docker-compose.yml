@@ -9,9 +9,6 @@ volumes:
 networks:
   web-network:
     name: web-network
-    driver: bridge
-  grafana-network:
-    name: grafana-network
     driver: bridge 
 services:
   traefik:
@@ -66,7 +63,6 @@ services:
             target_label: 'stream'
     networks:
       - web-network
-      - grafana-network
     restart: unless-stopped
 
   bcourse:
@@ -156,44 +152,20 @@ services:
             target_label: 'stream'
     command: --default-authentication-plugin=caching_sha2_password
 
-  grafana:
-    image: "grafana/grafana:latest"
-    container_name: "grafana"
-    user: "472:472"
-    extra_hosts:
-      # Allow access to host machine from container
-      - "host.docker.internal:host-gateway"
+  grafana-redirect:
+    image: "traefik/whoami:latest"
+    container_name: "grafana-redirect"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.brendanbank.com`)"
-      - "traefik.http.routers.grafana.entrypoints=websecure"
-      # TLS configuration: Use certresolver only in production (when TRAEFIK_CERT_RESOLVER is set)
-      # For development: Use docker-compose.dev.yml which omits this label to use self-signed certificates
-      - "traefik.http.routers.grafana.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-myresolver}"
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-      - "traefik.docker.network=grafana-network"
-    volumes:
-      - "./grafana/grafana.ini:/etc/grafana/grafana.ini"
-      - "./grafana/data:/var/lib/grafana"
-      - "./grafana/provisioning:/etc/grafana/provisioning"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
-      - GF_INSTALL_PLUGINS=${GRAFANA_PLUGINS:-}
-      - GF_SERVER_ROOT_URL=https://grafana.brendanbank.com/
-      - GF_SERVER_DOMAIN=grafana.brendanbank.com
-      # SMTP configuration - host can include port (e.g., "172.17.0.1:25")
-      # If host includes port, Grafana will parse it from the host string
-      # Can be overridden via .env file: GRAFANA_SMTP_HOST
-      - GF_SMTP_HOST=${GRAFANA_SMTP_HOST:-host.docker.internal}
-      # Port will be parsed from GF_SMTP_HOST if included, otherwise defaults to 25
-      - GF_SMTP_PORT=${GRAFANA_SMTP_PORT:-25}
-      # Google OAuth is disabled - only invited users can sign up with password
-      # To enable Google OAuth, uncomment and configure:
-      # - GF_AUTH_GOOGLE_ENABLED=true
-      # - GF_AUTH_GOOGLE_CLIENT_ID=${GRAFANA_GOOGLE_CLIENT_ID:-}
-      # - GF_AUTH_GOOGLE_CLIENT_SECRET=${GRAFANA_GOOGLE_CLIENT_SECRET:-}
-      # - GF_AUTH_GOOGLE_ALLOWED_DOMAINS=${GRAFANA_GOOGLE_ALLOWED_DOMAINS:-}
+      - "traefik.http.routers.grafana-redirect.rule=Host(`grafana.brendanbank.com`)"
+      - "traefik.http.routers.grafana-redirect.entrypoints=websecure"
+      - "traefik.http.routers.grafana-redirect.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-myresolver}"
+      - "traefik.http.middlewares.grafana-redirect.redirectregex.regex=^https://grafana\\.brendanbank\\.com(.*)"
+      - "traefik.http.middlewares.grafana-redirect.redirectregex.replacement=https://srv6.bgwlan.nl:3000$$1"
+      - "traefik.http.middlewares.grafana-redirect.redirectregex.permanent=true"
+      - "traefik.http.routers.grafana-redirect.middlewares=grafana-redirect"
+      - "traefik.http.services.grafana-redirect.loadbalancer.server.port=80"
+      - "traefik.docker.network=web-network"
     networks:
-      - grafana-network
+      - web-network
     restart: unless-stopped
