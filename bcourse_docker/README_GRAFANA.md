@@ -4,48 +4,84 @@
 
 Grafana is now hosted at: **https://srv6.bgwlan.nl:3000**
 
-Access via redirect: **https://grafana.brendanbank.com** (redirects to srv6.bgwlan.nl:3000)
+Access via proxy: **https://grafana.brendanbank.com** (proxies to srv6.bgwlan.nl:3000)
 
-## Redirect Configuration
+## Proxy Configuration
 
-The `grafana.brendanbank.com` domain is configured in `docker-compose.yml` to redirect to the new Grafana server:
+The `grafana.brendanbank.com` domain is configured using Traefik's file provider to proxy requests directly to the external Grafana server. This means the URL stays as `grafana.brendanbank.com` in the browser.
+
+### Traefik File Provider Configuration
+
+Traefik is configured with a file provider that watches `traefik/dynamic/` for configuration files. The Grafana proxy is defined in `traefik/dynamic/grafana.yml`:
 
 ```yaml
-grafana-redirect:
-  image: "traefik/whoami:latest"
-  container_name: "grafana-redirect"
-  labels:
-    - "traefik.enable=true"
-    - "traefik.http.routers.grafana-redirect.rule=Host(`grafana.brendanbank.com`)"
-    - "traefik.http.routers.grafana-redirect.entrypoints=websecure"
-    - "traefik.http.routers.grafana-redirect.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-myresolver}"
-    - "traefik.http.middlewares.grafana-redirect.redirectregex.regex=^https://grafana\\.brendanbank\\.com(.*)"
-    - "traefik.http.middlewares.grafana-redirect.redirectregex.replacement=https://srv6.bgwlan.nl:3000$$1"
-    - "traefik.http.middlewares.grafana-redirect.redirectregex.permanent=true"
-    - "traefik.http.routers.grafana-redirect.middlewares=grafana-redirect"
-    - "traefik.http.services.grafana-redirect.loadbalancer.server.port=80"
-    - "traefik.docker.network=web-network"
-  networks:
-    - web-network
-  restart: unless-stopped
+http:
+  routers:
+    grafana:
+      rule: "Host(`grafana.brendanbank.com`)"
+      service: grafana-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+  services:
+    grafana-service:
+      loadBalancer:
+        servers:
+          - url: "https://srv6.bgwlan.nl:3000"
+        passHostHeader: true
 ```
 
-This ensures that:
-- `https://grafana.brendanbank.com` redirects to `https://srv6.bgwlan.nl:3000` while preserving the path
-- HTTP requests are automatically redirected to HTTPS (via Traefik's global redirect)
-- The redirect is permanent (301), which helps with SEO and browser caching
+This configuration:
+- Routes requests for `grafana.brendanbank.com` to the external Grafana server
+- Preserves the original host header (`passHostHeader: true`)
+- Uses automatic SSL certificate management via Let's Encrypt
+- Automatically watches for configuration changes
+
+### Docker Compose Changes
+
+Traefik has been configured with:
+- File provider enabled: `--providers.file.directory=/etc/traefik/dynamic`
+- File watching enabled: `--providers.file.watch=true`
+- Volume mount: `./traefik/dynamic:/etc/traefik/dynamic:ro`
 
 ## Management
 
-To restart the redirect service:
+To reload Traefik configuration (after editing `traefik/dynamic/grafana.yml`):
 
 ```bash
 cd bcourse_docker
-docker compose restart grafana-redirect
+docker compose restart traefik
 ```
 
-To view logs:
+Or Traefik will automatically reload when files change (file watching is enabled).
+
+To view Traefik logs:
 
 ```bash
-docker compose logs grafana-redirect
+docker compose logs traefik | grep grafana
 ```
+
+## Troubleshooting
+
+If the proxy isn't working:
+
+1. **Check Traefik configuration:**
+   ```bash
+   docker compose exec traefik traefik version
+   docker compose logs traefik | grep -i "file\|grafana"
+   ```
+
+2. **Verify the configuration file exists:**
+   ```bash
+   cat bcourse_docker/traefik/dynamic/grafana.yml
+   ```
+
+3. **Test connectivity from Traefik container:**
+   ```bash
+   docker compose exec traefik wget -O- --no-check-certificate https://srv6.bgwlan.nl:3000
+   ```
+
+4. **Check Traefik dashboard:**
+   Visit `http://localhost:8080` (or your `TRAEFIK_DASHBOARD_PORT`) to see if the Grafana router and service are registered.
