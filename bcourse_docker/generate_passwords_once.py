@@ -47,8 +47,9 @@ def main():
     
     print("📝 Copy these lines to your .env file:")
     print("=" * 50)
-    print(f"MYSQL_ROOT_PASSWORD={root_password}")
-    print(f"MYSQL_PASSWORD={user_password}")
+    # nosec: intentional - this script's purpose is to generate and display passwords for manual copying
+    print(f"MYSQL_ROOT_PASSWORD={root_password}")  # noqa: T201
+    print(f"MYSQL_PASSWORD={user_password}")  # noqa: T201
     print("=" * 50)
     print()
     

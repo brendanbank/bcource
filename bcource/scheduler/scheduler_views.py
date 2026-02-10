@@ -6,7 +6,7 @@ from flask_security import current_user, auth_required
 from bcource.scheduler.scheduler_forms import SchedulerTrainingEnrollForm
 from bcource.training.training_forms import TrainingDerollForm
 from bcource import menu_structure, db
-from bcource.helpers import admin_has_role, get_url
+from bcource.helpers import admin_has_role, get_url, safe_redirect
 from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent, TrainingEnroll, Content
 from sqlalchemy import or_, and_
 import bcource.messages as system_msg
@@ -215,11 +215,11 @@ def enable(uuid):
     url = get_url()
     if not (enrollment):
         flash(_("Cannot find your enrollement!"), 'error')
-        return redirect(url)
+        return safe_redirect(url)
 
     enroll_common(enrollment.training, current_user)
 
-    return redirect(url)
+    return safe_redirect(url)
 
 @scheduler_bp.route('/training/deroll/<int:id>',methods=['GET', 'POST'])
 @auth_required()
@@ -248,7 +248,7 @@ def deroll(id):  # @ReservedAssignment
                                             ),enrollment=enrollment ).send()
 
         if return_acton:
-            return redirect(url)
+            return safe_redirect(url)
 
     return render_template("scheduler/deroll.html", cancel_policy=cancel_policy, training=training, form=form, return_url=url)
 
@@ -262,11 +262,11 @@ def accept_invite(uuid):
     
     if not (enrollment):
         flash(_("Cannot find invitation!"), 'error')
-        return redirect(url)
-    
+        return safe_redirect(url)
+
     enroll_from_waitlist(enrollment)
-    
-    return redirect(url)
+
+    return safe_redirect(url)
 
 @scheduler_bp.route('/training/decline-invite/<string:uuid>',methods=['GET', 'POST'])
 @auth_required()
@@ -278,17 +278,17 @@ def decline_invite(uuid):
     
     if not (enrollment):
         flash(_("Cannot find invitation! Have Did is expire?"), 'error')
-        return redirect(url)
-    
+        return safe_redirect(url)
+
     enrollment.status="waitlist-declined"
     db.session.commit()
-    
+
     waitlist_enrollments_eligeble = enrollment.training.waitlist_enrollments_eligeble()
     for enrollment in waitlist_enrollments_eligeble:
         invite_from_waitlist(enrollment)
-    
+
     flash(_("You have declined the invite for training %(trainingname)s!", trainingname=enrollment.training.name), 'error')
-    return redirect(url)
+    return safe_redirect(url)
 
 @scheduler_bp.route('/training/enroll/<int:id>',methods=['GET', 'POST'])
 @auth_required()
@@ -310,14 +310,13 @@ def enroll(id):  # @ReservedAssignment
         for policy in policies:
             if not policy:
                 flash (policy, "error")
-            return redirect(url)
-            
-        
-    
+            return safe_redirect(url)
+
+
     if form.validate_on_submit():
-        redirect_url = enroll_common(training, current_user)  
+        redirect_url = enroll_common(training, current_user)
         if redirect_url:
-            return redirect(url)
+            return safe_redirect(url)
         
     training.fill_numbers(current_user)
     

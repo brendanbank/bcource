@@ -6,7 +6,7 @@ from bcource.models import Training, Practice, TrainingType, TrainingEnroll, Tra
 from sqlalchemy import not_, and_, or_
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
-from bcource.helpers import get_url
+from bcource.helpers import get_url, safe_redirect
 from bcource.training.training_forms import TrainingDerollForm, TrainingEnrollForm
 from sqlalchemy.orm import joinedload
 from bcource.filters import Filters
@@ -95,7 +95,7 @@ def student_training(id):
         return redirect(url_for('students_bp.student_training', id=id, show=request.args.getlist('show'), url=get_url()))
 
     if clear and clear[0]=='back':
-        return redirect(get_url())
+        return safe_redirect(get_url())
 
     user = User().query.get(id)
     
