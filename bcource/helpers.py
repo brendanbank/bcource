@@ -11,6 +11,7 @@ import string
 import secrets
 import phonenumbers
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
+from flask_admin.helpers import is_safe_url
 from flask_babel import _
 from flask_babel import lazy_gettext as _l
 import nh3
@@ -68,13 +69,19 @@ def db_datetime_str(db_datetime_notz,fmt="%a, %b %-d %Y, %H:%M %p %Z"):
     TZ = pytz.timezone(TZ_NAME)    
     return dt.astimezone(TZ).strftime(fmt).replace("{th}", ordinal(dt.day))
 
+def safe_redirect(url, default='home_bp.home'):
+    """Redirect to url only if it's safe (same host), otherwise redirect to default."""
+    if url and is_safe_url(url):
+        return redirect(url)
+    return redirect(url_for(default))
+
 def get_url (form=None,default=None, back_button=False):
-    
+
     if not default:
         default = 'home_bp.home'
-        
+
     first_url = None
-        
+
     if form and form.is_submitted():
         url=form.url.data
     else:
@@ -88,17 +95,17 @@ def get_url (form=None,default=None, back_button=False):
                     url = request.args.get('first_url')
                     if url:
                         add_url_argument(url, 'first_url', first_url)
-                    
+
                 else:
                     url = add_url_argument(url, 'first_url', first_url)
         else:
             url = request.args.get('url')
-        
+
 
     if url == None:
         if request.referrer:
             url = request.referrer
-        
+
     for u in ['user_bp.settings', 'user_bp.update']:
         if url_for(u) == url:
             url = url_for(default)
@@ -110,7 +117,10 @@ def get_url (form=None,default=None, back_button=False):
             form.url.data=url_for(default)
     if url == None:
         url = url_for(default)
-        
+
+    if not is_safe_url(url):
+        url = url_for(default)
+
     return(url)
 
 def admin_has_role(roles):

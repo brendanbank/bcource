@@ -6,7 +6,7 @@ from flask import current_app as app
 from flask_security import auth_required
 from bcource.user.forms  import AccountDetailsForm, UserSettingsForm, UserMessages, MessageActionform, SupportForm, PublicSupportForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from bcource.helpers import (get_url, message_date, config_value as cv,
+from bcource.helpers import (get_url, safe_redirect, message_date, config_value as cv,
                              is_impersonating, get_original_user, get_impersonated_user,
                              start_impersonation, stop_impersonation, can_impersonate)
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
@@ -37,7 +37,7 @@ def set_practice():
         session['practice'] = int(practice_id)
     except:
         pass
-    return redirect(url)
+    return safe_redirect(url)
 
 
 @user_bp.route('/', methods=['GET', 'POST'])
@@ -641,13 +641,13 @@ def impersonate_user(user_id):
         target_user = User.query.get(user_id)
         if not target_user:
             flash(_("User not found."), 'error')
-            return redirect(request.referrer or url_for('admin.index'))
+            return safe_redirect(request.referrer, default='admin.index')
 
         # Check if we can impersonate
         can_impersonate_user, error_msg = can_impersonate(current_user._get_current_object(), target_user)
         if not can_impersonate_user:
             flash(error_msg, 'error')
-            return redirect(request.referrer or url_for('admin.index'))
+            return safe_redirect(request.referrer, default='admin.index')
 
         # Show confirmation page
         return render_template('user/impersonate_confirm.html', target_user=target_user)
@@ -660,7 +660,7 @@ def impersonate_user(user_id):
         return redirect(url_for('user_bp.index'))
     else:
         flash(message, 'error')
-        return redirect(request.referrer or url_for('home_bp.home'))
+        return safe_redirect(request.referrer, default='home_bp.home')
 
 
 @user_bp.route('/stop-impersonate', methods=['POST', 'GET'])
