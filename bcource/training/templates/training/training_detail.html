@@ -80,11 +80,24 @@
 </div>
 {% endblock %}
 
+{% block filter_actions %}
+<div class="px-0 pt-2 pb-2">
+<div class="">
+     <a class="col-12 btn btn-outline-dark btn-sm mt-0"
+          style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+          href="{{ url_for('training_bp.training_email_selection', id=training.id, **request.args) }}">
+          <i class="bi bi-envelope"></i> {{_("Email selection")}}
+     </a>
+</div>
+</div>
+{% endblock %}
+
 {% block data_headers %}
                <div class="col-lg-4 fw-semibold">Name</div>
                <div class="col-lg-3 fw-semibold">Email</div>
                <div class="col-lg-2 fw-semibold">Phone</div>
-               <div class="col-lg-3 fw-semibold">Status</div>
+               <div class="col-lg-2 fw-semibold">Status</div>
+               <div class="col fw-semibold">{{_('Paid')}}</div>
 
 {% endblock %}
 
@@ -120,7 +133,7 @@
           <div class="col-lg-2 pt-0 pb-0 ">
                 <span class="{{show_mobile}}">{{_('Phone: ')}}</span>
                {{ student_enrollment.student.phone_number | format_phone_number | safe }}</div>
-          <div class="col-lg-3 pt-0 pb-0">
+          <div class="col-lg-2 pt-0 pb-0">
                 <span class="{{show_mobile}}">{{_('Enrollment Status: ')}}</span>{{ student_enrollment.status }}<span class="{{show_mobile}}"><br></span>
 
                 {% if student_enrollment.status == "waitlist-invite-expired" %}
@@ -177,9 +190,15 @@
                          <span class="{{show_mobile}} small fw-semibold">{{_('Invite user for this training')}}</span></a>
            
            {% endif %}
-           
+
            </div>
-           
+           <div class="col pt-0 pb-0 text-center align-self-center">
+                <span class="{{show_mobile}}">{{_('Paid: ')}}</span>
+                <input type="checkbox" class="form-check-input toggle-paid"
+                       data-training-id="{{training.id}}"
+                       data-student-id="{{student_enrollment.student.id}}"
+                       {% if student_enrollment.paid %}checked{% endif %}>
+           </div>
 
      </div>
 
@@ -209,7 +228,22 @@ $('#student_search').on('change', function() {
 
      const href = "{{url_for('students_bp.enroll', training_id=training.id)}}?student_id="+ id + "&first_url={{return_url}}";
      window.location.href = href
-})
+});
+
+$('.toggle-paid').on('change', function() {
+     var cb = $(this);
+     $.ajax({
+          url: '/training/toggle-paid/' + cb.data('training-id') + '/' + cb.data('student-id'),
+          type: 'POST',
+          headers: { 'X-CSRFToken': '{{ csrf_token() }}' },
+          success: function(data) {
+               cb.prop('checked', data.paid);
+          },
+          error: function() {
+               cb.prop('checked', !cb.prop('checked'));
+          }
+     });
+});
 </script>
 
 {% endblock %}

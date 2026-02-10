@@ -254,14 +254,22 @@ def message():
     training_id = request.args.get('training_id',None,int)
     
     
+    user_ids_param = request.args.get('user_ids', None)
+
     if training_id and not form.is_submitted():
         training = Training().query.get(training_id)
         users = [ enrollemnt.student.user for enrollemnt in training.trainingenrollments ]
-        
+
         uids =  [str(user.id) for user in users]
         form.envelop_tos.data = uids
         form.subject.data = training.name
-        
+
+        form.envelop_tos.choices = [(user.id, user.fullname) for user in users]
+
+    elif user_ids_param and not form.is_submitted():
+        uid_list = [int(uid) for uid in user_ids_param.split(',') if uid.strip().isdigit()]
+        users = User().query.filter(User.id.in_(uid_list)).all()
+        form.envelop_tos.data = [str(user.id) for user in users]
         form.envelop_tos.choices = [(user.id, user.fullname) for user in users]
 
     elif reply_message_id and not form.is_submitted():
