@@ -1,5 +1,34 @@
 # Changes Log
 
+## [Unreleased] - 2026-02-10
+
+### Added - Email Selection Feature
+- **Email filtered students from Students overview**: New "Email selection" sidebar button on `/students/` that opens the message compose form pre-populated with all students matching the current filter selection
+- **Email filtered participants from Training detail**: New "Email selection" sidebar button on training detail pages with a new Student Type filter to narrow down recipients
+- **user_ids support in message route**: The `/account/message` route now accepts a `user_ids` query parameter for pre-populating recipients from any source
+- **filter_actions template block**: New extensible block in `filters.html` allowing child templates to inject sidebar actions below the filter form
+- Addresses starting with `do-not-reply` are automatically excluded from email selections
+
+### Added - Training Detail Enhancements
+- **Paid column with toggle**: Training detail page now shows a "Paid" checkbox per enrollment that toggles via AJAX (`/training/toggle-paid/<training_id>/<student_id>`)
+- **`paid` field on TrainingEnroll model**: New boolean column (`default=False`) to track payment status per enrollment
+- **Student Type filter on training detail**: Filter enrolled students by student type in the sidebar
+- **CSS highlight fix**: Row hover highlight now applies to the row element itself in addition to child elements
+
+### Added - Students Overview Enhancements
+- **Student type column links to student-edit**: The student type column on `/students/` now links to the student edit page
+
+### Changed - Local Static Assets for Offline Development
+- Bootstrap CSS/JS, Bootstrap Icons, jQuery, and Select2 now served from local `/static/` instead of CDN
+- CKEditor and intlTelInput still require an internet connection (CDN)
+
+### Chronological Commits
+- `4acf9e7` - Serve core static assets locally for offline development
+- `df329b4` - Add email selection feature for students and training detail pages
+- `7190a21` - Add link on student type column to student-edit page
+
+---
+
 ## [Unreleased] - 2025-12-21
 
 ### Enhanced - Email Deliverability & Anti-Spam Improvements
