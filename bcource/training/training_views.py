@@ -4,7 +4,7 @@ from flask_babel import lazy_gettext as _l
 from flask import Blueprint, abort
 from bcource import db, menu_structure
 from flask_security import current_user
-from bcource.helpers import get_url, has_trainer_role
+from bcource.helpers import get_url, safe_redirect, has_trainer_role
 from bcource.training.helper import make_table_header
 from bcource.models import Training, Practice, TrainingEvent, TrainingType, Trainer
 from bcource.training.training_forms import TrainingForm, EventForm, TrainingDeleteForm
@@ -98,13 +98,13 @@ def delete(id):  # @ReservedAssignment
 
     if training.trainingenrollments:
         flash(_('You cannot delete training <span class="fw-bold" style="white-space:nowrap;">%s</span>.<br> It still has students enrolled to it.' % training_name), "error")
-        return redirect(url)
-    
+        return safe_redirect(url)
+
     db.session.delete(training)
     db.session.commit()
     flash(_('Successfully deleted training: %s' % training_name))
-    
-    return redirect(url)
+
+    return safe_redirect(url)
 
 
 @training_bp.route('/edit/<int:id>',methods=['GET', 'POST'])
@@ -119,7 +119,7 @@ def edit_training(id=None):  # @ReservedAssignment
         training=Training().query.join(Practice).filter(and_(
             Training.id==id, Practice.shortname==Practice.default_row().shortname)).first()
         if not training:
-            return(redirect(get_url()))
+            return(safe_redirect(get_url()))
             
     
     form = TrainingForm(obj=training)
@@ -127,7 +127,7 @@ def edit_training(id=None):  # @ReservedAssignment
     url = get_url(form, default='training_bp.overview_list')
     
     if form.close.data:
-        return(redirect(url))
+        return(safe_redirect(url))
     
     if id == None:
         form.form_description = _("Create Training details")
@@ -163,8 +163,8 @@ def edit_training(id=None):  # @ReservedAssignment
         db.session.commit()                
         
         flash(_('Training details are successfully saved!'))
-        
-        return(redirect(url))
+
+        return(safe_redirect(url))
 
 
     return render_template("training/training.html", form=form, eventform=eventform, events=json.dumps(create_events(training)))
