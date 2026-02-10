@@ -10,17 +10,15 @@ Bcource is a Flask-based training scheduling and management system for managing 
 
 ### Python Environment
 
-The project uses Python 3.12 with pipenv for dependency management:
+The project uses Python 3.12 with pip and `requirements.txt` for dependency management:
 
 ```bash
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate
+
 # Install dependencies
-pipenv install
-
-# Activate virtual environment
-pipenv shell
-
-# Or run commands directly with pipenv
-pipenv run python run.py
+pip install -r requirements.txt
 ```
 
 ### Configuration
@@ -39,9 +37,6 @@ All configuration is environment-based via a `.env` file in the project root. Co
 
 ```bash
 # Development mode (uses console mail backend)
-pipenv run python run.py
-
-# Or with activated virtualenv
 python run.py
 ```
 
@@ -58,7 +53,7 @@ Environment modes:
 The scheduler must run as a separate process for automated tasks (reminders, waitlist management):
 
 ```bash
-pipenv run python run_scheduler.py
+python run_scheduler.py
 ```
 
 The scheduler uses a socket-based lock to prevent multiple instances (host/port configured via `BCOURSE_LOCK_HOST` and `BCOURSE_LOCK_PORT`).
@@ -83,7 +78,7 @@ cd test
 ../.venv/bin/python -m unittest test_automation.TestAutomationRegistry.test_register_automation_basic -v
 ```
 
-Note: Tests reference `.venv/bin/python` directly. If using pipenv, the virtualenv is typically located at `~/.local/share/virtualenvs/bcource-*/` but a `.venv` symlink or local virtualenv may be used for testing.
+Note: Tests reference `.venv/bin/python` directly.
 
 ### Database Migrations
 
