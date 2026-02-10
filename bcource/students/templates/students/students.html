@@ -25,6 +25,18 @@
 </div>
 {% endblock %}
 
+{% block filter_actions %}
+<div class="px-0 pt-2 pb-2">
+<div class="">
+     <a class="col-12 btn btn-outline-dark btn-sm mt-0"
+          style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+          href="{{ url_for('students_bp.email_selection', **request.args) }}">
+          <i class="bi bi-envelope"></i> {{_("Email selection")}}
+     </a>
+</div>
+</div>
+{% endblock %}
+
 {% block data_headers %}
                <div class="col-lg-3 fw-semibold">Name</div>
                <div class="col-lg-1 fw-semibold"></div>

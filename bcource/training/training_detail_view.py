@@ -1,9 +1,9 @@
 from bcource.training.training_views import training_bp, request, redirect, url_for, abort, flash
 from bcource.helpers import get_url
-from flask import render_template
+from flask import render_template, jsonify
 from flask_babel import _
 from flask_babel import lazy_gettext as _l
-from bcource.models import Training, TrainingType, TrainingEvent, TrainingEnroll, Student
+from bcource.models import Training, TrainingType, TrainingEvent, TrainingEnroll, Student, StudentType, User, Practice
 from bcource.students.common import invite_from_waitlist, enroll_common
 from datetime import datetime
 from bcource.training.training_forms import TrainingDerollForm
@@ -19,17 +19,27 @@ def make_filters():
     past_training_filter = filters.new_filter("waitlist", _("Wait List"))
     past_training_filter.add_filter_item( 1, _("Wait List"))
 
+    studenttype_filter = filters.new_filter("studenttype", _("Type"))
+    for student_type in StudentType.get_all():
+        studenttype_filter.add_filter_item( student_type.id, student_type.name)
+
     return (filters)
 
 def enrollement_query(training, filters):
 
-    
+
     if filters.get_item_is_checked("waitlist","1"):
-        return TrainingEnroll().query.join(Training).filter(TrainingEnroll.status.ilike("%waitlist%") ,
+        q = TrainingEnroll().query.join(Training).filter(TrainingEnroll.status.ilike("%waitlist%") ,
                                                          TrainingEnroll.training_id==training.id).order_by(
-                                                             TrainingEnroll.enrole_date).order_by(TrainingEnroll.enrole_date).all()
+                                                             TrainingEnroll.enrole_date)
     else:
-        return training.trainingenrollments_sorted
+        q = TrainingEnroll().query.filter(
+            TrainingEnroll.training_id==training.id).order_by(TrainingEnroll.enrole_date)
+
+    if filters.get_items_checked('studenttype'):
+        q = q.join(Student).filter(Student.studenttype_id.in_(filters.get_items_checked('studenttype')))
+
+    return q.all()
 
 
 
@@ -141,6 +151,26 @@ def invite(training_id,student_id):
     return redirect(url)
     
     
+@training_bp.route('/training-detail/<int:id>/email-selection', methods=['GET'])
+def training_email_selection(id):
+    training = Training().query.get(id)
+    if not training:
+        abort(404)
+
+    filters = make_filters().process_filters()
+    enrolled = enrollement_query(training, filters)
+    user_ids = [str(e.student.user_id) for e in enrolled
+                if not e.student.user.email.startswith('do-not-reply')]
+
+    if not user_ids:
+        flash(_('No students match the current filters.'), 'error')
+        return redirect(url_for('training_bp.training_detail', id=id))
+
+    return redirect(url_for('user_bp.message',
+                            user_ids=','.join(user_ids),
+                            first_url=request.url))
+
+
 @training_bp.route('/training-detail/<int:id>',methods=['GET', 'POST'])
 def training_detail(id):
     clear = request.args.getlist('submit_id')
@@ -163,10 +193,23 @@ def training_detail(id):
     url = get_url(deroll_form, default='training_bp.overview_list', back_button=True)
         
     
-    return render_template("training/training_detail.html", 
+    return render_template("training/training_detail.html",
                            return_url=url,
                            page_name=_("Training Overview for %(training_name)s",training_name=training.name),
-                           filters=filters, 
+                           filters=filters,
                            pagination=None,
                            enrolled=enrolled,
                            training=training)
+
+
+@training_bp.route('/toggle-paid/<int:training_id>/<int:student_id>', methods=['POST'])
+def toggle_paid(training_id, student_id):
+    enrollment = TrainingEnroll.query.filter_by(
+        training_id=training_id, student_id=student_id
+    ).first()
+    if not enrollment:
+        abort(404)
+
+    enrollment.paid = not enrollment.paid
+    db.session.commit()
+    return jsonify(paid=enrollment.paid)
