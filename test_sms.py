@@ -54,7 +54,8 @@ def main():
         print(f"\n{'='*60}")
         print(f"Sending Test SMS")
         print(f"{'='*60}")
-        print(f"To: {phone_number}")
+        masked = '*' * (len(phone_number) - 4) + phone_number[-4:] if len(phone_number) > 4 else '****'
+        print(f"To: {masked}")
         print(f"Message: {message}")
         print(f"Message length: {len(message)} characters")
         print(f"AWS Region: {app.config.get('AWS_REGION')}")
@@ -66,7 +67,7 @@ def main():
 
         if success:
             print("✓ SMS sent successfully!")
-            print(f"\nNote: Check your phone ({phone_number}) for the message.")
+            print(f"\nNote: Check your phone ({masked}) for the message.")
         else:
             print(f"✗ Failed to send SMS: {error}")
             print("\nTroubleshooting:")

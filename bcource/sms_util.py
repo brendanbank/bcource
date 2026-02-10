@@ -11,6 +11,12 @@ from functools import wraps
 
 logger = logging.getLogger(__name__)
 
+def _mask_phone(phone_number):
+    """Mask phone number for logging, showing only last 4 digits."""
+    if len(phone_number) > 4:
+        return '*' * (len(phone_number) - 4) + phone_number[-4:]
+    return '****'
+
 # Rate limiting configuration - loaded from app config
 def get_rate_limits():
     """Get rate limit configuration from Flask app config."""
@@ -96,13 +102,13 @@ def send_sms(phone_number, message):
     try:
         # Validate phone number format
         if not phone_number.startswith('+'):
-            logger.error(f"Invalid phone number format: {phone_number}. Must be E.164 format.")
+            logger.error(f"Invalid phone number format: {_mask_phone(phone_number)}. Must be E.164 format.")
             return False, "Phone number must be in E.164 format (e.g., +31612345678)"
 
         # Check rate limiting
         allowed, rate_limit_error = check_rate_limit(phone_number)
         if not allowed:
-            logger.warning(f"Rate limit exceeded for {phone_number}: {rate_limit_error}")
+            logger.warning(f"Rate limit exceeded for {_mask_phone(phone_number)}: {rate_limit_error}")
             return False, rate_limit_error
 
         # Get AWS configuration
@@ -144,7 +150,7 @@ def send_sms(phone_number, message):
 
         # Log the MessageId for tracking
         message_id = response.get('MessageId', 'unknown')
-        logger.info(f"[SMS] SNS accepted message {message_id} for {phone_number}")
+        logger.info(f"[SMS] SNS accepted message {message_id} for {_mask_phone(phone_number)}")
 
         # Note: SNS returns 200 OK even if delivery will fail due to quota
         # Check CloudWatch logs at: /aws/sns/<region>/<account-id>/DirectPublish
@@ -153,7 +159,7 @@ def send_sms(phone_number, message):
         # Record successful attempt for rate limiting
         record_sms_attempt(phone_number)
 
-        logger.info(f"[SMS] SMS queued successfully to {phone_number} (MessageId: {message_id})")
+        logger.info(f"[SMS] SMS queued successfully to {_mask_phone(phone_number)} (MessageId: {message_id})")
         logger.warning(f"[SMS] If delivery fails, check CloudWatch logs for MessageId: {message_id}")
         return True, None
 
