@@ -61,11 +61,11 @@ def update():
     
     if form.validate_on_submit():
         user = current_user
-        form.populate_obj(user)   
+        form.populate_obj(user)
         db.session.commit()
         flash(_("Account details are update successfully."))
-        return redirect(url)
-    
+        return safe_redirect(url)
+
     return render_template("user/update-account.html", form=form)
 
 
@@ -375,7 +375,7 @@ def settings():
         
         db.session.commit()
         flash(_("Account Settings are update successfully."))
-        return redirect(url)
+        return safe_redirect(url)
     
     return render_template("user/update-settings.html", form=form)
 
