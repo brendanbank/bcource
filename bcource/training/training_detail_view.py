@@ -1,5 +1,5 @@
 from bcource.training.training_views import training_bp, request, redirect, url_for, abort, flash
-from bcource.helpers import get_url
+from bcource.helpers import get_url, safe_redirect
 from flask import render_template, jsonify
 from flask_babel import _
 from flask_babel import lazy_gettext as _l
@@ -50,11 +50,11 @@ def enable(uuid):
     url = get_url()
     if not (enrollment):
         flash(_("Cannot find your enrollement!"), 'error')
-        return redirect(url)
+        return safe_redirect(url)
 
     enroll_common(enrollment.training, enrollment.student.user)
 
-    return redirect(url)
+    return safe_redirect(url)
 
 
 @training_bp.route('/training-de-invite/<int:training_id>/<int:student_id>',methods=['GET', 'POST'])
@@ -70,21 +70,21 @@ def deinvite(training_id,student_id):
         abort(404)
     
     url = get_url()
-        
+
     enrollment = TrainingEnroll().query.filter(TrainingEnroll.student == student, TrainingEnroll.training == training).first()
-    if enrollment: 
+    if enrollment:
         enrollment.status="waitlist"
         db.session.commit()
-        
-        flash(_('Student %(fullname)s is de-invited for %(trainingname)s.', 
-                fullname=student.fullname, 
+
+        flash(_('Student %(fullname)s is de-invited for %(trainingname)s.',
+                fullname=student.fullname,
                 trainingname=training.name))
     else:
-        flash(_('Cannot find invite for %(fullname)s for training %(trainingname)s.', 
-                fullname=student.fullname, 
+        flash(_('Cannot find invite for %(fullname)s for training %(trainingname)s.',
+                fullname=student.fullname,
                 trainingname=training.name), 'error')
-    
-    return redirect(url)
+
+    return safe_redirect(url)
 
 
 @training_bp.route('/training-force-waitlist/<int:training_id>/<int:student_id>',methods=['GET', 'POST'])
@@ -103,19 +103,19 @@ def force_waitlist(training_id,student_id):
     enrollment = TrainingEnroll().query.filter(TrainingEnroll.student == student, TrainingEnroll.training == training).first()
     if not enrollment:
         flash(_('Could not find enrollment'))
-        return redirect(url)
+        return safe_redirect(url)
 
-    flash(_('Student %(fullname)s is on waiting list for %(trainingname)s. Force enrollment!', 
-            fullname=student.fullname, 
+    flash(_('Student %(fullname)s is on waiting list for %(trainingname)s. Force enrollment!',
+            fullname=student.fullname,
             trainingname=training.name))
-    
+
     enrollment.status='force-off-waitlist'
     db.session.commit()
-    
+
     return_acton =  enroll_common(training, student.user)
-    
-    
-    return redirect(url)
+
+
+    return safe_redirect(url)
 
 @training_bp.route('/training-invite/<int:training_id>/<int:student_id>',methods=['GET', 'POST'])
 def invite(training_id,student_id):        
@@ -130,25 +130,25 @@ def invite(training_id,student_id):
         abort(404)
     
     url = get_url()
-    
+
     if not training.wait_list_spot_available(student):
         flash(_('Student %(fullname)s cannot be invited for %(trainingname)s.',
                 fullname=student.fullname,
                 trainingname=training.name), "error")
-        
-        return redirect(url)
-    
+
+        return safe_redirect(url)
+
     enrollment = TrainingEnroll().query.filter(TrainingEnroll.student == student, TrainingEnroll.training == training).first()
     if not enrollment:
         flash(_('Could not find enrollment'))
-        return redirect(url)
-    
-    invite_from_waitlist(enrollment)    
-    flash(_('Student %(fullname)s is invited for %(trainingname)s.', 
-            fullname=student.fullname, 
+        return safe_redirect(url)
+
+    invite_from_waitlist(enrollment)
+    flash(_('Student %(fullname)s is invited for %(trainingname)s.',
+            fullname=student.fullname,
             trainingname=training.name))
-    
-    return redirect(url)
+
+    return safe_redirect(url)
     
     
 @training_bp.route('/training-detail/<int:id>/email-selection', methods=['GET'])
@@ -176,7 +176,7 @@ def training_detail(id):
     clear = request.args.getlist('submit_id')
     
     if clear and clear[0]=='back':
-        return redirect(get_url())
+        return safe_redirect(get_url())
 
 
     if clear and clear[0]=='clear':

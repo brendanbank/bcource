@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, abort, redirect, url_for, flash, request, jsonify
 from flask_security import current_user, naive_utcnow
 from flask import current_app as app
-from bcource.helpers import admin_has_role, has_trainer_role, get_url, add_url_argument
+from bcource.helpers import admin_has_role, has_trainer_role, get_url, safe_redirect, add_url_argument
 
 from bcource import menu_structure, db
 from bcource.models import (Student, StudentStatus, StudentType, User, Practice, 
@@ -187,27 +187,27 @@ def delete(id):
     url = get_url()
     if user.id == current_user.id:
         flash(_('You cannot delete yourself!'), "error")
-        return redirect(url)
-    
+        return safe_redirect(url)
+
     if user.trainers:
         flash(_('You cannot delete user <span class="fw-bold" style="white-space:nowrap;">%s</span>. First delete the trainer record.<br>' % user.email), "error")
-        return redirect(url)
+        return safe_redirect(url)
 
     if user.student_from_practice.studentenrollments:
         flash(_('You cannot delete user <span class="fw-bold" style="white-space:nowrap;">%s</span>. The user is still enrolled in one or more trainings.<br>' % user.email), "error")
-        return redirect(url)
+        return safe_redirect(url)
 
     for student in user.students:
         db.session.delete(student)
 
     UserMessageAssociation().query.filter(UserMessageAssociation.user_id == user.id).delete()
     UserSettings().query.filter(UserSettings.user_id == user.id).delete()
-    
+
     db.session.delete(user)
     db.session.commit()
     flash(_('Successfully deleted training: %s' % user))
-    
-    return redirect(url)
+
+    return safe_redirect(url)
 
 
 @students_bp.route('/user-edit/<int:id>',methods=['GET', 'POST'])
@@ -233,7 +233,7 @@ def edit_user(id=None):
     url = get_url(form, default='students_bp.index')
     if user.id == current_user.id:
         flash(_('You cannot edit yourself here! Go to the Account Details menu to edit your own details.'), "error")
-        return redirect (url)
+        return safe_redirect(url)
 
 
     if admin_has_role('db-admin'):
@@ -267,9 +267,9 @@ def edit_user(id=None):
             
         db.session.commit()
         flash(_('User %s has been updated' % user.fullname))
-                
-        return redirect(url)
-    
+
+        return safe_redirect(url)
+
     return render_template("students/student.html", form=form)
 
 
@@ -280,7 +280,7 @@ def deroll(user_id,training_id):
     user = User().query.get(user_id)
     url = get_url()
     deroll_common(training, user, admin=True)
-    return redirect(url)
+    return safe_redirect(url)
 
     
 @students_bp.route('/student-trainings/enroll/<int:training_id>',methods=['GET', 'POST'])
@@ -289,19 +289,19 @@ def enroll(training_id):
     student_id = request.args.get('student_id')
     if not student_id:
         flash(_('Could get student from query!'), 'error')
-        return redirect(get_url())
-    
+        return safe_redirect(get_url())
+
     training = Training().query.get(training_id)
     user = User().query.join(Student).filter(Student.id==student_id).first()
     if not user:
         flash(_('Could get user from query!'), 'error')
-        return redirect(get_url())
-    
+        return safe_redirect(get_url())
+
     url = get_url()
-    
+
     return_acton =  enroll_common(training, user)
-    
-    return redirect(url)
+
+    return safe_redirect(url)
 
 
 
@@ -319,7 +319,7 @@ def student(id):
     url = get_url(form, default='students_bp.index')
     
     if request.form.get("submit") == 'close':
-        return redirect(url)
+        return safe_redirect(url)
     
     
     if  form.validate_on_submit():
@@ -327,11 +327,11 @@ def student(id):
 
         db.session.commit()
         flash(_('Student %s has been updated' % student.fullname))
-        
+
         if student.studentstatus.name == "active":
             bmsg.EmailStudentStatusActive(envelop_to=student.user,
                     user=student.user, status=student.studentstatus).send()
-        
-        return redirect(url)
+
+        return safe_redirect(url)
     
     return render_template("students/student.html",  form=form)
