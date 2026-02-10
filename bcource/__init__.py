@@ -6,6 +6,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_admin import Admin
+from flask_admin.theme import Bootstrap4Theme
 from flask_security.models import sqla
 import flask_security.mail_util
 from flask_mailman import Mail
@@ -47,7 +48,7 @@ db = SQLAlchemy(model_class=Base)
 
 MyFsModels.set_db_info(base_model=Base)
 
-table_admin = Admin(name=__name__, template_mode='bootstrap4', base_template='admin/mybase.html')
+table_admin = Admin(name=__name__, theme=Bootstrap4Theme(base_template='admin/mybase.html'))
 
 security = Security() 
 
