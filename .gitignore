@@ -185,3 +185,4 @@ attic/
 */letsencrypt/*
 */grafana_data/*
 */grafana/data/*
+.DS_Store
