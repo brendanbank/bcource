@@ -236,7 +236,7 @@ def edit_user(id=None):
         return safe_redirect(url)
 
 
-    if admin_has_role('db-admin'):
+    if current_user.has_role('db-admin'):
         form.roles.query=Role().query.all()
     else:
         form.roles.query=Role().query.filter(Role.name != "db-admin").all()
