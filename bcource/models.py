@@ -239,7 +239,9 @@ class TrainingEnroll(db.Model):
         server_default=func.now(),
         onupdate=func.now(),
     )
-    
+
+    paid: Mapped[bool] = mapped_column(Boolean(), default=False, nullable=False, server_default="0")
+
     @hybrid_property
     def sequence_next(self):
         if self.ical_sequence == None:

@@ -140,6 +140,22 @@ def index():
                            )
 
 
+@students_bp.route('/email-selection', methods=['GET'])
+def email_selection():
+    filters = make_filters().process_filters()
+    students_select = students_query(filters)
+    user_ids = [str(s.user_id) for s in students_select.all()
+                 if not s.user.email.startswith('do-not-reply')]
+
+    if not user_ids:
+        flash(_('No students match the current filters.'), 'error')
+        return redirect(url_for('students_bp.index'))
+
+    return redirect(url_for('user_bp.message',
+                            user_ids=','.join(user_ids),
+                            first_url=request.url))
+
+
 @students_bp.route('/search',methods=['GET'])
 def search():
     results = {}

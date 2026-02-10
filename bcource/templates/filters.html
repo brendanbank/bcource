@@ -82,8 +82,9 @@
                     >{{_("Clear filters")}}</button>
                     </div>
                </div>
+               {% block filter_actions %}{% endblock %}
                </div>
-               <input id="q" name="q" type="hidden" value="{{user_q}}"> 
+               <input id="q" name="q" type="hidden" value="{{user_q}}">
                <input id="hidden_show" name="show" type="hidden" value="{{filters.show}}"> 
                <input id="page" name="page" type="hidden" value="{{pagination.page}}"> 
 
@@ -102,7 +103,6 @@
                     </div>
                 {% endif %}
           </form>
-
 
 </div>
   
