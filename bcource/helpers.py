@@ -10,8 +10,7 @@ import pytz
 import string
 import secrets
 import phonenumbers
-from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
-from flask_admin.helpers import is_safe_url
+from urllib.parse import urlparse, urljoin, urlunparse, parse_qs, urlencode
 from flask_babel import _
 from flask_babel import lazy_gettext as _l
 import nh3
@@ -20,6 +19,13 @@ from datetime import timedelta, datetime
 from copy import deepcopy
 
 
+
+def is_safe_url(target):
+    """Validate that redirect target is safe (same host or relative)."""
+    target = target.replace('\\', '/')
+    test_url = urlparse(urljoin(request.host_url, target))
+    ref_url = urlparse(request.host_url)
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
 def has_trainer_role():
     admin_has_role(["trainer"])
