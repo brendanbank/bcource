@@ -107,7 +107,7 @@
                     </a>
                </span>                    
                </div>
-               <div class="col-lg-1 py-1"><span class="mt-1 {{show_mobile}} fw-semibold"> {{_("Student Type") }}: </span>{{ student.studenttype }} 
+               <div class="col-lg-1 py-1"><span class="mt-1 {{show_mobile}} fw-semibold"> {{_("Student Type") }}: </span><a class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" href="{{ url_for('students_bp.student', id=student.id) }}">{{ student.studenttype }}</a>
                </div>
                <div class="col-lg-2 py-1 pb-2"><span class="mt-1 {{show_mobile}} fw-semibold"> {{_("Phone") }}: </span>{{ student.user.phone_number | format_phone_number | safe}}</div>
           </div>
