@@ -2,7 +2,7 @@ from bcource import db, security
 from bcource.models import Content, Message
 from flask_mailman import EmailMultiAlternatives
 from bs4 import BeautifulSoup
-from icalendar import Calendar, Event
+from icalendar import Calendar, Event, vCalAddress, vText
 from bcource.helpers import db_datetime, format_phone_number
 from bcource.helpers import config_value as cv
 import datetime as dt
@@ -350,8 +350,14 @@ class EmailStudentEnrolledInTrainingWaitlist(SendEmail):
             event.add('uid', enrollment.uuid)
             event.add('SEQUENCE', enrollment.sequence_next)
             event.add('status', "TENTATIVE")
-            #event.add(f'ORGANIZER;CN="{self.envelop_from}"', f'mailto:noreply@bgwlan.nl')
-            event.add(f'ATTENDEE;ROLE=REQ-PARTICIPANT;CN="{user.fullname}"', f'mailto:{user.email}')
+            organizer = vCalAddress('mailto:noreply@bcourse.nl')
+            organizer.params['CN'] = vText('Bcourse')
+            event.add('organizer', organizer)
+            attendee = vCalAddress(f'mailto:{user.email}')
+            attendee.params['CN'] = vText(user.fullname)
+            attendee.params['PARTSTAT'] = vText('TENTATIVE')
+            attendee.params['RSVP'] = vText('FALSE')
+            event.add('attendee', attendee)
             event.add('location', db_event.location.ical_adress)
             event.add('summary', f'{training.name} (Waiting List)')
             cal.add_component(event)
@@ -393,8 +399,14 @@ class EmailStudentEnrolledInTraining(SendEmail):
             event.add('uid', enrollment.uuid)
             event.add('SEQUENCE', enrollment.sequence_next)
             event.add('status', "CONFIRMED")
-            #event.add(f'ORGANIZER;CN="{self.envelop_from}"', f'mailto:noreply@bgwlan.nl')
-            event.add(f'ATTENDEE;ROLE=REQ-PARTICIPANT;CN="{user.fullname}"', f'mailto:{user.email}')
+            organizer = vCalAddress('mailto:noreply@bcourse.nl')
+            organizer.params['CN'] = vText('Bcourse')
+            event.add('organizer', organizer)
+            attendee = vCalAddress(f'mailto:{user.email}')
+            attendee.params['CN'] = vText(user.fullname)
+            attendee.params['PARTSTAT'] = vText('ACCEPTED')
+            attendee.params['RSVP'] = vText('FALSE')
+            event.add('attendee', attendee)
             event.add('location', db_event.location.ical_adress)
             event.add('summary', training.name)
             cal.add_component(event)
@@ -435,8 +447,14 @@ class EmailStudentDerolledInTraining(SendEmail):
             event.add('uid', uuid)
             event.add('SEQUENCE', enrollment.sequence_next)
             event.add('status', "CANCELLED")
-            #event.add(f'ORGANIZER;CN="{self.envelop_from}"', f'mailto:noreply@bgwlan.nl')
-            event.add(f'ATTENDEE;ROLE=REQ-PARTICIPANT;CN="{user.fullname}"', f'mailto:{user.email}')
+            organizer = vCalAddress('mailto:noreply@bcourse.nl')
+            organizer.params['CN'] = vText('Bcourse')
+            event.add('organizer', organizer)
+            attendee = vCalAddress(f'mailto:{user.email}')
+            attendee.params['CN'] = vText(user.fullname)
+            attendee.params['PARTSTAT'] = vText('DECLINED')
+            attendee.params['RSVP'] = vText('FALSE')
+            event.add('attendee', attendee)
             event.add('location', db_event.location.ical_adress)
             event.add('summary', f"CANCELLED: {enrollment.training.name}")
             cal.add_component(event)
