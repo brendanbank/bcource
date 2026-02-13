@@ -87,6 +87,7 @@
                <input id="q" name="q" type="hidden" value="{{user_q}}">
                <input id="hidden_show" name="show" type="hidden" value="{{filters.show}}"> 
                <input id="page" name="page" type="hidden" value="{{pagination.page}}"> 
+               {% block filter_extra_inputs %}{% endblock %}
 
                {% if return_url %}
                <input id="url" name="url" type="hidden" value="{{return_url}}">    

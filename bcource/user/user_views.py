@@ -159,17 +159,38 @@ def get_messages(id):
             "read": f'{message_date(envelop.message_read, mobile_date=True)}' if envelop.message_read != None else None,
             "unread_messages": current_user.unread_messages
             }
+    else:
+        # Check if the user is the sender (for sent mailbox)
+        message = Message.query.filter(Message.id == id, Message.envelop_from_id == current_user.id).first()
+        if message:
+            recipients = ", ".join([f'{assoc.user}' for assoc in message.envelop_to])
+            results = {
+                "results": True,
+                "id": message.id, 
+                "subject": message.subject,
+                "created_date": f'{message_date(message.created_date, mobile_date=True)}',
+                "body": message.body,
+                "tags": [tag.tag for tag in message.tags],
+                "from": f'{message.envelop_from}',
+                "to": recipients,
+                "deleted": None,
+                "read": None,
+                "unread_messages": current_user.unread_messages,
+                "is_sent": True
+                }
         
     return jsonify(results)
 
 
-def make_filters():
+def make_filters(mailbox='inbox'):
 
     filters = Filters("Training Filters")
-    past_training_filter = filters.new_filter("read", _("Read status"))
-    past_training_filter.add_filter_item( 1, _("Read"))
-    past_training_filter.add_filter_item( 2, _("Unread"))
-    past_training_filter.add_filter_item( 3, _("Deleted"))
+    
+    if mailbox == 'inbox':
+        past_training_filter = filters.new_filter("read", _("Read status"))
+        past_training_filter.add_filter_item( 1, _("Read"))
+        past_training_filter.add_filter_item( 2, _("Unread"))
+        past_training_filter.add_filter_item( 3, _("Deleted"))
     
     tags_filter = filters.new_filter("tag", _("Tags"))
     for tagobj in MessageTag().query.filter(MessageTag.hidden == False).order_by(MessageTag.tag).all():
@@ -217,20 +238,45 @@ def make_message_select(filters, user_q=None):
 
     return (q)
 
+def make_sent_message_select(filters, user_q=None):
+    
+    q = Message.query.filter(Message.envelop_from_id == current_user.id)
+    
+    if user_q:
+        q = q.filter(or_(
+            Message.body.like(f"%{user_q}%"),
+            Message.subject.like(f"%{user_q}%"),
+        ))
+
+    items_checked = filters.get_items_checked('tag')
+    if items_checked:
+        q = q.join(Message.tags).filter(MessageTag.id.in_(items_checked))
+
+    q = q.order_by(Message.created_date.desc())
+
+    return (q)
+
 @user_bp.route('/messages', methods=['GET', 'POST'])
 @auth_required()
 def messages():
     
+    mailbox = request.args.get('mailbox', 'inbox')
+    if mailbox not in ('inbox', 'sent'):
+        mailbox = 'inbox'
+    
     clear = request.args.getlist('submit_id')
     if clear and clear[0]=='clear':
-        return redirect(url_for('user_bp.messages', show=request.args.getlist('show')))
+        return redirect(url_for('user_bp.messages', show=request.args.getlist('show'), mailbox=mailbox))
 
-    filters = make_filters().process_filters()
+    filters = make_filters(mailbox=mailbox).process_filters()
 
 
     user_q = request.args.get('q', None)
 
-    q = make_message_select(filters, user_q)                                                 
+    if mailbox == 'sent':
+        q = make_sent_message_select(filters, user_q)
+    else:
+        q = make_message_select(filters, user_q)                                                 
        
     messages = b_pagination(q, per_page=22)
 
@@ -238,6 +284,7 @@ def messages():
     
     return render_template("user/messages.html",
                            filters=filters,
+                           mailbox=mailbox,
                            user_q=user_q if user_q != None else "",
                            form=MessageActionform(),
                            page_name=_l("Messages"),
