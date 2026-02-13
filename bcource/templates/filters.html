@@ -46,13 +46,9 @@
 
           <div class="p-0 {% if filters.show %}collapse.show{%else%}collapse{%endif%}" id="collapseExample">
                {% for filter in filters %}
-               <div class="ps-0 py-1" style="cursor: pointer;"
-                    data-bs-toggle="collapse" data-bs-target="#filter_group_{{filter.id}}"
-                    aria-expanded="true" aria-controls="filter_group_{{filter.id}}">
-                    <small><strong>{{filter.name}}</strong> <i class="bi bi-chevron-down" style="font-size: 0.65rem;"></i></small>
-               </div>
-               <div class="collapse show" id="filter_group_{{filter.id}}" 
-                    style="max-height: 10rem; overflow-y: auto;">
+               <details class="ps-0 py-1" open>
+                    <summary class="list-unstyled"><small><strong>{{filter.name}}</strong></small></summary>
+                    <div style="max-height: 10rem; overflow-y: auto;">
                     {% for item in filter %}
                                         
                     <div class="form-check ">
@@ -72,7 +68,8 @@
                     </div>
                
                     {% endfor -%}
-               </div>
+                    </div>
+               </details>
                {% endfor -%}
                {% if user_q is defined and user_q != "" %}<span] class="small pt-1"> <span class="">Search term: <span class="fw-semibold">{{user_q}}</span></<span></span>{% endif %}
                <div class="px-0 pt-2 pb-2">
