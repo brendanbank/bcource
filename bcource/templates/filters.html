@@ -46,7 +46,7 @@
 
           <div class="p-0 {% if filters.show %}collapse.show{%else%}collapse{%endif%}" id="collapseExample">
                {% for filter in filters %}
-               <details class="ps-0 py-1" open>
+               <details class="ps-0 py-1" {% if filter.get_items_checked() %}open{% endif %}>
                     <summary class="list-unstyled"><small><strong>{{filter.name}}</strong></small></summary>
                     <div>
                     {% for item in filter %}
