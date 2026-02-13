@@ -23,13 +23,17 @@
 {% if not g.is_mobile %}
 <div class="row lh-1 lh-1 pt-1 ps-1 border-top m-0">
 <div class="col-lg-4 p-0 ">
+     {% if mailbox == 'inbox' %}
      <input class="form-check-input" onClick="all_messages_enable(this);" id="select_all" name="select_all" type="checkbox" value="y">
+     {% endif %}
      
 {{- message_action(0, "new_message", "bi-envelope-plus","New Message", class="icon-link link-body-emphasis", class="ps-2 icon-link link-body-emphasis fs-5") }}
+{% if mailbox == 'inbox' %}
 {{- message_action(0, "read_selected", "bi-envelope-open","Mark as read", class="icon-link link-body-emphasis fs-5 when_active d-none") }}
 {{- message_action(0, "unread_selected", "bi-envelope","Mark as unread", class="icon-link link-body-emphasis fs-5 when_active d-none") }}
 {{- message_action(0, "delete_selected", "bi-trash","Delete selected", class="icon-link link-body-emphasis fs-5 when_active d-none") }}
 {{- message_action(0, "undelete_selected", "bi-envelope-x","Undelete selected", class="icon-link link-body-emphasis fs-5 when_active d-none") }}
+{% endif %}
                     
                     
 </div>
@@ -63,14 +67,18 @@
 
 <div class="ps-1 ms-0 lh-1 d-flex justify-content-between">
 <div>
+     {% if mailbox == 'inbox' %}
      <input class="form-check-input" onClick="all_messages_enable(this);" id="select_all" name="select_all" type="checkbox" value="y">
+     {% endif %}
      {% set iconclass="icon-link link-body-emphasis when_active d-none small " %}
 {{- message_action(0, "new_message", "bi-envelope-plus","New", mobile=True, class="small ps-4 pe-0 icon-link link-body-emphasis") }}
 </div>
+{% if mailbox == 'inbox' %}
                     {{- message_action(0, "read_selected", "bi-envelope-open","Read", mobile=True, class=iconclass) }}
                     {{- message_action(0, "unread_selected", "bi-envelope","Unread", mobile=True,class=iconclass) }}
                     {{- message_action(0, "delete_selected", "bi-trash","Del",  mobile=True,class=iconclass) }}
      {{- message_action(0, "undelete_selected", "bi-envelope-x","Undelete", mobile=True,class=iconclass) }}
+{% endif %}
 </div>
 
 
@@ -90,18 +98,74 @@
 {% endblock %}
 
 {% block searchbox %}
-<!-- <l class="col-lg-12 mt-2"><strong>{{_('User Search')}}</strong></l>
-     <div class="">
-     <select  class="col-12" id="student_search" class="student_search"></select>
+<div class="py-2 px-1">
+     <a href="{{ url_for('user_bp.messages', mailbox='inbox') }}" 
+        class="btn btn-sm {% if mailbox == 'inbox' %}btn-dark{% else %}btn-outline-dark{% endif %} w-100 mb-1">
+        <i class="bi bi-inbox"></i> {{_("Inbox")}}
+     </a>
+     <a href="{{ url_for('user_bp.messages', mailbox='sent') }}" 
+        class="btn btn-sm {% if mailbox == 'sent' %}btn-dark{% else %}btn-outline-dark{% endif %} w-100">
+        <i class="bi bi-send"></i> {{_("Sent")}}
+     </a>
 </div>
- -->{% endblock %}
+{% endblock %}
+
+{% block filter_extra_inputs %}
+<input name="mailbox" type="hidden" value="{{ mailbox }}">
+{% endblock %}
 
 {% block data_headers %}
 {% endblock %}
 
 {% block data_rows %}
 
+{% if mailbox == 'sent' %}
+      {% for message in pagination -%}
+               
+      {%if g.is_mobile %} 
+      <div class="row base-row position-relative {{ loop.cycle('evendiv', 'odddiv')}} m-0" 
+          id="m_{{message.id}}" message-id={{message.id}} onClick="user_show_model(this);"
+               message-bcourse-read-status="1"  >
+      
+                    <div class="ps-0 d-flex align-items-center border-bottom">
+                         <div class="col-10">
+                              <div class="me-3 text-truncate pb-1 ">
+                                   <span class="ps-1 text-muted"><i class="bi bi-send small"></i> {% for assoc in message.envelop_to %}{{ assoc.user }}{% if not loop.last %}, {% endif %}{% endfor %}</span><br>
+                                   <span class="ps-1 ">{{ message.subject }}</span>
+                              </div>
+                         </div >
+                         <div class="w-100 justify-content-end text-end">
+                                        <span class="">{{ message.created_date | message_date}}</span>
+                         </div>
 
+                    </div>
+      
+      
+      {% else %}
+      <div class="row base-row position-relative {{ loop.cycle('evendiv', 'odddiv')}} m-0" >
+          <div  class="highlight hover-container px-0"> 
+              <div  class=" d-lg-flex hover-target" 
+              style="cursor: pointer;" id="m_{{message.id}}" message-id={{message.id}} onClick="user_show_model(this);"
+               message-bcourse-read-status="1">
+                    <div class="me-3 col-lg-3 text-truncate pb-1 ">
+                         <span class="ps-1 text-muted"><i class="bi bi-send small"></i> {% for assoc in message.envelop_to %}{{ assoc.user }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+                    </div>
+
+                    <div class="test-overflow col-lg-8 py-0 text-truncate">
+                         {{ message.subject }}
+                    </div>
+                    <div class="text-end w-100">
+                                   <span class="pe-2  test-overflow">{{ message.created_date | message_date}}</span>
+                    </div>
+               </div>
+               
+         </div>
+         {% endif %}
+     </div>
+
+          {% endfor %}
+
+{% else %}
       {% for user_envelop in pagination -%}
                
       {%if g.is_mobile %} 
@@ -159,6 +223,7 @@
      </div>
 
           {% endfor %}
+{% endif %}
     
 {% endblock %}
 
@@ -170,8 +235,11 @@
     <div class="modal-content">
       <div class="modal-header d-flex justify-content-between">
       <div class="row">
-      <div class="col-lg-12">
+      <div class="col-lg-12" id="message_from_row">
         <span class="fw-semibold">From:&nbsp;</span><span class="modal-title " id="message_from"></span>
+        </div>
+      <div class="col-lg-12 d-none" id="message_to_row">
+        <span class="fw-semibold">To:&nbsp;</span><span class="modal-title " id="message_to"></span>
         </div>
       <div class="col-lg-12">
         <span class="fw-semibold">Subject:&nbsp;</span><span class="modal-title " id="message_subject"></span>
@@ -191,9 +259,9 @@
       </div>
       <div class="modal-footer">
                <span class="fs-3"><button onClick="this.blur();" type="button" class="btn btn-sm btn-outline-dark" data-bs-dismiss="modal">Close</button>&nbsp;</span>
-               <span class="fs-3">{{- message_action(0, "unread_msg_modal", "bi-envelope mb-2","Unread ", mobile=True, class="btn btn-sm btn-outline-dark") }}&nbsp;</span>
-               <span class="fs-3 admin_hide">{{- message_action(0, "reply", "bi-reply mb-2","Reply", mobile=True, class="btn btn-sm btn-outline-dark ") }}&nbsp;</span>
-               <span class="fs-3">{{- message_action(0, "delete_msg_modal", "bi-trash mb-2","Delete", mobile=True, class="btn btn-sm btn-outline-dark") }}&nbsp;</span>
+               <span class="fs-3 inbox_action">{{- message_action(0, "unread_msg_modal", "bi-envelope mb-2","Unread ", mobile=True, class="btn btn-sm btn-outline-dark") }}&nbsp;</span>
+               <span class="fs-3 admin_hide inbox_action">{{- message_action(0, "reply", "bi-reply mb-2","Reply", mobile=True, class="btn btn-sm btn-outline-dark ") }}&nbsp;</span>
+               <span class="fs-3 inbox_action">{{- message_action(0, "delete_msg_modal", "bi-trash mb-2","Delete", mobile=True, class="btn btn-sm btn-outline-dark") }}&nbsp;</span>
       </div>
     </div>
   </div>
@@ -225,13 +293,28 @@ function user_show_model(item){
 	    $('#message_date').html(data.created_date);
 	    $('#message_from').html(data.from )
 	    $('#message_tags').html("Tags: " + data.tags.join(", ") )
-	    if (data.from == "do-not-reply"){
-	    	$('.admin_hide').addClass("d-none")
+	    
+	    if (data.is_sent) {
+	    	// Sent message: show To, hide From, hide inbox actions
+	    	$('#message_from_row').addClass("d-none")
+	    	$('#message_to_row').removeClass("d-none")
+	    	$('#message_to').html(data.to)
+	    	$('.inbox_action').addClass("d-none")
 	    } else {
-	    	$('.admin_hide').removeClass("d-none")
+	    	// Inbox message: show From, hide To, show inbox actions
+	    	$('#message_from_row').removeClass("d-none")
+	    	$('#message_to_row').addClass("d-none")
+	    	$('.inbox_action').removeClass("d-none")
+	    	if (data.from == "do-not-reply"){
+	    		$('.admin_hide').addClass("d-none")
+	    	} else {
+	    		$('.admin_hide').removeClass("d-none")
+	    	}
 	    }
 	    action_update_nav_unread(data.unread_messages)
-	    action_read_toggle([msg_id], 1)
+	    if (!data.is_sent) {
+	    	action_read_toggle([msg_id], 1)
+	    }
 	    MsgModal.show()
 	});
 	
@@ -432,13 +515,15 @@ function addOrReplaceUrlParam(url, paramName, paramValue) {
 }
   
 const $searchInput = $('#free_text_search');
+const currentMailbox = '{{ mailbox }}';
 
 $searchInput.on('keydown', async (event) => {
 	if (event.key === 'Enter') {
 		const q = $searchInput.val().trim()
-		const currentUrl = window.location.href;
-		const updatedUrl = addOrReplaceUrlParam(currentUrl, "q", q);
-		window.location.href = updatedUrl;
+		var currentUrl = window.location.href;
+		currentUrl = addOrReplaceUrlParam(currentUrl, "q", q);
+		currentUrl = addOrReplaceUrlParam(currentUrl, "mailbox", currentMailbox);
+		window.location.href = currentUrl;
 	}
 });
   </script>
