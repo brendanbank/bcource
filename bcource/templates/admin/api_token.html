@@ -1,0 +1,26 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<h1>API Token</h1>
+<p>Generate a JWT token for the <a href="{{ url_for('admin_api.doc') }}">Admin API</a>.</p>
+
+{% if token %}
+<div class="mb-3">
+    <label for="token" class="form-label"><strong>Token</strong> (expires in {{ expires_in // 3600 }} hours):</label>
+    <div class="input-group">
+        <input type="text" class="form-control font-monospace" id="token" value="{{ token }}" readonly>
+        <button class="btn btn-outline-secondary" type="button" onclick="copyToken()">Copy</button>
+    </div>
+</div>
+<div class="mb-3">
+    <label class="form-label"><strong>Example usage:</strong></label>
+    <pre class="bg-light p-2 rounded"><code>curl -H "Authorization: Bearer {{ token[:20] }}..." {{ request.url_root }}admin-api/trainings/</code></pre>
+</div>
+<hr>
+{% endif %}
+
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-primary">Generate Token</button>
+</form>
+{% endblock %}
