@@ -176,7 +176,8 @@ def main():
     base = args.base_url.rstrip("/") + "/admin-api"
 
     # Production safety check
-    if "localhost" not in args.base_url and "127.0.0.1" not in args.base_url:
+    is_production = "localhost" not in args.base_url and "127.0.0.1" not in args.base_url
+    if is_production and not args.dry_run:
         if not args.confirm:
             print(f"ERROR: Running against non-local URL: {args.base_url}")
             print("Add --confirm to proceed. Make sure you have:")
