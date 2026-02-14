@@ -166,6 +166,10 @@ class Config:
     BCOURSE_LOCK_HOST="127.0.0.1"
     BCOURSE_LOCK_PORT=53462
 
+    # JWT Configuration for Admin API token auth
+    JWT_EXPIRATION_SECONDS = int(environ.get("JWT_EXPIRATION_SECONDS", "86400"))
+    JWT_ALGORITHM = environ.get("JWT_ALGORITHM", "HS256")
+
 
 settings = Config
 
