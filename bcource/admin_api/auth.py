@@ -47,10 +47,15 @@ def admin_required(f):
     """Decorator that requires db-admin role + 2FA, mirroring accessible_as_admin().
 
     Accepts both Bearer token and session-based authentication.
+    JWT tokens skip the 2FA check (token itself proves identity via SECRET_KEY signature).
+    Session-based auth still requires 2FA.
     """
     @wraps(f)
     def decorated(*args, **kwargs):
+        via_jwt = False
         user = _user_from_bearer_token()
+        if user is not None:
+            via_jwt = True
 
         if user is None and current_user.is_authenticated:
             user = current_user
@@ -61,7 +66,7 @@ def admin_required(f):
         if not user.is_active:
             abort(403, 'Account is not active')
 
-        if not user.tf_primary_method:
+        if not via_jwt and not user.tf_primary_method:
             abort(403, 'Two-factor authentication must be enabled')
 
         role_name = current_app.config['BCOURSE_SUPER_USER_ROLE']
