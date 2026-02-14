@@ -525,6 +525,7 @@ $searchInput.on('keydown', async (event) => {
 		var currentUrl = window.location.href;
 		currentUrl = addOrReplaceUrlParam(currentUrl, "q", q);
 		currentUrl = addOrReplaceUrlParam(currentUrl, "mailbox", currentMailbox);
+		currentUrl = addOrReplaceUrlParam(currentUrl, "page", "1");
 		window.location.href = currentUrl;
 	}
 });
