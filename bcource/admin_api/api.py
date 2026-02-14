@@ -4,19 +4,28 @@ from flask_restx import Api, abort
 admin_api_bp = Blueprint('admin_api', __name__, url_prefix='/admin-api')
 
 
+PUBLIC_PATHS = {'/admin-api/auth/token'}
+
+
 @admin_api_bp.before_request
-def protect_docs():
-    """Require admin auth for Swagger UI and spec."""
-    from bcource.admin_api.auth import _user_from_bearer_token, admin_required
-    if request.path in ('/admin-api/docs', '/admin-api/swagger.json'):
-        from flask_security import current_user
-        user = _user_from_bearer_token()
-        if user is None and current_user.is_authenticated:
-            user = current_user
-        if user is None:
-            abort(401, 'Authentication required')
-        if not user.is_active or not user.has_role('db-admin'):
-            abort(403, 'Forbidden')
+def require_admin_auth():
+    """Require admin auth on all admin API endpoints by default.
+
+    Only the token endpoint is public (needs credentials to get a token).
+    All other paths (including /docs and /swagger.json) require an
+    authenticated db-admin user.
+    """
+    if request.path in PUBLIC_PATHS:
+        return
+    from flask_security import current_user
+    from bcource.admin_api.auth import _user_from_bearer_token
+    user = _user_from_bearer_token()
+    if user is None and current_user.is_authenticated:
+        user = current_user
+    if user is None:
+        abort(401, 'Authentication required')
+    if not user.is_active or not user.has_role('db-admin'):
+        abort(403, 'Forbidden')
 
 authorizations = {
     'Bearer': {
