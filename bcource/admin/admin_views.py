@@ -4,10 +4,11 @@ from bcource.models import User, Role, Permission, Content
 from flask_security import current_user, hash_password
 from wtforms.fields import PasswordField
 from flask import current_app, url_for, abort, redirect, request, flash
+from flask_admin import BaseView, expose
 from flask_admin.menu import MenuLink
 import uuid
 from flask_security import naive_utcnow
-from bcource.admin.helper import AuthModelView, PhoneField, CkModelView
+from bcource.admin.helper import AuthModelView, PhoneField, CkModelView, accessible_as_admin
 from bcource.helpers import can_impersonate
 from flask_admin.actions import action
 from flask_babel import lazy_gettext as _l
@@ -117,4 +118,27 @@ class ContentModelView(CkModelView, AuthModelView):
         return self.session.query(func.count('*')).filter(not_(self.model.tag.regexp_match(r'\_\d+$')))   
 
 table_admin.add_view(ContentModelView(Content, db.session, ckfields=["text"])) #@UndefinedVariable
+
+
+class ApiTokenView(BaseView):
+    @expose('/', methods=['GET', 'POST'])
+    def index(self):
+        token = None
+        expires_in = current_app.config['JWT_EXPIRATION_SECONDS']
+        if request.method == 'POST':
+            from bcource.admin_api.auth import generate_admin_token
+            token = generate_admin_token(current_user._get_current_object())
+        return self.render('admin/api_token.html', token=token, expires_in=expires_in)
+
+    def is_accessible(self):
+        return accessible_as_admin()
+
+    def _handle_view(self, name, **kwargs):
+        if not self.is_accessible():
+            if current_user.is_authenticated:
+                abort(403)
+            else:
+                return redirect(url_for("security.login", next=request.url))
+
+table_admin.add_view(ApiTokenView(name='API Token', category='User'))
 
