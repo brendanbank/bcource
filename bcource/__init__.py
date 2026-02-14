@@ -164,8 +164,12 @@ def create_app():
         app.register_blueprint(api_calls.api_bp)
         app.register_blueprint(students.students_bp)        
         app.register_blueprint(training.training_bp)   
-        app.register_blueprint(scheduler.scheduler_bp)   
-             
+        app.register_blueprint(scheduler.scheduler_bp)
+
+        from bcource.admin_api import admin_api_bp
+        app.register_blueprint(admin_api_bp)
+        csrf.exempt(admin_api_bp)
+
         app.before_request(bcource.admin.authorize_user)
         
         from bcource.errors import ( HTTPExceptionMustHaveTwoFactorEnabled, handle_no_2fa, 
