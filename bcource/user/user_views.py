@@ -153,8 +153,7 @@ def get_messages(id):
             "body": envelop.message.body,
             "tags": [tag.tag for tag in envelop.message.tags ],
             "from": f'{envelop.message.envelop_from}' if not current_app.config["BCOURSE_SYSTEM_USER"] == envelop.message.envelop_from.email else "do-not-reply",
-            # "to": [ f'{envelop.user}' for envelop in envelop.message.envelop_to ],
-            "to": f'{envelop.user}',
+            "to": ", ".join([f'{assoc.user}' for assoc in envelop.message.envelop_to]),
             "deleted": f'{message_date(envelop.message_deleted, mobile_date=True)}' if envelop.message_deleted != None else None,
             "read": f'{message_date(envelop.message_read, mobile_date=True)}' if envelop.message_read != None else None,
             "unread_messages": current_user.unread_messages
