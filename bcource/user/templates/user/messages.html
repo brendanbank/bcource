@@ -240,7 +240,7 @@
       <div class="col-lg-12" id="message_from_row">
         <span class="fw-semibold">From:&nbsp;</span><span class="modal-title " id="message_from"></span>
         </div>
-      <div class="col-lg-12" id="message_to_row">
+      <div class="col-lg-12 d-none" id="message_to_row">
         <span class="fw-semibold">To:&nbsp;</span><span class="modal-title " id="message_to"></span>
         </div>
       <div class="col-lg-12">
@@ -299,13 +299,20 @@ function user_show_model(item){
 	    $('#message_to').html(data.to)
 	    
 	    if (data.is_sent) {
-	    	// Sent message: hide From, hide inbox actions
+	    	// Sent message: hide From, show To, hide inbox actions
 	    	$('#message_from_row').addClass("d-none")
+	    	$('#message_to_row').removeClass("d-none")
 	    	$('.inbox_action').addClass("d-none")
 	    } else {
 	    	// Inbox message: show From, show inbox actions
 	    	$('#message_from_row').removeClass("d-none")
 	    	$('.inbox_action').removeClass("d-none")
+	    	// Only show To field for trainers
+	    	if (data.show_to) {
+	    		$('#message_to_row').removeClass("d-none")
+	    	} else {
+	    		$('#message_to_row').addClass("d-none")
+	    	}
 	    	if (data.from == "do-not-reply"){
 	    		$('.admin_hide').addClass("d-none")
 	    	} else {
