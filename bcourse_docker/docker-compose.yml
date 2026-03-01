@@ -50,7 +50,7 @@ services:
     logging:
       driver: "loki"
       options:
-        loki-url: "http://loki.bgwlan.nl:3100/loki/api/v1/push"
+        loki-url: "https://loki.banzai.nl:3100/loki/api/v1/push"
         loki-pipeline-stages: |
           - json:
               expressions:
@@ -88,7 +88,7 @@ services:
     logging:
       driver: "loki"
       options:
-        loki-url: "http://loki.bgwlan.nl:3100/loki/api/v1/push"
+        loki-url: "https://loki.banzai.nl:3100/loki/api/v1/push"
         loki-pipeline-stages: |
           - json:
               expressions:
@@ -139,7 +139,7 @@ services:
     logging:
       driver: "loki"
       options:
-        loki-url: "http://loki.bgwlan.nl:3100/loki/api/v1/push"
+        loki-url: "https://loki.banzai.nl:3100/loki/api/v1/push"
         loki-pipeline-stages: |
           - json:
               expressions:
