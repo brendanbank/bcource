@@ -1025,6 +1025,9 @@ class AutomationSchedule(db.Model):
     automation_class = db.relationship('AutomationClasses', lazy=True, backref='schedules')
     automation_class_id: Mapped[int] = mapped_column(ForeignKey(AutomationClasses.id, ondelete="CASCADE"), nullable=True)
 
+    def __str__(self):
+        return self.name
+
     trainingtypes: Mapped[List["TrainingType"]] = relationship(
         secondary=automation_trainingtype_association, back_populates="automation_schedules"
     )
