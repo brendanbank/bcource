@@ -252,6 +252,31 @@ class BaseAutomationTask:
         elif hasattr(item, 'training') and hasattr(item.training, 'trainingtype_id'):
             return item.training.trainingtype_id
         return None
+
+    @staticmethod
+    def _get_training_type(item):
+        """Get the TrainingType object for an item."""
+        if hasattr(item, 'trainingtype'):
+            return item.trainingtype
+        elif hasattr(item, 'training') and hasattr(item.training, 'trainingtype'):
+            return item.training.trainingtype
+        return None
+
+    @staticmethod
+    def _is_schedule_allowed(automation, item_type_id):
+        """Check if this automation schedule is allowed to run for the given training type.
+
+        Filtering is driven by the TrainingType side:
+        - If a training type has NO automation_schedules configured → all schedules run (backward compat)
+        - If a training type HAS specific automation_schedules → only those run
+        """
+        from bcource.models import TrainingType
+        training_type = TrainingType.query.get(item_type_id)
+        if training_type is None:
+            return True
+        if not hasattr(training_type, 'automation_schedules') or not training_type.automation_schedules:
+            return True
+        return automation.id in {s.id for s in training_type.automation_schedules}
     
     @classmethod
     def _create_job(cls, automation, item, event_dt):
@@ -272,9 +297,15 @@ class BaseAutomationTask:
         """
         when = cls._when(automation, event_dt)
 
-        print (f'automation: {automation.name}')
-        
-        str_id = f"{automation.name}/{cls._get_id(item)}/{app_scheduler.flask_app.config.get('ENVIRONMENT')}"
+        # Build a human-readable name for the item
+        if hasattr(item, 'name'):
+            item_name = item.name
+        elif hasattr(item, 'training') and hasattr(item.training, 'name'):
+            item_name = item.training.name
+        else:
+            item_name = str(cls._get_id(item))
+
+        str_id = f"{automation.name}/{item_name}/{app_scheduler.flask_app.config.get('ENVIRONMENT')}"
         
         
         job = app_scheduler.add_job(
@@ -330,16 +361,10 @@ class BaseAutomationTask:
         items = cls.query()
         jobs = set()
 
-        # Empty set = all types allowed (backward compatible)
-        allowed_type_ids = set()
-        if hasattr(automation, 'trainingtypes') and automation.trainingtypes:
-            allowed_type_ids = {tt.id for tt in automation.trainingtypes}
-
         for item in items:
-            if allowed_type_ids:
-                item_type_id = cls._get_training_type_id(item)
-                if item_type_id is not None and item_type_id not in allowed_type_ids:
-                    continue
+            item_type_id = cls._get_training_type_id(item)
+            if item_type_id is not None and not cls._is_schedule_allowed(automation, item_type_id):
+                continue
 
             job = cls.create_job(item, automation)
             if job:
@@ -459,8 +484,8 @@ class BaseAutomationTask:
         if when < datetime.datetime.utcnow():
             logger.warning(f"job is scheduler in the past: {db_datetime_str(when)} task will be probably be ignored event_dt: {event_dt}")
             
-        if app_scheduler.flask_app.config.get('ENVIRONMENT') == "DEVELOPMENT":
-            when = datetime.datetime.utcnow() + timedelta(seconds=1)
+        # if app_scheduler.flask_app.config.get('ENVIRONMENT') == "DEVELOPMENT":
+        #     when = datetime.datetime.utcnow() + timedelta(seconds=1)
                 
         return when
     
