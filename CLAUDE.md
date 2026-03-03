@@ -102,7 +102,7 @@ flask db downgrade
 ### Database Dump
 
 ```bash
-./dump.sh
+./scripts/dump.sh
 ```
 
 ## Architecture
@@ -545,7 +545,7 @@ Test strategies:
 Additional documentation is available in the following files:
 
 ### Feature Documentation
-- **IMPERSONATION.md** - Complete user impersonation feature guide
+- **docs/IMPERSONATION.md** - Complete user impersonation feature guide
 - **CHANGES.md** - Changelog of recent updates and features
 
 ### Subsystem Documentation
@@ -554,13 +554,14 @@ Additional documentation is available in the following files:
 - **docs/WAITLIST_QUICK_START.md** - Quick start guide for waitlist setup (5 minutes)
 
 ### Deployment Documentation
-- **bcourse_docker/PRODUCTION_DEPLOYMENT.md** - Production deployment procedures
+- **docs/PRODUCTION_DEPLOYMENT.md** - Production deployment procedures
+- **docs/HETZNER_SETUP.md** - Hetzner server setup documentation
 
 ## Admin Features
 
 ### User Impersonation
 
-Administrators with the `db-admin` role and 2FA enabled can view the application from a student's perspective. This feature is fully documented in `IMPERSONATION.md`.
+Administrators with the `db-admin` role and 2FA enabled can view the application from a student's perspective. This feature is fully documented in `docs/IMPERSONATION.md`.
 
 Quick access path: Admin → Database Admin → User → Select user → "Impersonate User"
 
@@ -570,7 +571,7 @@ Key security features:
 - Full audit logging of all impersonation sessions
 - Visible red banner during impersonation with quick exit
 
-See `IMPERSONATION.md` for complete documentation.
+See `docs/IMPERSONATION.md` for complete documentation.
 
 ## Deployment
 
@@ -578,8 +579,8 @@ See `IMPERSONATION.md` for complete documentation.
 - **bcourse.ini** - uWSGI configuration
 - **bcourse.service** - systemd service for main app
 - **bcourse-scheduler.service** - systemd service for scheduler
-- **wait_for_mysql.sh** - Startup dependency script for Docker
-- **bcourse_docker/PRODUCTION_DEPLOYMENT.md** - Production deployment guide
+- **scripts/wait_for_mysql.sh** - Startup dependency script for Docker
+- **docs/PRODUCTION_DEPLOYMENT.md** - Production deployment guide
 
 ## Security Notes
 
@@ -589,4 +590,4 @@ See `IMPERSONATION.md` for complete documentation.
 - Password hashing via argon2
 - Role-based access control for admin interface
 - SMS rate limiting and cooldown protection
-- User impersonation audit trail (see `IMPERSONATION.md`)
+- User impersonation audit trail (see `docs/IMPERSONATION.md`)
