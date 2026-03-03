@@ -416,7 +416,12 @@ class TestBeforeAfterEnum(unittest.TestCase):
 
 
 class TestTrainingTypeFiltering(unittest.TestCase):
-    """Test per-training-type filtering in create_jobs()."""
+    """Test per-training-type filtering in create_jobs().
+
+    Filtering is TrainingType-driven:
+    - TrainingType with NO automation_schedules → all schedules run (backward compat)
+    - TrainingType with specific automation_schedules → only those run
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -432,7 +437,6 @@ class TestTrainingTypeFiltering(unittest.TestCase):
         class TypeFilterTestTask(BaseAutomationTask):
             @staticmethod
             def query():
-                # Training-like items with trainingtype_id
                 item1 = Mock()
                 item1.id = 1
                 item1.trainingtype_id = 10
@@ -459,10 +463,10 @@ class TestTrainingTypeFiltering(unittest.TestCase):
 
         self.task_class = TypeFilterTestTask
 
-    def _make_automation_mock(self, trainingtypes=None):
+    def _make_automation_mock(self, schedule_id=100):
         """Helper to create a properly configured automation mock."""
         automation = Mock()
-        automation.trainingtypes = trainingtypes if trainingtypes is not None else []
+        automation.id = schedule_id
         automation.name = "test_sched"
         automation.interval = timedelta(hours=1)
         automation.beforeafter = BeforeAfterEnum.before
@@ -478,58 +482,119 @@ class TestTrainingTypeFiltering(unittest.TestCase):
             return Mock(id=f"job_{call_count[0]}")
         return make_job
 
-    def test_no_type_filter_runs_all(self):
-        """Empty trainingtypes = all items get jobs (backward compat)."""
-        with self.app.app_context():
-            automation = self._make_automation_mock(trainingtypes=[])
+    def _mock_training_type(self, type_id, schedule_ids=None):
+        """Create a mock TrainingType with optional automation_schedules."""
+        tt = Mock()
+        tt.id = type_id
+        if schedule_ids is not None:
+            tt.automation_schedules = [Mock(id=sid) for sid in schedule_ids]
+        else:
+            tt.automation_schedules = []
+        return tt
 
-            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched:
+    def test_type_no_schedules_all_run(self):
+        """TrainingType with no automation_schedules → all schedules run (backward compat)."""
+        with self.app.app_context():
+            automation = self._make_automation_mock(schedule_id=100)
+
+            # Both type 10 and 20 have no schedules configured → all run
+            type_map = {
+                10: self._mock_training_type(10),
+                20: self._mock_training_type(20),
+            }
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched, \
+                 patch('bcource.automation.automation_base.BaseAutomationTask._is_schedule_allowed', side_effect=lambda a, tid: True):
                 mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
                 mock_sched.add_job.side_effect = self._unique_job_side_effect()
 
                 jobs = self.task_class.create_jobs(automation)
                 self.assertEqual(len(jobs), 3)
 
-    def test_no_trainingtypes_attr_runs_all(self):
-        """Automation without trainingtypes attr = all items (backward compat)."""
+    def test_type_with_schedules_only_allowed_run(self):
+        """TrainingType with specific schedules → only those run for that type."""
         with self.app.app_context():
-            automation = self._make_automation_mock(trainingtypes=[])
+            automation = self._make_automation_mock(schedule_id=100)
 
-            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched:
+            # Type 10 allows schedule 100, type 20 does NOT allow schedule 100
+            tt10 = self._mock_training_type(10, schedule_ids=[100, 200])
+            tt20 = self._mock_training_type(20, schedule_ids=[200, 300])
+
+            type_map = {10: tt10, 20: tt20}
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched, \
+                 patch('bcource.models.TrainingType') as MockTT:
+                MockTT.query.get.side_effect = lambda tid: type_map.get(tid)
                 mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
                 mock_sched.add_job.side_effect = self._unique_job_side_effect()
 
                 jobs = self.task_class.create_jobs(automation)
-                self.assertEqual(len(jobs), 3)
-
-    def test_type_filter_only_matching(self):
-        """With type filter, only matching items get jobs."""
-        with self.app.app_context():
-            tt_mock = Mock()
-            tt_mock.id = 10
-            automation = self._make_automation_mock(trainingtypes=[tt_mock])
-
-            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched:
-                mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
-                mock_sched.add_job.side_effect = self._unique_job_side_effect()
-
-                jobs = self.task_class.create_jobs(automation)
-                # Items 1 and 3 have trainingtype_id=10, item 2 has 20
+                # Items 1 and 3 (type 10) allowed, item 2 (type 20) blocked
                 self.assertEqual(len(jobs), 2)
 
-    def test_type_filter_no_match(self):
-        """With type filter that matches nothing, no jobs created."""
+    def test_type_with_schedules_none_match(self):
+        """Schedule not in any type's list → no jobs for types with configured schedules."""
         with self.app.app_context():
-            tt_mock = Mock()
-            tt_mock.id = 999
-            automation = self._make_automation_mock(trainingtypes=[tt_mock])
+            automation = self._make_automation_mock(schedule_id=999)
 
-            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched:
+            # Both types have schedules configured, but neither includes 999
+            tt10 = self._mock_training_type(10, schedule_ids=[100])
+            tt20 = self._mock_training_type(20, schedule_ids=[200])
+
+            type_map = {10: tt10, 20: tt20}
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched, \
+                 patch('bcource.models.TrainingType') as MockTT:
+                MockTT.query.get.side_effect = lambda tid: type_map.get(tid)
                 mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
                 mock_sched.add_job.side_effect = self._unique_job_side_effect()
 
                 jobs = self.task_class.create_jobs(automation)
                 self.assertEqual(len(jobs), 0)
+
+    def test_mixed_configured_and_unconfigured_types(self):
+        """Type with schedules filters; type without schedules allows all."""
+        with self.app.app_context():
+            automation = self._make_automation_mock(schedule_id=100)
+
+            # Type 10 has schedules configured (includes 100) → allowed
+            # Type 20 has NO schedules → all run
+            tt10 = self._mock_training_type(10, schedule_ids=[100])
+            tt20 = self._mock_training_type(20)  # no schedules
+
+            type_map = {10: tt10, 20: tt20}
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched, \
+                 patch('bcource.models.TrainingType') as MockTT:
+                MockTT.query.get.side_effect = lambda tid: type_map.get(tid)
+                mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
+                mock_sched.add_job.side_effect = self._unique_job_side_effect()
+
+                jobs = self.task_class.create_jobs(automation)
+                # All 3 items allowed (type 10 explicitly, type 20 by default)
+                self.assertEqual(len(jobs), 3)
+
+    def test_configured_type_blocks_unlisted_schedule(self):
+        """Type with specific schedules blocks a schedule not in the list."""
+        with self.app.app_context():
+            automation = self._make_automation_mock(schedule_id=999)
+
+            # Type 10 has schedules but NOT 999 → blocked
+            # Type 20 has no schedules → allowed
+            tt10 = self._mock_training_type(10, schedule_ids=[100])
+            tt20 = self._mock_training_type(20)
+
+            type_map = {10: tt10, 20: tt20}
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched, \
+                 patch('bcource.models.TrainingType') as MockTT:
+                MockTT.query.get.side_effect = lambda tid: type_map.get(tid)
+                mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
+                mock_sched.add_job.side_effect = self._unique_job_side_effect()
+
+                jobs = self.task_class.create_jobs(automation)
+                # Only item 2 (type 20, unconfigured) gets a job
+                self.assertEqual(len(jobs), 1)
 
     def test_get_training_type_id_direct(self):
         """_get_training_type_id works for Training-like objects."""
@@ -549,6 +614,36 @@ class TestTrainingTypeFiltering(unittest.TestCase):
         item = Mock(spec=[])
         self.assertIsNone(BaseAutomationTask._get_training_type_id(item))
 
+    def test_is_schedule_allowed_no_schedules(self):
+        """_is_schedule_allowed returns True when type has no schedules."""
+        with self.app.app_context():
+            tt = self._mock_training_type(10)  # no schedules
+            automation = self._make_automation_mock(schedule_id=100)
+
+            with patch('bcource.models.TrainingType') as MockTT:
+                MockTT.query.get.return_value = tt
+                self.assertTrue(BaseAutomationTask._is_schedule_allowed(automation, 10))
+
+    def test_is_schedule_allowed_schedule_in_list(self):
+        """_is_schedule_allowed returns True when schedule is in type's list."""
+        with self.app.app_context():
+            tt = self._mock_training_type(10, schedule_ids=[100, 200])
+            automation = self._make_automation_mock(schedule_id=100)
+
+            with patch('bcource.models.TrainingType') as MockTT:
+                MockTT.query.get.return_value = tt
+                self.assertTrue(BaseAutomationTask._is_schedule_allowed(automation, 10))
+
+    def test_is_schedule_allowed_schedule_not_in_list(self):
+        """_is_schedule_allowed returns False when schedule is not in type's list."""
+        with self.app.app_context():
+            tt = self._mock_training_type(10, schedule_ids=[200, 300])
+            automation = self._make_automation_mock(schedule_id=100)
+
+            with patch('bcource.models.TrainingType') as MockTT:
+                MockTT.query.get.return_value = tt
+                self.assertFalse(BaseAutomationTask._is_schedule_allowed(automation, 10))
+
     def test_enrollment_based_filtering(self):
         """Enrollment-based items filter through item.training.trainingtype_id."""
         from bcource.automation import automation_base
@@ -558,7 +653,6 @@ class TestTrainingTypeFiltering(unittest.TestCase):
         class EnrollFilterTask(BaseAutomationTask):
             @staticmethod
             def query():
-                # TrainingEnroll-like items (no trainingtype_id directly)
                 enroll1 = Mock(spec=[])
                 enroll1.id = 101
                 enroll1.training = Mock()
@@ -581,22 +675,26 @@ class TestTrainingTypeFiltering(unittest.TestCase):
                 return True
 
         with self.app.app_context():
-            tt_mock = Mock()
-            tt_mock.id = 20
-
             automation = Mock()
-            automation.trainingtypes = [tt_mock]
+            automation.id = 100
             automation.name = "test_enroll_sched"
             automation.interval = timedelta(hours=1)
             automation.beforeafter = BeforeAfterEnum.before
             automation.automation_class.class_name = "EnrollFilterTask"
 
-            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched:
+            # Type 10 allows schedule 100, type 20 does not
+            tt10 = self._mock_training_type(10, schedule_ids=[100])
+            tt20 = self._mock_training_type(20, schedule_ids=[200])
+            type_map = {10: tt10, 20: tt20}
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched, \
+                 patch('bcource.models.TrainingType') as MockTT:
+                MockTT.query.get.side_effect = lambda tid: type_map.get(tid)
                 mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
                 mock_sched.add_job.side_effect = self._unique_job_side_effect()
 
                 jobs = EnrollFilterTask.create_jobs(automation)
-                # Only enroll2 matches type 20
+                # Only enroll1 (type 10) allowed
                 self.assertEqual(len(jobs), 1)
 
 

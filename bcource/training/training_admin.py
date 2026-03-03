@@ -36,6 +36,7 @@ class TrainingTypeAdmin(TagMixIn, CkModelView, AuthModelView):
     permission = "admin-trainingtype-edit"
     form_columns = ["name", "practice", "policies", "automation_schedules"]
     column_list = ["name", "practice", "policies", "automation_schedules"]
+    column_labels = {'automation_schedules': 'Automation Schedules (empty = all)'}
     
 # class ClientTypeAdmin(AuthModelView):
 #     permission = "admin-cientType-edit"
