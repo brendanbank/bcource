@@ -30,6 +30,13 @@ policy_association = Table(
     Column("trainingtype_id", ForeignKey("training_type.id", ondelete="CASCADE"), primary_key=True),
 )
 
+automation_trainingtype_association = Table(
+    "automation_trainingtypes",
+    db.Model.metadata,
+    Column("automation_schedule_id", ForeignKey("automation_schedule.id", ondelete="CASCADE"), primary_key=True),
+    Column("trainingtype_id", ForeignKey("training_type.id", ondelete="CASCADE"), primary_key=True),
+)
+
 class Practice(db.Model):
     
     CONFIG = 'DEFAULT_PRACTICE'
@@ -118,6 +125,10 @@ class TrainingType(db.Model, GetAll):
 
     policies: Mapped[List["Policy"]] =  relationship(
         secondary=policy_association, back_populates="trainingtypes"
+    )
+
+    automation_schedules: Mapped[List["AutomationSchedule"]] = relationship(
+        secondary=automation_trainingtype_association, back_populates="trainingtypes"
     )
 
     @classmethod
@@ -1013,6 +1024,10 @@ class AutomationSchedule(db.Model):
 
     automation_class = db.relationship('AutomationClasses', lazy=True, backref='schedules')
     automation_class_id: Mapped[int] = mapped_column(ForeignKey(AutomationClasses.id, ondelete="CASCADE"), nullable=True)
+
+    trainingtypes: Mapped[List["TrainingType"]] = relationship(
+        secondary=automation_trainingtype_association, back_populates="automation_schedules"
+    )
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),

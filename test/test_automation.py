@@ -415,5 +415,190 @@ class TestBeforeAfterEnum(unittest.TestCase):
         self.assertTrue(hasattr(BeforeAfterEnum, 'after'))
 
 
+class TestTrainingTypeFiltering(unittest.TestCase):
+    """Test per-training-type filtering in create_jobs()."""
+
+    @classmethod
+    def setUpClass(cls):
+        from bcource import create_app
+        cls.app = create_app()
+
+    def setUp(self):
+        """Set up a concrete task class and mock items with training types."""
+        from bcource.automation import automation_base
+        automation_base._automation_classes = {}
+
+        @register_automation(description="Type filter test task")
+        class TypeFilterTestTask(BaseAutomationTask):
+            @staticmethod
+            def query():
+                # Training-like items with trainingtype_id
+                item1 = Mock()
+                item1.id = 1
+                item1.trainingtype_id = 10
+                item1.scheduled_time = datetime.datetime.utcnow() + timedelta(hours=1)
+
+                item2 = Mock()
+                item2.id = 2
+                item2.trainingtype_id = 20
+                item2.scheduled_time = datetime.datetime.utcnow() + timedelta(hours=2)
+
+                item3 = Mock()
+                item3.id = 3
+                item3.trainingtype_id = 10
+                item3.scheduled_time = datetime.datetime.utcnow() + timedelta(hours=3)
+
+                return [item1, item2, item3]
+
+            @staticmethod
+            def get_event_dt(item):
+                return item.scheduled_time
+
+            def execute(self):
+                return True
+
+        self.task_class = TypeFilterTestTask
+
+    def _make_automation_mock(self, trainingtypes=None):
+        """Helper to create a properly configured automation mock."""
+        automation = Mock()
+        automation.trainingtypes = trainingtypes if trainingtypes is not None else []
+        automation.name = "test_sched"
+        automation.interval = timedelta(hours=1)
+        automation.beforeafter = BeforeAfterEnum.before
+        automation.automation_class.class_name = "TypeFilterTestTask"
+        return automation
+
+    @staticmethod
+    def _unique_job_side_effect():
+        """Return a side_effect that produces unique job IDs."""
+        call_count = [0]
+        def make_job(*args, **kwargs):
+            call_count[0] += 1
+            return Mock(id=f"job_{call_count[0]}")
+        return make_job
+
+    def test_no_type_filter_runs_all(self):
+        """Empty trainingtypes = all items get jobs (backward compat)."""
+        with self.app.app_context():
+            automation = self._make_automation_mock(trainingtypes=[])
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched:
+                mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
+                mock_sched.add_job.side_effect = self._unique_job_side_effect()
+
+                jobs = self.task_class.create_jobs(automation)
+                self.assertEqual(len(jobs), 3)
+
+    def test_no_trainingtypes_attr_runs_all(self):
+        """Automation without trainingtypes attr = all items (backward compat)."""
+        with self.app.app_context():
+            automation = self._make_automation_mock(trainingtypes=[])
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched:
+                mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
+                mock_sched.add_job.side_effect = self._unique_job_side_effect()
+
+                jobs = self.task_class.create_jobs(automation)
+                self.assertEqual(len(jobs), 3)
+
+    def test_type_filter_only_matching(self):
+        """With type filter, only matching items get jobs."""
+        with self.app.app_context():
+            tt_mock = Mock()
+            tt_mock.id = 10
+            automation = self._make_automation_mock(trainingtypes=[tt_mock])
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched:
+                mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
+                mock_sched.add_job.side_effect = self._unique_job_side_effect()
+
+                jobs = self.task_class.create_jobs(automation)
+                # Items 1 and 3 have trainingtype_id=10, item 2 has 20
+                self.assertEqual(len(jobs), 2)
+
+    def test_type_filter_no_match(self):
+        """With type filter that matches nothing, no jobs created."""
+        with self.app.app_context():
+            tt_mock = Mock()
+            tt_mock.id = 999
+            automation = self._make_automation_mock(trainingtypes=[tt_mock])
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched:
+                mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
+                mock_sched.add_job.side_effect = self._unique_job_side_effect()
+
+                jobs = self.task_class.create_jobs(automation)
+                self.assertEqual(len(jobs), 0)
+
+    def test_get_training_type_id_direct(self):
+        """_get_training_type_id works for Training-like objects."""
+        item = Mock()
+        item.trainingtype_id = 42
+        self.assertEqual(BaseAutomationTask._get_training_type_id(item), 42)
+
+    def test_get_training_type_id_via_training(self):
+        """_get_training_type_id works for TrainingEnroll-like objects."""
+        item = Mock(spec=[])
+        item.training = Mock()
+        item.training.trainingtype_id = 55
+        self.assertEqual(BaseAutomationTask._get_training_type_id(item), 55)
+
+    def test_get_training_type_id_unknown(self):
+        """_get_training_type_id returns None for unknown objects."""
+        item = Mock(spec=[])
+        self.assertIsNone(BaseAutomationTask._get_training_type_id(item))
+
+    def test_enrollment_based_filtering(self):
+        """Enrollment-based items filter through item.training.trainingtype_id."""
+        from bcource.automation import automation_base
+        automation_base._automation_classes = {}
+
+        @register_automation(description="Enrollment filter test")
+        class EnrollFilterTask(BaseAutomationTask):
+            @staticmethod
+            def query():
+                # TrainingEnroll-like items (no trainingtype_id directly)
+                enroll1 = Mock(spec=[])
+                enroll1.id = 101
+                enroll1.training = Mock()
+                enroll1.training.trainingtype_id = 10
+                enroll1.scheduled_time = datetime.datetime.utcnow() + timedelta(hours=1)
+
+                enroll2 = Mock(spec=[])
+                enroll2.id = 102
+                enroll2.training = Mock()
+                enroll2.training.trainingtype_id = 20
+                enroll2.scheduled_time = datetime.datetime.utcnow() + timedelta(hours=2)
+
+                return [enroll1, enroll2]
+
+            @staticmethod
+            def get_event_dt(item):
+                return item.scheduled_time
+
+            def execute(self):
+                return True
+
+        with self.app.app_context():
+            tt_mock = Mock()
+            tt_mock.id = 20
+
+            automation = Mock()
+            automation.trainingtypes = [tt_mock]
+            automation.name = "test_enroll_sched"
+            automation.interval = timedelta(hours=1)
+            automation.beforeafter = BeforeAfterEnum.before
+            automation.automation_class.class_name = "EnrollFilterTask"
+
+            with patch('bcource.automation.automation_base.app_scheduler') as mock_sched:
+                mock_sched.flask_app.config.get.return_value = "DEVELOPMENT"
+                mock_sched.add_job.side_effect = self._unique_job_side_effect()
+
+                jobs = EnrollFilterTask.create_jobs(automation)
+                # Only enroll2 matches type 20
+                self.assertEqual(len(jobs), 1)
+
+
 if __name__ == '__main__':
     unittest.main()

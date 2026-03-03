@@ -231,14 +231,27 @@ class BaseAutomationTask:
     def _get_id(item):
         """
         Get the ID of an item.
-        
+
         Args:
             item: Model instance.
-        
+
         Returns:
             int: The ID of the item.
         """
         return item.id
+
+    @staticmethod
+    def _get_training_type_id(item):
+        """Get the training type ID for filtering.
+
+        Works for both Training objects (have trainingtype_id directly)
+        and TrainingEnroll objects (access via item.training.trainingtype_id).
+        """
+        if hasattr(item, 'trainingtype_id'):
+            return item.trainingtype_id
+        elif hasattr(item, 'training') and hasattr(item.training, 'trainingtype_id'):
+            return item.training.trainingtype_id
+        return None
     
     @classmethod
     def _create_job(cls, automation, item, event_dt):
@@ -297,27 +310,41 @@ class BaseAutomationTask:
     def create_jobs(cls, automation):
         """
         Create jobs for all items returned by query().
-        
+
         This method queries for all items that need processing and creates
         a job for each one. It's typically used during system initialization
         or when automation rules are updated.
-        
+
+        Items are filtered by training type when the automation schedule has
+        specific training types configured. An empty trainingtypes list means
+        the automation runs for all training types (backward compatible).
+
         Args:
             automation: Automation configuration object.
-        
+
         Returns:
             set: Set of job IDs that were created.
         """
         logger.info (f'start {cls.__name__}')
-        
+
         items = cls.query()
         jobs = set()
 
+        # Empty set = all types allowed (backward compatible)
+        allowed_type_ids = set()
+        if hasattr(automation, 'trainingtypes') and automation.trainingtypes:
+            allowed_type_ids = {tt.id for tt in automation.trainingtypes}
+
         for item in items:
+            if allowed_type_ids:
+                item_type_id = cls._get_training_type_id(item)
+                if item_type_id is not None and item_type_id not in allowed_type_ids:
+                    continue
+
             job = cls.create_job(item, automation)
             if job:
                 jobs.add(job.id)
-                
+
         return (jobs)
 
     @staticmethod

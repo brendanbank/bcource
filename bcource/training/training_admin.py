@@ -34,8 +34,8 @@ class TrainingAdmin(AuthModelView):
 
 class TrainingTypeAdmin(TagMixIn, CkModelView, AuthModelView):
     permission = "admin-trainingtype-edit"
-    form_columns = ["name", "practice", "policies",]
-    column_list = ["name", "practice", "policies" ]
+    form_columns = ["name", "practice", "policies", "automation_schedules"]
+    column_list = ["name", "practice", "policies", "automation_schedules"]
     
 # class ClientTypeAdmin(AuthModelView):
 #     permission = "admin-cientType-edit"
@@ -135,8 +135,9 @@ class IntervalStringField(StringField):
 
 class AutomationScheduleAdmin(AuthModelView):
     permission = "admin-trainingevent-edit"
-    column_list = ["name", "interval", "automation_class","active" ]
-    form_columns = ["name", "automation_class", "interval", "beforeafter", "events", "active"]
+    column_list = ["name", "interval", "automation_class", "trainingtypes", "active"]
+    form_columns = ["name", "automation_class", "interval", "beforeafter", "events", "trainingtypes", "active"]
+    column_labels = {'trainingtypes': 'Training Types (empty = all)'}
 
     # Override the 'duration' field with your custom WTForms field
     form_overrides = {

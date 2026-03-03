@@ -186,3 +186,4 @@ attic/
 */grafana_data/*
 */grafana/data/*
 .DS_Store
+.claude/*
