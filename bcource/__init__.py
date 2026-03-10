@@ -5,6 +5,7 @@ import config
 from flask_wtf.csrf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import event
 from flask_admin import Admin
 from flask_admin.theme import Bootstrap4Theme
 from flask_security.models import sqla
@@ -19,6 +20,8 @@ from bcource.helpers import (MyFsModels, admin_has_role, db_datetime, db_datetim
                              is_impersonating, get_original_user, get_impersonated_user)
 from bcource.helpers import config_value as cv
 from flask_mobility import Mobility
+import time
+import logging
 
 class Base(DeclarativeBase):
     # __abstract__ = True
@@ -141,7 +144,24 @@ def create_app():
     security.init_app(app, user_datastore, phone_util_cls=CustomPhoneUtil)
 
     with app.app_context():
-        
+
+        # Slow query logging via SQLAlchemy engine events
+        slow_query_log = logging.getLogger('bcource.slow_queries')
+        slow_query_threshold = float(app.config.get('SLOW_QUERY_THRESHOLD', 0.05))
+
+        @event.listens_for(db.engine, "before_cursor_execute")
+        def _before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+            conn.info['query_start_time'] = time.monotonic()
+
+        @event.listens_for(db.engine, "after_cursor_execute")
+        def _after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+            elapsed = time.monotonic() - conn.info.get('query_start_time', 0)
+            if elapsed >= slow_query_threshold:
+                slow_query_log.warning(
+                    'Slow query (%.1fms): %s | params: %s',
+                    elapsed * 1000, statement[:500], parameters
+                )
+
         import bcource.commands
 
         # Import parts of our application
