@@ -36,6 +36,11 @@ def deinvite_from_waitlist(enrollment: TrainingEnroll):
 
 
 def invite_from_waitlist(enrollment: TrainingEnroll):
+    # Skip users with transactional emails disabled
+    user = enrollment.student.user
+    if hasattr(user, 'usersettings') and user.usersettings and not user.usersettings.msg_transactional_emails:
+        logger.info(f'Skipping waitlist invitation for {user} - transactional emails disabled')
+        return False
 
     enrollment.status="waitlist-invited"
     enrollment.invite_date = datetime.utcnow()
@@ -145,8 +150,14 @@ def enroll_common(training, user):
     enroll.training = training
     
     if waitlist and enroll.status != 'force-off-waitlist':
+        # Block waitlist placement for users with transactional emails disabled
+        if hasattr(user, 'usersettings') and user.usersettings and not user.usersettings.msg_transactional_emails:
+            flash(_("%(fullname)s cannot be placed on the waitlist because transactional emails are disabled for this user.",
+                    fullname=user.fullname), 'error')
+            return False
+
         enroll.status = "waitlist"
-        flash(_("%(fullname)s has been added to the wait list of training training: %(trainingname)s", 
+        flash(_("%(fullname)s has been added to the wait list of training training: %(trainingname)s",
                 fullname=user.fullname, trainingname=training.name ))
 
     else:

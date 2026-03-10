@@ -1,5 +1,6 @@
-from flask import (current_app, Blueprint, render_template, jsonify, abort, 
+from flask import (current_app, Blueprint, render_template, jsonify, abort,
                    flash, url_for, redirect, request)
+from markupsafe import Markup
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
 from flask_security import current_user, auth_required
@@ -312,13 +313,19 @@ def enroll(id):  # @ReservedAssignment
                 flash (policy, "error")
             return safe_redirect(url)
 
+    # Check if training is full and user has transactional emails disabled (can't join waitlist)
+    training.fill_numbers(current_user)
+    waitlist = training._spots_enrolled >= training.max_participants
+    if waitlist:
+        if hasattr(current_user, 'usersettings') and current_user.usersettings and not current_user.usersettings.msg_transactional_emails:
+            settings_url = url_for('user_bp.settings')
+            flash(Markup(_('You cannot be placed on the waitlist because transactional emails are disabled. Enable them in your <a href="%(url)s">account settings</a>.', url=settings_url)), 'error')
+            return safe_redirect(url)
 
     if form.validate_on_submit():
         redirect_url = enroll_common(training, current_user)
         if redirect_url:
             return safe_redirect(url)
-        
-    training.fill_numbers(current_user)
     
     return render_template("scheduler/enroll.html", training=training, form=form, return_url=url)
 

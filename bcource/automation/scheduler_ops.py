@@ -54,10 +54,10 @@ def renew_automations():
             
 def init_app_scheduler(app):
     app_scheduler.flask_app = app
-    #app_scheduler.remove_all_jobs()
+    app_scheduler.remove_all_jobs()
 
     import bcource.automation.automation_tasks  # @UnusedImport
-    
+
     with app_scheduler.flask_app.app_context():
         for class_name, details in get_registered_automation_classes().items():
             existing_config = AutomationClasses().query.filter_by(class_name=class_name).first()

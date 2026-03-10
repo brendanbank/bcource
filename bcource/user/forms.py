@@ -60,8 +60,13 @@ class UserSettingsForm(FlaskForm):
     #     default=True,
     #     render_kw={"class": "form-check-input"})
     
+    msg_transactional_emails  = MyBooleanField(
+        _l('Send me transactional emails'),
+        divclass = "col-md-12",
+        render_kw={"class": "form-check-input"})
+
     msg_last_min_spots  = MyBooleanField(
-        _l('Send me a message when last minute training spots open.'),
+        _l('Send me a message when last minute training spots open'),
         divclass = "col-md-12",
         default=True,
         render_kw={"class": "form-check-input"})
