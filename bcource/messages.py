@@ -137,6 +137,11 @@ class SendEmail(SystemMessage):
             email_from = f'{envelop_from_system.fullname} <{envelop_from_system.email}>'
 
         for user in self.envelop_to:
+            # Skip users who have opted out of transactional emails
+            if hasattr(user, 'usersettings') and user.usersettings and not user.usersettings.msg_transactional_emails:
+                logging.info(f'Skipping email ({self.CONTENT_TAG}) to {user} - transactional emails disabled')
+                continue
+
             # If user has no name, fullname returns email - avoid duplicate email format
             if user.fullname == user.email:
                 email_str = user.email

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, abort, redirect, url_for, flash, request, jsonify
-from flask_security import current_user, naive_utcnow
+from flask_security import current_user, naive_utcnow, hash_password
 from flask import current_app as app
 from bcource.helpers import admin_has_role, has_trainer_role, get_url, safe_redirect, add_url_argument
 
@@ -8,6 +8,7 @@ from bcource.models import (Student, StudentStatus, StudentType, User, Practice,
                             Role, Trainer, UserMessageAssociation, UserSettings, TrainingType, Training, TrainingEnroll, TrainingEvent)
 from bcource.students.student_forms import StudentForm, UserStudentForm, UserDeleteForm, UserDerollForm, UserBackForm
 from sqlalchemy import or_, and_, not_
+import wtforms.validators as validators
 import bcource.messages as bmsg 
 from datetime import datetime 
 import uuid, pytz
@@ -221,50 +222,86 @@ def edit_user(id=None):
             abort(404)
     else:
         user = User()
-        
-            
+
+
     form = UserStudentForm(obj=user)
     if id == None:
         form.form_description = _("Create User")
+        form.password.validators = [validators.DataRequired()]
     else:
         form.form_description = _("Edit User")
+        del form.password
+        # Pre-populate settings fields from existing UserSettings
+        if user.usersettings:
+            form.msg_transactional_emails.data = user.usersettings.msg_transactional_emails
+            form.msg_last_min_spots.data = user.usersettings.msg_last_min_spots
+        # Pre-populate student fields
+        student = Student.query.join(Practice).filter(
+            Practice.shortname == Practice.default_row().shortname,
+            Student.user == user
+        ).first()
+        if student:
+            form.studentstatus.data = student.studentstatus
+            form.studenttype.data = student.studenttype
 
-    
+
     url = get_url(form, default='students_bp.index')
     if user.id == current_user.id:
         flash(_('You cannot edit yourself here! Go to the Account Details menu to edit your own details.'), "error")
         return safe_redirect(url)
 
-
-    if current_user.has_role('db-admin'):
-        form.roles.query=Role().query.all()
-    else:
-        form.roles.query=Role().query.filter(Role.name != "db-admin").all()
-    
     if  form.validate_on_submit():
-            
+
+        # Extract non-User fields before populate_obj
+        password_data = form.password.data if form.password is not None else None
+        msg_transactional = form.msg_transactional_emails.data
+        msg_last_min = form.msg_last_min_spots.data
+        studentstatus_data = form.studentstatus.data
+        studenttype_data = form.studenttype.data
+        del form.msg_transactional_emails
+        del form.msg_last_min_spots
+        del form.studentstatus
+        del form.studenttype
+        if form.password is not None:
+            del form.password
+
         form.populate_obj(user)
-        if not id:
-            user.fs_uniquifier = uuid.uuid4().hex
+
+        # Always ensure active, confirmed_at and student role
+        user.active = True
+        if not user.confirmed_at:
             user.confirmed_at = naive_utcnow()
 
+        if not id:
+            user.fs_uniquifier = uuid.uuid4().hex
+            user.password = hash_password(password_data)
             db.session.add(user)
+            db.session.flush()
 
-        is_trainer = Trainer().query.filter(Trainer.user_id == user.id).first()
+        student_role = Role.query.filter_by(name='student').first()
+        if student_role and not user.has_role('student'):
+            user.roles.append(student_role)
 
-        if user.has_role('trainer') and not is_trainer:
-            trainer = Trainer()
-            trainer.user_id = user.id
-            trainer.practice = Practice.default_row()
-            db.session.add(trainer)
-        elif not user.has_role('trainer') and is_trainer and is_trainer.trainings:
-            flash(_('User %s has the role trainer removed but still has trainings assigned.' % user.fullname), 'error')
-            return render_template("students/student.html",  form=form)
+        # Create or update Student record
+        student = Student.query.join(Practice).filter(
+            Practice.shortname == Practice.default_row().shortname,
+            Student.user == user
+        ).first()
+        if not student:
+            student = Student(user=user, practice=Practice.default_row())
+            db.session.add(student)
+        student.studentstatus = studentstatus_data
+        student.studenttype = studenttype_data
 
-        elif not user.has_role('trainer') and is_trainer:
-            db.session.delete(is_trainer)
-        
-            
+        # Create or update UserSettings
+        settings = user.usersettings
+        if not settings:
+            settings = UserSettings()
+            settings.user = user
+            db.session.add(settings)
+        settings.msg_transactional_emails = msg_transactional
+        settings.msg_last_min_spots = msg_last_min
+
         db.session.commit()
         flash(_('User %s has been updated' % user.fullname))
 
