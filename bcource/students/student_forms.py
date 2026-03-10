@@ -69,9 +69,10 @@ class UserStudentForm(FlaskForm):
     
     url  = MyHiddenField('url')
     id  = MyHiddenIdField('id')
-    hrfields = { 
+    hrfields = {
         "postal_code": "",
-        "active": ""
+        "msg_transactional_emails": _l("Disabling these email options will disable all email sending"),
+        "password": ""
     }
     email = MyStringField(
         _l('Email'),
@@ -81,13 +82,13 @@ class UserStudentForm(FlaskForm):
 
     first_name = MyStringField(
         _l('Firstname'),
-        [validators.Optional()],
+        [validators.DataRequired()],
         divclass = "col-md-6 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "given-name"})
 
     last_name = MyStringField(
         _l('Lastname'),
-        [validators.Optional()],
+        [validators.DataRequired()],
         divclass = "col-md-6 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "family-name"})
 
@@ -104,25 +105,28 @@ class UserStudentForm(FlaskForm):
                            render_kw={"class": "position-relative form-control"})     
 
     gender = MySelectField(_l('Gender'),
-                           [validators.Optional()],
+                           [validators.DataRequired()],
                            choices=(("", _l("Choose")),("F", _l("Female")), ("M", _l("Male")), ("O",_l("Other"))),
                            divclass = "col-md-12 mt-1",
-                           render_kw={"class": "position-relative form-control form-select"})     
+                           render_kw={"class": "position-relative form-control form-select"})
 
+    studentstatus = MyQuerySelectField(_l("Student status"),
+                                       query_factory=lambda: models.StudentStatus().query.join(
+                                           Practice
+                                           ).filter(
+                                               Practice.shortname==Practice.default_row().shortname
+                                               ).order_by(models.StudentStatus.name).all(),
+                                      divclass="col-md-6 mt-1",
+                                      render_kw={"class": "position-relative form-control form-select"})
 
-    active = MyBooleanField(
-        _l('User is enabled'),
-        divclass = "col-md-6 mt-2 pt-4 pb-1",
-        render_kw={"class": "form-check-input"})
+    studenttype = MyQuerySelectField(_l("Student type"),
+                                       query_factory=lambda: models.StudentType().query.join(
+                                           Practice
+                                           ).filter(Practice.shortname==Practice.default_row().shortname
+                                               ).order_by(models.StudentType.name).all(),
+                                      divclass="col-md-6 mt-1",
+                                      render_kw={"class": "position-relative form-control form-select"})
 
-    confirmed_at = MyDateTimeLocalField(_l("User is verified at"),
-                                   [validators.Optional()],
-                                 divclass = "col-md-6 pb-0",
-                                 render_kw={"class": "position-relative form-control"})
-    
-    roles = MyQuerySelectMultipleField(_l("Roles"),
-                                          divclass = "col-md-12 mt-1",
-                                          render_kw={"class": "position-relative form-control select2-js"}) #select2-js
     postal_code = MyStringField(
         _l('Postal Code'),
         [validators.Optional()],
@@ -147,12 +151,6 @@ class UserStudentForm(FlaskForm):
         divclass = "col-md-12 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "address-line1"})
 
-    address_line2 = MyStringField(
-        _l('Street line 2'),
-        divclass = "col-md-12 mt-1",
-        render_kw={"class": "position-relative form-control"})
-
-
     city = MyStringField(
         _l('City'),
         [validators.Optional()],
@@ -160,11 +158,29 @@ class UserStudentForm(FlaskForm):
         render_kw={"class": "position-relative form-control", "autocomplete": "address-line2"})
 
     country = MyStringField(
-        _l('Country'), 
+        _l('Country'),
         [validators.Optional(), validators.Length(min=2,max=2)],
         default="NL",
         divclass = "col-md-2 mt-1",
         render_kw={"class": "position-relative form-control", "autocomplete": "country"})
+
+    msg_transactional_emails = MyBooleanField(
+        _l('Send transactional emails'),
+        divclass = "col-md-6 mt-2 pt-4 pb-1",
+        default=False,
+        render_kw={"class": "form-check-input"})
+
+    msg_last_min_spots = MyBooleanField(
+        _l('Send last minute spot notifications'),
+        divclass = "col-md-6 mt-2 pt-4 pb-1",
+        default=False,
+        render_kw={"class": "form-check-input"})
+
+    password = MyPasswordField(
+        _l('Password'),
+        [validators.Optional()],
+        divclass = "col-md-6 mt-1",
+        render_kw={"class": "position-relative form-control", "autocomplete": "new-password"})
 
 class UserDerollForm(FlaskForm):
     url  = MyHiddenField('url')

@@ -317,10 +317,13 @@ class Training(db.Model):
                                                                          TrainingEnroll.status == 'waitlist-invited')
                                 ).count()
 
-        if self._spots_waitlist == None:                   
-            self._spots_waitlist = TrainingEnroll.query.join(Training).join(Student).filter(
-                            TrainingEnroll.training_id==self.id, 
-                            TrainingEnroll.status.in_(['waitlist'])
+        if self._spots_waitlist == None:
+            self._spots_waitlist = TrainingEnroll.query.join(Training).join(Student).join(
+                            Student.user
+                        ).outerjoin(UserSettings, UserSettings.user_id == User.id).filter(
+                            TrainingEnroll.training_id==self.id,
+                            TrainingEnroll.status.in_(['waitlist']),
+                            or_(UserSettings.msg_transactional_emails == True, UserSettings.id == None)
                         ).order_by(TrainingEnroll.enrole_date).all()  
                                                 
         self._spots_waitlist_count = len(self._spots_waitlist)
@@ -961,6 +964,7 @@ class UserSettings(db.Model):
     
     msg_signal: Mapped[bool] = mapped_column(Boolean(), default=False)
     msg_last_min_spots: Mapped[bool] = mapped_column(Boolean(), default=True)
+    msg_transactional_emails: Mapped[bool] = mapped_column(Boolean(), default=True)
     registration_complete: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     
     

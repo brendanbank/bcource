@@ -6,7 +6,7 @@
 
 {% block formheader %}
 
-<div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+<div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -41,17 +41,10 @@
 
 
 $(window).on('load', function() {
-    $('#studentModal').modal({keyboard: false});
+    $('#studentModal').modal({keyboard: false, backdrop: 'static'});
     $('#studentModal').modal('show')
 	
     const studentModal = document.getElementById('studentModal')
-    studentModal.addEventListener('hidePrevented.bs.modal', event => {
-    	const url =  document.getElementById('url').value;
-    	$('#studentModal').blur();
-    	$('#studentModal').modal('hide');
-        window.location.replace(url);
-    })
-
     studentModal.addEventListener('hidden.bs.modal', event => {
     	const url =  document.getElementById('url').value;
     	$('#studentModal').blur();
@@ -88,6 +81,39 @@ $(function() {
 
 
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
+
+<script>
+$(window).on('load', function() {
+    var pwField = document.getElementById('password');
+    if (pwField) {
+        var inputGroup = pwField.closest('.input-group');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-outline-secondary input-group-text';
+        btn.title = '{{ _("Generate password") }}';
+        btn.innerHTML = '<i class="bi bi-key"></i>';
+        btn.addEventListener('click', function() {
+            var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*';
+            var pwd = '';
+            var arr = new Uint32Array(16);
+            crypto.getRandomValues(arr);
+            for (var i = 0; i < 16; i++) {
+                pwd += chars[arr[i] % chars.length];
+            }
+            pwField.type = 'text';
+            pwField.value = pwd;
+            var icon = inputGroup.querySelector('.toggle-password i');
+            if (icon) { icon.className = 'bi bi-eye'; }
+        });
+        var toggleBtn = inputGroup.querySelector('.toggle-password');
+        toggleBtn.after(btn);
+        var helpDiv = document.createElement('div');
+        helpDiv.className = 'col-md-6 mt-1 d-flex align-items-end';
+        helpDiv.innerHTML = '<small class="form-text text-muted">{{ _("Click the key icon to generate a safe password. Copy and share it with the student.") }}</small>';
+        inputGroup.closest('.col-md-6').after(helpDiv);
+    }
+});
+</script>
 
 {% endblock %}
 
