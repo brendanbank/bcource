@@ -409,21 +409,32 @@ def search():
 @auth_required()
 def settings():
     form = UserSettingsForm(obj=current_user.usersettings)
-    
+
+    # Pre-populate checkbox on GET
+    if not form.is_submitted():
+        if current_user.usersettings:
+            form.msg_transactional_emails.data = current_user.usersettings.msg_transactional_emails
+        else:
+            form.msg_transactional_emails.data = True
+
     url = get_url(form)
-    
+
     if form.validate_on_submit():
+        msg_transactional = form.msg_transactional_emails.data
+        del form.msg_transactional_emails
+
         settings = current_user.usersettings
         if not settings:
             settings = UserSettings()
             settings.user = current_user
             db.session.add(settings)
         form.populate_obj(settings)
-        
+        settings.msg_transactional_emails = msg_transactional
+
         db.session.commit()
         flash(_("Account Settings are update successfully."))
         return safe_redirect(url)
-    
+
     return render_template("user/update-settings.html", form=form)
 
 
