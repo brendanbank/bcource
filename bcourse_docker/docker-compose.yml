@@ -50,6 +50,7 @@ services:
     logging:
       driver: "loki"
       options:
+        loki-external-labels: "platform=docker"
         loki-url: "https://loki.banzai.nl:3100/loki/api/v1/push"
         loki-pipeline-stages: |
           - json:
@@ -89,6 +90,7 @@ services:
       driver: "loki"
       options:
         loki-url: "https://loki.banzai.nl:3100/loki/api/v1/push"
+        loki-external-labels: "platform=docker"
         loki-pipeline-stages: |
           - json:
               expressions:
