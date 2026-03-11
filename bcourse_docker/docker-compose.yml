@@ -92,6 +92,10 @@ services:
         loki-url: "https://loki-host:3100/loki/api/v1/push"
         loki-external-labels: "platform=docker"
         loki-pipeline-stages: |
+          - multiline:
+              firstline: '^Traceback \(most recent call last\):'
+              max_wait_time: 3s
+              max_lines: 128
           - json:
               expressions:
                 stream: stream
