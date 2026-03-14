@@ -139,8 +139,8 @@ class CKTextAreaField(TextAreaField):
     widget = CKTextAreaWidget()
     
 class CkModelView(object):
-    extra_js = ['//cdn.ckeditor.com/ckeditor5/44.3.0/ckeditor5.umd.js',
-                '//cdn.ckeditor.com/ckeditor5-premium-features/44.3.0/ckeditor5-premium-features.umd.js',
+    extra_js = ['//cdn.ckeditor.com/ckeditor5/47.6.0/ckeditor5.umd.js',
+                '//cdn.ckeditor.com/ckeditor5-premium-features/47.6.0/ckeditor5-premium-features.umd.js',
                 '//cdn.ckbox.io/ckbox/2.6.1/ckbox.js',
                 '/static/ckeditor.js' ]
     
