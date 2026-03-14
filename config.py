@@ -169,6 +169,9 @@ class Config:
     # Slow query logging threshold in seconds (0.05 = 50ms)
     SLOW_QUERY_THRESHOLD = float(environ.get("SLOW_QUERY_THRESHOLD", "0.05"))
 
+    # CKEditor
+    CKEDITOR_LICENSE_KEY = environ.get("CKEDITOR_LICENSE_KEY", "")
+
     # JWT Configuration for Admin API token auth
     JWT_EXPIRATION_SECONDS = int(environ.get("JWT_EXPIRATION_SECONDS", "86400"))
     JWT_ALGORITHM = environ.get("JWT_ALGORITHM", "HS256")

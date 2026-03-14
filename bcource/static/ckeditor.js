@@ -62,8 +62,7 @@ const {
 	Underline
 } = window.CKEDITOR;
 
-const LICENSE_KEY =
-	'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Nzk0OTQzOTksImp0aSI6ImI0M2NkYzE0LTQ5YzItNDc2MS1hM2NmLTVmOGI1MzM2NDdkMiIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiXSwiZmVhdHVyZXMiOlsiRFJVUCIsIkUyUCIsIkUyVyJdLCJ2YyI6IjZkZmFlYjVkIn0.wjthIDwZY8xxG2g2QPmbOoasC8IfNGxkA3R1A9mvC_vqds4dxNRWO3l-kyIQf12-LCn2Xx5gcnRY3cuIJxuOrQ';
+const LICENSE_KEY = window.CKEDITOR_LICENSE_KEY || '';
 	const editorConfig = {
 	height: 100,
 	htmlEmbed: {
