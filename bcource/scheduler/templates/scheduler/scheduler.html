@@ -18,14 +18,14 @@
 
 {% block data_headers %}
 
-               <div class="col-3 fw-semibold ">{{_('Name')}}</div>
-               <div class="col-2 fw-semibold px-0 ps-4">{{_('Type')}}</div>
-               <div class="col-3 fw-semibold ">{{_('Date')}}</div>
-               <div class="col-1 fw-semibold ">{{_('Spots')}} <i class="text-primary fs-6 bi bi-question" 
-                                                            data-toggle="tooltip" 
-                                                            data-placement="top" 
+               <div class="col-lg-4 fw-semibold ">{{_('Name')}}</div>
+               <div class="col-lg-1 fw-semibold ">{{_('Action')}}</div>
+               <div class="col-lg-3 fw-semibold ">{{_('Date')}}</div>
+               <div class="col-lg-1 fw-semibold ">{{_('Spots')}} <i class="text-primary fs-6 bi bi-question"
+                                                            data-toggle="tooltip"
+                                                            data-placement="top"
                                                             title="{{_('participants max/current/waitlist') }}"></i></div>
-               <div class="col-3 fw-semibold ">{{_('Status')}}</div>
+               <div class="col-lg-3 fw-semibold ">{{_('Status')}}</div>
 
 {% endblock %}
 
@@ -36,6 +36,12 @@
 {% set enroll_view = "scheduler_bp.enroll" %}
 
 {% include 'scheduler/scheduler_loop.html' %}
+
+<div class="row m-0 p-0">
+     <div class="col-12 text-muted mt-2" style="font-size: 0.75rem;">
+          <i class="bi bi-info-circle"></i> {{_('Click the info icon next to a training name for more information about the training type.')}}
+     </div>
+</div>
 {% endblock %}
 
 {% block modals %}
