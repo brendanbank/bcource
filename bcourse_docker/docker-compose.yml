@@ -52,18 +52,32 @@ services:
       options:
         loki-external-labels: "platform=docker"
         loki-url: "https://loki-host:3100/loki/api/v1/push"
+
+        # Pipeline stages: multiline merging + structured log parsing.
+        # The multiline stage buffers Python tracebacks into single entries.
+        # The json stage extracts fields from JSON-formatted Python logs.
         loki-pipeline-stages: |
+          - multiline:
+              firstline: '^Traceback \(most recent call last\):'
+              max_wait_time: 3s
+              max_lines: 128
           - json:
               expressions:
-                stream: stream
-                attrs: attrs
-                tag: attrs.tag
-                level: attrs.level
-                msg: log
+                level: level
+                logger: name
+                message: message
+          - labels:
+              level:
+              logger:
+
+        # Relabel config to expose useful labels in Loki.
+        # - host: identifies which Docker host produced the logs
+        # - container: the container name
+        # - stream: stdout or stderr
         loki-relabel-config: |
           - action: replace
-            source_labels: ['__filename__']
-            target_label: 'job'
+            source_labels: ['host']
+            target_label: 'host'
           - action: replace
             source_labels: ['container_name']
             target_label: 'container'
@@ -89,8 +103,12 @@ services:
     logging:
       driver: "loki"
       options:
-        loki-url: "https://loki-host:3100/loki/api/v1/push"
         loki-external-labels: "platform=docker"
+        loki-url: "https://loki-host:3100/loki/api/v1/push"
+
+        # Pipeline stages: multiline merging + structured log parsing.
+        # The multiline stage buffers Python tracebacks into single entries.
+        # The json stage extracts fields from JSON-formatted Python logs.
         loki-pipeline-stages: |
           - multiline:
               firstline: '^Traceback \(most recent call last\):'
@@ -98,15 +116,21 @@ services:
               max_lines: 128
           - json:
               expressions:
-                stream: stream
-                attrs: attrs
-                tag: attrs.tag
-                level: attrs.level
-                msg: log
+                level: level
+                logger: name
+                message: message
+          - labels:
+              level:
+              logger:
+
+        # Relabel config to expose useful labels in Loki.
+        # - host: identifies which Docker host produced the logs
+        # - container: the container name
+        # - stream: stdout or stderr
         loki-relabel-config: |
           - action: replace
-            source_labels: ['__filename__']
-            target_label: 'job'
+            source_labels: ['host']
+            target_label: 'host'
           - action: replace
             source_labels: ['container_name']
             target_label: 'container'
