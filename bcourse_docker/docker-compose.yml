@@ -51,7 +51,7 @@ services:
       driver: "loki"
       options:
         loki-external-labels: "platform=docker"
-        loki-url: "https://loki.banzai.nl:3100/loki/api/v1/push"
+        loki-url: "${LOKI_URL}"
 
         # Pipeline stages: multiline merging + structured log parsing.
         # The multiline stage buffers Python tracebacks into single entries.
@@ -104,7 +104,7 @@ services:
       driver: "loki"
       options:
         loki-external-labels: "platform=docker"
-        loki-url: "https://loki.banzai.nl:3100/loki/api/v1/push"
+        loki-url: "${LOKI_URL}"
 
         # Pipeline stages: multiline merging + structured log parsing.
         # The multiline stage buffers Python tracebacks into single entries.
@@ -169,7 +169,7 @@ services:
     logging:
       driver: "loki"
       options:
-        loki-url: "https://loki.banzai.nl:3100/loki/api/v1/push"
+        loki-url: "${LOKI_URL}"
         loki-pipeline-stages: |
           - json:
               expressions:
