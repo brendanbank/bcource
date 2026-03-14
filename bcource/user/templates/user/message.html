@@ -25,7 +25,7 @@
       </div>
       <div class="modal-footer">
         <button onclick="this.blur();" type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{_('Close')}}</button>
-        <button onclick="this.blur();" type="submit" class="btn btn-primary">{{_('Send')}}</button>
+        <button onclick="this.blur();" type="submit" class="btn btn-primary" id="sendBtn">{{_('Send')}}</button>
 
       </div>
     </div>
@@ -105,7 +105,14 @@ $(window).on('load', function() {
     settingModel.addEventListener('hide.bs.modal', event => {
      setTimeout(function(){window.location.href = document.getElementById('url').value;},2);
     })
-    
+
+    // Show spinner on form submit
+    const form = document.getElementById('UserMessages');
+    const sendBtn = document.getElementById('sendBtn');
+    form.addEventListener('submit', function() {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>' + "{{_('Sending...')}}";
+    });
 
 });
 
