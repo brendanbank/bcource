@@ -31,7 +31,7 @@ def tandc():
 def home(error_msg=None):
 
     if current_user.is_anonymous:
-        return render_template("home/index.html")
+        return redirect(url_for('security.login'))
     
     #check if system tables are OK for user
     UserProfileSystemChecks().validate()
