@@ -509,6 +509,7 @@ def support_public():
     
     if form.validate_on_submit():
         support_email = cv('SUPPORT_EMAIL')
+        from_email = app.config.get('MAIL_DEFAULT_SENDER', support_email)
         sender_name = form.name.data or 'Guest'
         sender_email = form.email.data
 
@@ -518,7 +519,7 @@ def support_public():
             body=f"Support Request from {sender_name} ({sender_email})\n\n"
                  f"Subject: {form.subject.data}\n\n"
                  f"{form.body.data}",
-            from_email=support_email,
+            from_email=from_email,
             to=[support_email],
             reply_to=[sender_email]
         )
@@ -540,7 +541,7 @@ def support_public():
                 body=f"Thank you for contacting support. We have received your message "
                      f"and will respond to {sender_email} as soon as possible.\n\n"
                      f"Your message:\nSubject: {form.subject.data}\n\n{form.body.data}",
-                from_email=support_email,
+                from_email=from_email,
                 to=[sender_email]
             )
             confirm_html = f"""
