@@ -224,7 +224,7 @@ def create_app():
                 "default-src 'self'; "
                 "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.ckeditor.com https://cdn.ckbox.io https://cdn.jsdelivr.net; "
                 "style-src 'self' 'unsafe-inline' https://cdn.ckeditor.com https://cdn.jsdelivr.net; "
-                "img-src 'self' data:; "
+                "img-src 'self' data: https://cdn.jsdelivr.net; "
                 "font-src 'self'; "
                 "frame-ancestors 'self'"
             )
