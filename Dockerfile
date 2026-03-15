@@ -1,5 +1,7 @@
 FROM python:3.13-slim
 
+RUN groupadd -r bcourse && useradd -r -g bcourse -d /app -s /sbin/nologin bcourse
+
 WORKDIR /app
 
 COPY ./requirements.txt /app/requirements.txt
@@ -8,6 +10,10 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY ./bcource /app/bcource
 COPY ./config.py /app/config.py
 COPY ./run.py /app/run.py
+
+RUN chown -R bcourse:bcourse /app
+
+USER bcourse
 
 EXPOSE 8000
 

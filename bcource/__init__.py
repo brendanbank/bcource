@@ -66,7 +66,10 @@ csrf = CSRFProtect()
 
 def create_app():
     """Create Flask application."""
+    from werkzeug.middleware.proxy_fix import ProxyFix
+
     app = Flask(__name__, instance_relative_config=False)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 
     app.config.from_object('config.Config')
@@ -210,7 +213,24 @@ def create_app():
         def get_locale():
             return request.accept_languages.best_match(cv('LANGUAGES'))
         
+        @app.after_request
+        def set_security_headers(response):
+            response.headers['X-Content-Type-Options'] = 'nosniff'
+            response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+            response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+            response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+            response.headers['Content-Security-Policy'] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.ckeditor.com https://cdn.ckbox.io https://cdn.jsdelivr.net; "
+                "style-src 'self' 'unsafe-inline' https://cdn.ckeditor.com https://cdn.jsdelivr.net; "
+                "img-src 'self' data:; "
+                "font-src 'self'; "
+                "frame-ancestors 'self'"
+            )
+            return response
+
         models.db_init_data(app)
-                
+
         return app
     
