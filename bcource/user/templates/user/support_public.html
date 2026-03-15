@@ -77,11 +77,18 @@
                             <a href="{{ url_for('home_bp.home') }}" class="btn btn-secondary">
                                 {{ _('Cancel') }}
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" id="sendBtn">
                                 <i class="bi bi-envelope-fill"></i> {{ _('Send to Support') }}
                             </button>
                         </div>
                     </form>
+                    <script>
+                    document.querySelector('form').addEventListener('submit', function() {
+                        var btn = document.getElementById('sendBtn');
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>' + "{{ _('Sending...') }}";
+                    });
+                    </script>
                 </div>
                 <div class="card-footer text-muted">
                     <small>
