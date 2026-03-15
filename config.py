@@ -172,6 +172,14 @@ class Config:
     # CKEditor
     CKEDITOR_LICENSE_KEY = environ.get("CKEDITOR_LICENSE_KEY", "")
 
+    # Session cookie hardening
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    REMEMBER_COOKIE_SECURE = True
+    REMEMBER_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_SAMESITE = 'Lax'
+
     # JWT Configuration for Admin API token auth
     JWT_EXPIRATION_SECONDS = int(environ.get("JWT_EXPIRATION_SECONDS", "86400"))
     JWT_ALGORITHM = environ.get("JWT_ALGORITHM", "HS256")
