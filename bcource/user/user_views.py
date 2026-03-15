@@ -1,4 +1,6 @@
+import uuid
 from flask import Blueprint, render_template, request, flash, request, redirect, session, url_for, jsonify, current_app
+from flask_mailman import EmailMultiAlternatives
 from flask_babel import _
 from flask_security import current_user, logout_user
 from bcource.models import UserSettings, Message, User, UserMessageAssociation, Role, MessageTag, Training, TrainingEnroll, Student
@@ -454,11 +456,12 @@ def support():
                 email=cv('SUPPORT_EMAIL'),
                 first_name='Support',
                 last_name='Team',
-                active=True
+                active=True,
+                fs_uniquifier=uuid.uuid4().hex
             )
             db.session.add(support_user)
             db.session.commit()
-        
+
         # Send email to support
         msg = SendEmail(
             envelop_to=[support_user],
@@ -505,65 +508,53 @@ def support_public():
     url = get_url(form)
     
     if form.validate_on_submit():
-        # Find or create the support user
-        support_user = User.query.filter_by(email=cv('SUPPORT_EMAIL')).first()
-        if not support_user:
-            # Create support user if it doesn't exist
-            support_user = User(
-                email=cv('SUPPORT_EMAIL'),
-                first_name='Support',
-                last_name='Team',
-                active=True
-            )
-            db.session.add(support_user)
-            db.session.commit()
-        
-        # Create or find the sender user
-        sender_user = User.query.filter_by(email=form.email.data).first()
-        if not sender_user:
-            # Create a temporary user for tracking purposes
-            sender_user = User(
-                email=form.email.data,
-                first_name=form.name.data.split()[0] if form.name.data else 'Guest',
-                last_name=' '.join(form.name.data.split()[1:]) if form.name.data and len(form.name.data.split()) > 1 else 'User',
-                active=False  # Not an active user, just for message tracking
-            )
-            db.session.add(sender_user)
-            db.session.commit()
-        
+        support_email = cv('SUPPORT_EMAIL')
+        sender_name = form.name.data or 'Guest'
+        sender_email = form.email.data
+
         # Send email to support
-        msg = SendEmail(
-            envelop_to=[support_user],
-            envelop_from=sender_user,
-            body=f"""
-            <p><strong>Support Request from {form.name.data} ({form.email.data})</strong></p>
+        support_msg = EmailMultiAlternatives(
+            subject=f"Support Request: {form.subject.data}",
+            body=f"Support Request from {sender_name} ({sender_email})\n\n"
+                 f"Subject: {form.subject.data}\n\n"
+                 f"{form.body.data}",
+            from_email=support_email,
+            to=[support_email],
+            reply_to=[sender_email]
+        )
+        support_html = f"""
+            <p><strong>Support Request from {sender_name} ({sender_email})</strong></p>
             <p><em>Note: This is from a non-authenticated user</em></p>
             <hr>
             <p><strong>Subject:</strong> {form.subject.data}</p>
             <p><strong>Message:</strong></p>
             <p>{form.body.data}</p>
-            """,
-            subject=f"Support Request: {form.subject.data}",
-            taglist=['support', 'email', 'public']
-        )
-        msg.send()
-        
-        # Send confirmation to the user
-        confirmation_msg = SendEmail(
-            envelop_to=[sender_user],
-            envelop_from=support_user,
-            body=f"""
-            <p>Thank you for contacting support. We have received your message and will respond to {form.email.data} as soon as possible.</p>
-            <hr>
-            <p><strong>Your message:</strong></p>
-            <p><strong>Subject:</strong> {form.subject.data}</p>
-            <p>{form.body.data}</p>
-            """,
-            subject=f"Support Request Received: {form.subject.data}",
-            taglist=['support', 'email', 'public']
-        )
-        confirmation_msg.send()
-        
+        """
+        support_msg.attach_alternative(support_html, "text/html")
+        support_msg.send()
+
+        # Send confirmation to the sender (best-effort — don't fail if address is invalid)
+        try:
+            confirm_msg = EmailMultiAlternatives(
+                subject=f"Support Request Received: {form.subject.data}",
+                body=f"Thank you for contacting support. We have received your message "
+                     f"and will respond to {sender_email} as soon as possible.\n\n"
+                     f"Your message:\nSubject: {form.subject.data}\n\n{form.body.data}",
+                from_email=support_email,
+                to=[sender_email]
+            )
+            confirm_html = f"""
+                <p>Thank you for contacting support. We have received your message and will respond to {sender_email} as soon as possible.</p>
+                <hr>
+                <p><strong>Your message:</strong></p>
+                <p><strong>Subject:</strong> {form.subject.data}</p>
+                <p>{form.body.data}</p>
+            """
+            confirm_msg.attach_alternative(confirm_html, "text/html")
+            confirm_msg.send()
+        except Exception:
+            app.logger.warning(f"Failed to send confirmation email to {sender_email}")
+
         flash(_("Your message has been sent to support. You will receive a response at the email address provided."), 'success')
         return redirect(url_for('home_bp.home'))
     
@@ -625,7 +616,8 @@ def delete_account():
                     email=support_email,
                     first_name='Support',
                     last_name='Team',
-                    active=True
+                    active=True,
+                    fs_uniquifier=uuid.uuid4().hex
                 )
                 db.session.add(support_user)
                 db.session.commit()
