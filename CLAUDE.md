@@ -409,6 +409,7 @@ The scheduler (`run_scheduler.py`) runs as a separate process with a socket lock
 | Cannot delete user with trainer record | `students_views.delete()` | Deletion blocked |
 | Admin de-enrollment skips waitlist cascade | `deroll_common(admin=True)` | No auto-invitation of waitlisted students |
 | `StudentOpenSpotReminder` disables policies | `automation_tasks.py` | Sets `training.apply_policies=False` permanently |
+| All DB timestamps must be UTC | All models, `db_datetime()` for display | Local times in DB will cause incorrect scheduling and display |
 
 ### Database Models (`bcource/models.py`)
 
@@ -426,6 +427,8 @@ Primary models:
 - **Content** - CMS-like content storage for email templates
 
 Note: The application supports multi-practice deployments where data can be scoped to different practices.
+
+**Timestamps**: All datetime columns in the database store UTC values. Conversion to local time (Europe/Amsterdam) happens at display time via `db_datetime()` in `bcource/helpers.py`. Never store local times in the database.
 
 ### Multi-Database Setup
 
