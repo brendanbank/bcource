@@ -23,7 +23,7 @@ class EmailReminderIcal(EmailStudentEnrolledInTraining):
 class Reminder(BaseAutomationTask):
     def __init__(self,  *args, **kwargs):
         super().__init__( *args, **kwargs)
-        logger.warning (f'Reminder Class: {self.__class__.__name__}')
+        logger.debug(f'Reminder Class: {self.__class__.__name__}')
         self.template_kw= {}
 
     @staticmethod
@@ -44,7 +44,7 @@ class StudentReminderTask(Reminder):
         self.enrollments = TrainingEnroll().query.join(Training).filter(TrainingEnroll.status=="enrolled", Training.id == id).all()
         
         if not self.enrollments:
-            logger.warning(f"No enrollments in training with id {id}")
+            logger.debug(f"No enrollments in training with id {id}")
             return
         self.to = [ enrollment.student.user for enrollment in self.enrollments ]
         self.template_kw['training'] = Training().query.get(id)
@@ -55,6 +55,7 @@ class StudentReminderTask(Reminder):
             self.template_kw['enrollment'] = enrollment
             a = EmailReminderIcal(envelop_to=[enrollment.student.user], CONTENT_TAG=self.automation_name, taglist=['reminder'], **self.template_kw)
             a.send()
+        logger.info(f"Sent student reminders to {len(self.enrollments)} student(s) for training {self.template_kw.get('training', '')}")
 
 @register_automation(
     description="Class to handle sending reminders to trainers."
@@ -65,7 +66,7 @@ class TrainerReminderTask(Reminder):
         self.to = []
         self.training = Training().query.get(id)
         if not self.training:
-            logger.warning(f"traiing with id {id} is not found")
+            logger.debug(f"Training with id {id} is not found")
             return
 
         self.to = self.training.trainer_users
@@ -77,6 +78,7 @@ class TrainerReminderTask(Reminder):
             self.template_kw['training'] = self.training
             a = EmailReminder(envelop_to=[user], CONTENT_TAG=self.automation_name, taglist=['reminder'], **self.template_kw)
             a.send()
+        logger.info(f"Sent trainer reminders to {len(self.training.trainer_users)} trainer(s) for training {self.training}")
 
 
 @register_automation(
@@ -90,13 +92,15 @@ class AutomaticWaitList(BaseAutomationTask):
     def execute(self):
         enrollment = TrainingEnroll().query.filter(TrainingEnroll.uuid == self.id).first()
         if enrollment.status != "waitlist-invited":
-            logging.warn(f'{enrollment} enrollment.status: {enrollment.status} is not waitlist-invited, stop automation')
+            logger.warning(f'{enrollment} enrollment.status: {enrollment.status} is not waitlist-invited, stop automation')
         else:
-            deinvite = deinvite_from_waitlist(enrollment)
-            
+            deinvite_from_waitlist(enrollment)
+            logger.info(f"Expired waitlist invitation for {enrollment.student} in {enrollment.training}")
+
         waitlist_enrollments_eligeble = enrollment.training.waitlist_enrollments_eligeble()
         for enrollment in waitlist_enrollments_eligeble:
             invite_from_waitlist(enrollment)
+            logger.info(f"Invited {enrollment.student} from waitlist for {enrollment.training}")
 
         return(True)
     
@@ -122,7 +126,7 @@ class StudentOpenSpotReminder(Reminder):
         self.to = []
         self.training = Training().query.get(self.id)
         if not self.training:
-            logger.warning(f"traiing with id {self.id} is not found")
+            logger.debug(f"Training with id {self.id} is not found")
             return
 
         students_in_training = [enrollment.student.id for enrollment in self.training.trainingenrollments ]
@@ -135,7 +139,7 @@ class StudentOpenSpotReminder(Reminder):
                 UserSettings.msg_last_min_spots == True,
                 ~Student.id.in_(students_in_training)).all()                
         else:
-            logging.warning(f"traing  {self.training} has no open spots")
+            logger.debug(f"Training {self.training} has no open spots")
             self.to = []
                  
         self.template_kw['training'] = self.training
@@ -143,13 +147,14 @@ class StudentOpenSpotReminder(Reminder):
     def execute(self):
         self.training.apply_policies = False
         db.session.commit()
-        
+
         for student in self.to:
             user = student.user
             self.template_kw['user'] = user
             self.template_kw['training'] = self.training
             msg = EmailReminder(envelop_to=[user], CONTENT_TAG=self.automation_name, taglist=['reminder', 'openspot'], **self.template_kw)
             msg.send()
+        logger.info(f"Sent open spot reminders to {len(self.to)} student(s) for training {self.training}")
 
 
 @register_automation(
@@ -160,9 +165,9 @@ class DeleteTrainingTask(BaseAutomationTask):
         super().__init__(id, automation_name, *args, **kwargs)
         self.training = Training().query.get(id)
         if not self.training:
-            logger.warning(f"Training with id {id} is not found")
+            logger.debug(f"Training with id {id} is not found")
             return
-        
+
     @staticmethod
     def query():
         # Query trainings that are marked for deletion or have passed their end date
@@ -202,7 +207,7 @@ class DeleteTrainingTask(BaseAutomationTask):
             when = event_dt
                 
         if when < datetime.utcnow():
-            logger.warning(f"job is scheduler in the past: {db_datetime_str(when)} task executed immediately: {event_dt}")
+            logger.debug(f"job scheduled in the past: {db_datetime_str(when)} task executed immediately: {event_dt}")
             when = datetime.utcnow() + timedelta(seconds=1)
 
             
@@ -234,16 +239,14 @@ class DeleteTrainingTask(BaseAutomationTask):
             
             # Remove all students from the training
             for enrollment in enrollments:
-                logger.info(f"Removing student {enrollment.student} from training {training_name}")
+                logger.debug(f"Removing student {enrollment.student} from training {training_name}")
                 db.session.delete(enrollment)
             
             db.session.commit()
-            logger.info(f"Removed {len(enrollments)} student(s) from training {training_name}")
-            
             # Delete the training
             db.session.delete(self.training)
             db.session.commit()
-            logger.info(f"Successfully deleted training: {training_name} (ID: {training_id})")
+            logger.info(f"Deleted training {training_name} (ID: {training_id}), removed {len(enrollments)} enrollment(s)")
             
             return True
             
@@ -261,7 +264,7 @@ class SendAttendeeListTask(Reminder):
         super().__init__(id, automation_name, *args, **kwargs)
         self.training = Training().query.get(id)
         if not self.training:
-            logger.warning(f"Training with id {id} is not found")
+            logger.debug(f"Training with id {id} is not found")
             return
 
         # Get all enrolled students for this training
@@ -271,7 +274,7 @@ class SendAttendeeListTask(Reminder):
         ).all()
         
         if not self.enrollments:
-            logger.warning(f"No enrolled students found for training with id {id}")
+            logger.debug(f"No enrolled students found for training with id {id}")
             return
 
         self.to = self.training.trainer_users

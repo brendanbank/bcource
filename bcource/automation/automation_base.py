@@ -204,7 +204,7 @@ class BaseAutomationTask:
         self.automation_name = automation_name
         self.args = args
         self.kwags = kwags
-        logger.warning (f'Started {self.__class__.__name__} id: {id} automation_name: {automation_name} args: {args} kvargs: {kwags}' )
+        logger.debug(f'Started {self.__class__.__name__} id: {id} automation_name: {automation_name}')
 
     @staticmethod
     def query():
@@ -333,7 +333,7 @@ class BaseAutomationTask:
         Returns:
             Job: The created scheduler job.
         """
-        logger.info (f'create_job {cls.__name__} for {item.__class__.__name__} {item}')
+        logger.debug(f'create_job {cls.__name__} for {item.__class__.__name__} {item}')
         event_dt = cls.get_event_dt(item)
         return cls._create_job(automation, item, event_dt)
         
@@ -356,7 +356,7 @@ class BaseAutomationTask:
         Returns:
             set: Set of job IDs that were created.
         """
-        logger.info (f'start {cls.__name__}')
+        logger.debug(f'start {cls.__name__}')
 
         items = cls.query()
         jobs = set()
@@ -482,7 +482,7 @@ class BaseAutomationTask:
             when = event_dt
                 
         if when < datetime.datetime.utcnow():
-            logger.warning(f"job is scheduler in the past: {db_datetime_str(when)} task will be probably be ignored event_dt: {event_dt}")
+            logger.debug(f"job scheduled in the past: {db_datetime_str(when)} event_dt: {event_dt}")
             
         # if app_scheduler.flask_app.config.get('ENVIRONMENT') == "DEVELOPMENT":
         #     when = datetime.datetime.utcnow() + timedelta(seconds=1)
