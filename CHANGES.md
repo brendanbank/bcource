@@ -1,5 +1,77 @@
 # Changes Log
 
+## [Unreleased] - 2026-03-16
+
+### Changed - Scheduler moved into Docker
+- **Scheduler runs as Docker container**: `bcourse-scheduler` service added to `docker-compose.yml`, replacing the systemd service. Uses the same image as the web app with `command: ["python", "run_scheduler.py"]`
+- **MySQL boot ordering fixed**: Scheduler now uses `depends_on` with MySQL healthcheck, eliminating Connection Refused errors on server reboot
+- **Healthcheck**: Container reports healthy/unhealthy via `docker compose ps`
+- **Reduced automation log noise**: Routine per-cycle messages (job creation, renewal churn) demoted to `debug`; only actual actions (emails sent, trainings deleted, waitlist invitations) log at `info` level. One-line summary per renewal cycle.
+- **Silenced apscheduler internal logging**: Job add/remove/run messages set to `WARNING`
+- **Removed obsolete files**: `bcourse-scheduler.service`, `bcource.service`, `bcource.ini` (uWSGI), `scripts/wait_for_mysql.sh`
+
+### Deploy notes
+- After deploying, disable the old systemd service: `sudo systemctl disable --now bcourse-scheduler.service`
+- Log verbosity controlled by `LOG` env var (`INFO` for production, `DEBUG` for development)
+
+### Added - Admin REST API
+- **REST API with Swagger UI**: Full CRUD API at `/admin-api/` for trainings, events, enrollments, students, locations, and training types (Flask-RESTX)
+- **JWT authentication**: `POST /admin-api/auth/token` returns Bearer tokens (HS256, 24h expiry) alongside session auth
+- **Bulk enrollment operations**: Bulk-move participants between trainings via API
+- **Enrollment actions**: invite, deinvite, return-to-waitlist, force-enroll, decline, toggle-paid
+- **JWT token generator page** in Flask-Admin for easy token creation
+
+### Added - Per-Training-Type Automation Scheduling
+- **Training type filtering for automations**: Automation schedules can be scoped to specific training types via many-to-many relationship
+- **Backward compatible**: Training types with no configured schedules still run all automations
+- **Training names in scheduler job log** for easier debugging
+
+### Added - Messages Enhancements
+- **Sent mailbox**: New "Sent" view alongside Inbox in messages
+- **Collapsible filter groups**: Filter sidebar groups collapse by default, auto-open when active
+- **Page reset on filter change**: Page resets to 1 when searching or toggling filters
+
+### Changed - Docker & Deployment
+- **Migrated from uWSGI to gunicorn**: Replaced `tiangolo/uwsgi-nginx` base image with `python:3.13-slim` + gunicorn
+- **Non-root container**: Application runs as `bcourse` user inside Docker
+- **Security headers**: Added Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options, Referrer-Policy via Traefik
+- **Cookie hardening**: Secure, HttpOnly, SameSite=Lax on session cookies
+- **Traefik dashboard disabled** in production
+- **Loki logging**: Structured JSON logging with multiline traceback support, external labels, Loki URL moved to env variable
+
+### Changed - Security
+- **CKEditor 5 upgraded**: 44.3.0 → 47.6.0 (CVE-2026-28343 XSS fix)
+- **CKEditor license key** moved from static JS to `.env` configuration
+- **CSP**: Added `cdn.jsdelivr.net` to `img-src` for intl-tel-input country flags
+- **Open redirect fixes**: `safe_redirect()` used at all redirect call sites (CodeQL)
+- **Sensitive data logging** fixed (CodeQL)
+- **Swagger UI auth**: Requires admin login + 2FA before accessing `/admin-api/docs`
+
+### Fixed
+- **SMTP sender rejection** in public support form
+- **Home page redirect**: Unauthenticated users redirected to login
+- **Support form spinner**: Loading spinner on submit buttons while email sends
+- **Message send spinner**: Loading spinner on message compose send button
+- **fs_uniquifier null error**: Stopped creating User records for public support form submissions
+- **Scheduler duplicate jobs**: Fixed duplicate job creation on startup
+- **iCal Proton Mail compatibility**: Fixed iCal generation for Proton Mail
+- **admin_has_role**: Fixed boolean check in user-edit view
+- **Flask-Admin upgrade**: 1.6.1 → 2.0.2, unpinned WTForms to 3.2.1
+
+### Added - Trainer-Created Students
+- **Transactional email opt-out**: Trainer-created student accounts can opt out of transactional emails
+- **Generate password button** in student creation with non-dismissable modal
+
+### Changed - Housekeeping
+- **Slow query logging**: Queries exceeding 50ms logged for performance monitoring
+- **Migrations tracked in git**
+- **Docs reorganized**: Moved to `docs/` directory, added Hetzner setup guide
+- **Removed deprecated files**: Old SMS quota scripts, test scripts, grafana-proxy service
+- **Dependabot & CodeQL**: GitHub Actions for dependency updates and security scanning
+- **Dependency management**: Migrated from Pipenv to pip + `requirements.txt`
+
+---
+
 ## [Unreleased] - 2026-02-10
 
 ### Added - Email Selection Feature
