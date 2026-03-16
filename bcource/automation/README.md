@@ -260,7 +260,8 @@ logger.error("Task failed")
    - Review `replace_existing` setting
 
 3. **Jobs executing at wrong time**
-   - Verify timezone settings
+   - All database timestamps are stored in UTC — `get_event_dt()` must return UTC
+   - Conversion to local time (Europe/Amsterdam) happens only at display time via `db_datetime()`
    - Check `get_event_dt()` implementation
    - Review interval calculations
 
