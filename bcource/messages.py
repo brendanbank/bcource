@@ -154,11 +154,19 @@ class SendEmail(SystemMessage):
             # Generate plain text version from HTML
             text_body = self.email_render_text_body(html_body)
 
+            # Build reply-to from config if set
+            reply_to = []
+            from flask import current_app
+            reply_to_addr = current_app.config.get('MAIL_DEFAULT_REPLY_TO')
+            if reply_to_addr:
+                reply_to = [reply_to_addr]
+
             # Create multipart message with plain text body
             msg = EmailMultiAlternatives(subject=self.render_subject(),
                                          body=text_body,
                                          from_email=email_from,
-                                         to=[email_str]
+                                         to=[email_str],
+                                         reply_to=reply_to
                                          )
 
             # Attach HTML alternative

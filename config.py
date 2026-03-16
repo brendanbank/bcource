@@ -107,6 +107,7 @@ class Config:
     MAIL_BACKEND = 'smtp'
     MAIL_USERNAME = environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = environ.get('MAIL_PASSWORD')
+    MAIL_DEFAULT_REPLY_TO = environ.get('MAIL_DEFAULT_REPLY_TO')
     
     
     ## Application settings:
