@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY ./bcource /app/bcource
 COPY ./config.py /app/config.py
 COPY ./run.py /app/run.py
+COPY ./run_scheduler.py /app/run_scheduler.py
 
 RUN chown -R bcourse:bcourse /app
 
