@@ -3,6 +3,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Reduce apscheduler noise — it logs every job add/remove/run at INFO
+logging.getLogger('apscheduler.scheduler').setLevel(logging.WARNING)
+logging.getLogger('apscheduler.executors').setLevel(logging.WARNING)
+
 from pytz import utc
 
 from apscheduler.schedulers.background import BackgroundScheduler

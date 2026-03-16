@@ -310,8 +310,8 @@ class TestJobScheduling(unittest.TestCase):
                 with patch('bcource.automation.automation_base.logger') as mock_logger:
                     result = BaseAutomationTask._when(mock_automation, event_dt)
 
-                    # Should log a warning
-                    mock_logger.warning.assert_called()
+                    # Should log at debug level
+                    mock_logger.debug.assert_called()
 
 
 class TestAutomationTaskExecution(unittest.TestCase):

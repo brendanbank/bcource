@@ -149,6 +149,56 @@ services:
       - "traefik.docker.network=web-network"
     restart: unless-stopped
 
+  bcourse-scheduler:
+    container_name: "bcourse-scheduler"
+    image: bcourse:latest
+    env_file: "../.env"
+    environment:
+      - MYSQL_HOSTNAME=bcourse-mysql
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@bcourse-mysql/${MYSQL_DATABASE:-bcourse}
+      - SQLALCHEMY_BINDS_POSTALCODES=mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@bcourse-mysql/postalcodes
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["python", "run_scheduler.py"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; os.kill(1, 0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "loki"
+      options:
+        loki-external-labels: "platform=docker"
+        loki-url: "${LOKI_URL}"
+        loki-pipeline-stages: |
+          - multiline:
+              firstline: '^Traceback \(most recent call last\):'
+              max_wait_time: 3s
+              max_lines: 128
+          - json:
+              expressions:
+                level: level
+                logger: name
+                message: message
+          - labels:
+              level:
+              logger:
+        loki-relabel-config: |
+          - action: replace
+            source_labels: ['host']
+            target_label: 'host'
+          - action: replace
+            source_labels: ['container_name']
+            target_label: 'container'
+          - action: replace
+            source_labels: ['stream']
+            target_label: 'stream'
+    networks:
+      - web-network
+    restart: unless-stopped
+
   mysql:
     image: mysql:8.0
     container_name: "bcourse-mysql"
