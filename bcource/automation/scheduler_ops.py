@@ -10,47 +10,48 @@ logger = logging.getLogger(__name__)
     
 def report_active_jobs():
     renew_automations()
-    logger.info("Reporting active ...")
     all_jobs = app_scheduler.get_jobs()
     for jobs in all_jobs:
-        logger.info(f'scheduled job: {jobs.id} {jobs}')
-        
+        logger.debug(f'scheduled job: {jobs.id} {jobs}')
+
 def renew_automations():
-    
-    with app_scheduler.flask_app.app_context():        
+
+    with app_scheduler.flask_app.app_context():
         job = app_scheduler.add_job(func=report_active_jobs,
-                              trigger='interval', 
+                              trigger='interval',
                               minutes=1,
-                              id='report_active_jobs_id', 
+                              id='report_active_jobs_id',
                               replace_existing=True)
-    
-        logger.info(f'added job {job}')
+
+        logger.debug(f'added job {job}')
 
         current_job_ids = {job.id for job in app_scheduler.get_jobs()}
-        
+
         new_jobs_ids = set()
-        
+
         automations = AutomationSchedule().query.filter(
             AutomationSchedule.active == True).all()
-        
+
         for automation in automations:
-            logger.info(f'check for jobs in {automation.automation_class}')
+            logger.debug(f'check for jobs in {automation.automation_class}')
             automationobj = get_automation_class (automation.automation_class.class_name)
             if not automationobj:
                 logging.critical(f'class_name: {automation.automation_class.class_name} does not exists')
                 continue
-            
+
             cls = automationobj['class']
-            
-            new_jobs_ids.update(cls.create_jobs(automation))     
-        
+
+            new_jobs_ids.update(cls.create_jobs(automation))
+
         remove_jobs_list = current_job_ids - new_jobs_ids
 
-        
+
         for job_id in remove_jobs_list:
             if job_id == "report_active_jobs_id":
                 continue
             app_scheduler.remove_job(job_id)
+
+        logger.info(f"Renewed {len(new_jobs_ids)} jobs across {len(automations)} automations")
             
 def init_app_scheduler(app):
     app_scheduler.flask_app = app
