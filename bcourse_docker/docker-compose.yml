@@ -51,6 +51,8 @@ services:
     logging:
       driver: "loki"
       options:
+        max-size: "500m"
+        max-file: "1"
         loki-external-labels: "platform=docker"
         loki-url: "${LOKI_URL}"
 
@@ -106,6 +108,8 @@ services:
     logging:
       driver: "loki"
       options:
+        max-size: "500m"
+        max-file: "1"
         loki-external-labels: "platform=docker"
         loki-url: "${LOKI_URL}"
 
@@ -174,6 +178,8 @@ services:
     logging:
       driver: "loki"
       options:
+        max-size: "500m"
+        max-file: "1"
         loki-external-labels: "platform=docker"
         loki-url: "${LOKI_URL}"
         loki-pipeline-stages: |
@@ -224,6 +230,8 @@ services:
     logging:
       driver: "loki"
       options:
+        max-size: "500m"
+        max-file: "1"
         loki-url: "${LOKI_URL}"
         loki-pipeline-stages: |
           - json:
