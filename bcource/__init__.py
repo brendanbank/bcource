@@ -208,8 +208,46 @@ def create_app():
         main_menu.add_menu('Terms and Conditions', 'home_bp.tandc')
 
         # db.create_all()  # Create sql tables for our data models
-        
-        
+
+        @app.route('/health')
+        def health():
+            from flask import jsonify
+            from sqlalchemy import text
+            checks = {}
+            status = 200
+
+            # Check main database
+            try:
+                db.session.execute(text('SELECT 1'))
+                checks['database'] = 'ok'
+            except Exception as e:
+                checks['database'] = str(e)
+                status = 503
+
+            # Check postalcodes database
+            try:
+                with db.get_engine(bind_key='postalcodes').connect() as conn:
+                    conn.execute(text('SELECT 1'))
+                checks['postalcodes_db'] = 'ok'
+            except Exception as e:
+                checks['postalcodes_db'] = str(e)
+                status = 503
+
+            # Check mail server connectivity
+            try:
+                import socket
+                mail_host = app.config.get('MAIL_SERVER', 'localhost')
+                mail_port = int(app.config.get('MAIL_PORT', 25))
+                sock = socket.create_connection((mail_host, mail_port), timeout=5)
+                sock.close()
+                checks['mail'] = 'ok'
+            except Exception as e:
+                checks['mail'] = str(e)
+                status = 503
+
+            checks['status'] = 'healthy' if status == 200 else 'unhealthy'
+            return jsonify(checks), status
+
         def get_locale():
             return request.accept_languages.best_match(cv('LANGUAGES'))
         
