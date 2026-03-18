@@ -68,7 +68,7 @@
 
 {% block js %}
 
-{{ moment.include_moment() }}
+{{ moment.include_moment(local_js=url_for('static', filename='moment-with-locales.min.js')) }}
 
 
 	<script src="/static/moment-timezone-with-data.min.js"></script>
