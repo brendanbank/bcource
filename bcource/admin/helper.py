@@ -14,15 +14,14 @@ def accessible_as_admin(role_name=current_app.config['BCOURSE_SUPER_USER_ROLE'])
         db.session.add(role)
         db.session.commit()
 
+    if not current_user.is_authenticated or not current_user.is_active:
+        return False
+
     if not current_user.tf_primary_method:
         from bcource.errors import HTTPExceptionMustHaveTwoFactorEnabled
         raise(HTTPExceptionMustHaveTwoFactorEnabled())
 
-    return (
-        current_user.is_active
-        and current_user.is_authenticated
-        and current_user.has_role(role)
-    )
+    return current_user.has_role(role)
     
 def accessible_by_permission(permission=current_app.config['BCOURSE_SUPER_USER_ROLE']):
     permissionObj = Permission().query.filter(Permission.name==permission).first()
@@ -31,11 +30,10 @@ def accessible_by_permission(permission=current_app.config['BCOURSE_SUPER_USER_R
         db.session.add(permissionObj)
         db.session.commit()
 
-    return (
-        current_user.is_active
-        and current_user.is_authenticated
-        and current_user.has_permission(permission)
-    )
+    if not current_user.is_authenticated or not current_user.is_active:
+        return False
+
+    return current_user.has_permission(permission)
 
 
 def authorize_user():
