@@ -113,7 +113,8 @@ The application follows a modular Flask blueprint architecture:
 
 - **bcource/__init__.py** - Application factory (`create_app()`) and core initialization
 - **config.py** - Configuration loaded from environment variables via .env
-- **run.py** - Application entry point
+- **app.py** - WSGI entry point (used by uWSGI in production)
+- **run.py** - Development server entry point
 - **run_scheduler.py** - Scheduler daemon entry point
 
 ### Directory Structure
@@ -123,6 +124,8 @@ bcource/
 ├── __init__.py           - Application factory and initialization
 ├── models.py             - All database models
 ├── helpers.py            - Utility functions and template helpers
+├── helper_app_context.py - Pagination helper (b_pagination)
+├── errors.py            - Custom HTTP exceptions and error handlers (403, 404)
 ├── messages.py           - Email and message system
 ├── sms_util.py          - SMS functionality (AWS SNS)
 ├── filters.py           - Jinja template filters
@@ -152,6 +155,53 @@ bcource/
 - **admin_api** - REST API with Swagger UI for admin operations (Flask-RESTX)
 - **scheduler** - Scheduler views and management
 - **api** - API endpoints
+
+### Important Implementation Details
+
+#### Security Headers & Middleware (`bcource/__init__.py`)
+
+- **ProxyFix** applied for X-Forwarded-* header handling (reverse proxy support)
+- **Security headers** set via `after_request`: CSP (allows CKEditor CDN, unsafe-inline/eval for scripts), HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+- **Per-request auth**: `before_request` calls `bcource.admin.authorize_user` for auth enforcement
+- **Session cookies** hardened: Secure + HttpOnly + SameSite=Lax
+
+#### Slow Query Logging
+
+Configurable via `SLOW_QUERY_THRESHOLD` (default 0.05s). Uses SQLAlchemy engine events, logs to `bcource.slow_queries` logger. Useful for debugging performance.
+
+#### Jinja Template Globals
+
+The following are registered as Jinja globals in `__init__.py` and available in all templates:
+
+- `get_tag` — Content template lookup (for CMS-backed email/page content)
+- `db_datetime`, `db_datetime_str` — UTC-to-local time conversion
+- `show_mobile`, `hide_mobile` — Mobile detection helpers
+- `add_url_argument` — URL query parameter helper
+- `is_impersonating`, `get_original_user`, `get_impersonated_user` — Impersonation state
+- `format_phone_number`, `format_email` — Formatting filters
+- `bcourse_safe` — nh3 HTML sanitization filter
+
+#### Training Transient Attributes (Caching Gotcha)
+
+`Training.__init__()` and `@orm.reconstructor` initialize transient (non-persisted) attributes: `_spots_enrolled`, `_spots_waitlist`, `_spots_available`, `_spots_waitlist_count`, `student_allowed`, `_user_enrollment`, `in_policy`. These are populated by `_cal_enrollments()`.
+
+**Important:** After any DB operation affecting enrollments, these cached values become stale. Either re-query the Training object or call `_cal_enrollments()` again.
+
+#### `msg_transactional_emails` Opt-Out Affects Waitlist
+
+Students who opt out of transactional emails (`UserSettings.msg_transactional_emails == False`) are **excluded from waitlist promotion queries**. This means they will never be auto-invited from the waitlist.
+
+#### Practice Switching via Session
+
+`Practice.default_row()` checks `session.get('practice')` for a practice ID override before falling back to the `DEFAULT_PRACTICE_SHORTNAME` config value. This allows users to switch practices mid-session.
+
+#### `default_row()` Methods Auto-Create
+
+All `default_row()` methods (`Practice`, `TrainingType`, `Location`, `StudentStatus`, `StudentType`, `Policy`) use a get-or-create pattern: if the configured default doesn't exist in the DB, they create it and commit. Be aware of this side effect on first run or after DB resets.
+
+#### Configuration Architecture
+
+Config uses a single `Config` class in `config.py` (no dev/prod/test subclasses). The `ENVIRONMENT` variable is a runtime flag checked in code, not a class hierarchy. APScheduler uses the main MySQL database for job storage (no separate job store).
 
 ### Key Subsystems
 
@@ -534,11 +584,13 @@ value = cv('DEFAULT_PRACTICE')
 
 ## Testing
 
-Tests are located in `test/` directory. The codebase currently has minimal test coverage.
+Tests are located in `test/` directory. Total: 114 tests across 4 modules.
 
-Test coverage:
-- **test_automation.py** - Tests for the automation system (21 tests)
-- **test_messages.py** - Tests for the messaging system (26 tests)
+Test modules:
+- **test_automation.py** - Automation system tests (21 tests)
+- **test_messages.py** - Messaging system tests (26 tests)
+- **test_admin_api.py** - Admin API endpoint tests (45 tests)
+- **test_functional_flows.py** - Enrollment/waitlist functional flow tests (11 tests)
 
 Test strategies:
 - **test/WAITLIST_TEST_STRATEGY.md** - Comprehensive functional test strategy for waitlist functionality
@@ -550,6 +602,9 @@ Additional documentation is available in the following files:
 ### Feature Documentation
 - **docs/IMPERSONATION.md** - Complete user impersonation feature guide
 - **CHANGES.md** - Changelog of recent updates and features
+
+### API Documentation
+- **API.md** - Admin API reference documentation
 
 ### Subsystem Documentation
 - **bcource/automation/README.md** - Detailed automation system documentation
@@ -579,9 +634,7 @@ See `docs/IMPERSONATION.md` for complete documentation.
 ## Deployment
 
 - **Dockerfile** - Docker containerization support
-- **bcourse.ini** - uWSGI configuration
-- **bcourse.service** - systemd service for main app
-- **bcourse-scheduler.service** - systemd service for scheduler
+- **bcourse_docker/** - Docker Compose setup, Traefik, Grafana, MySQL, and Let's Encrypt configs
 - **scripts/wait_for_mysql.sh** - Startup dependency script for Docker
 - **docs/PRODUCTION_DEPLOYMENT.md** - Production deployment guide
 
