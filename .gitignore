@@ -184,3 +184,9 @@ attic/
 */grafana/data/*
 .DS_Store
 .claude/*
+
+# TLS/SSL certificates and keys
+*.pem
+*.key
+*.crt
+*.csr
