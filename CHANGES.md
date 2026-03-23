@@ -199,7 +199,7 @@ All emails now include:
   <strong>Bcourse Training System</strong><br>
   <br>
   You received this email because you are registered with Bcourse Training System.<br>
-  <a href="https://bcourse.nl/account/">Manage your account settings</a>
+  <a href="https://<your-domain>/account/">Manage your account settings</a>
 </p>
 ```
 
@@ -218,7 +218,7 @@ X-Recipient-ID: [user_email]
 
 **Authentication Status** (confirmed via email headers):
 - ✅ SPF: PASS
-- ✅ DKIM: PASS (dual signatures: bcourse.nl + amazonses.com)
+- ✅ DKIM: PASS (dual signatures: application domain + SES)
 - ✅ DMARC: PASS
 
 **Spam Score Improvements**:

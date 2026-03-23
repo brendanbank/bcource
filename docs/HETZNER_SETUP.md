@@ -1,6 +1,6 @@
-# Hetzner setup (server-hostname)
+# Hetzner setup
 
-Host: `brendan@server-hostname`  
+Host: `<user>@<server-hostname>`
 App path: `/usr/local/bcource/`
 
 ## 1. Apt packages
@@ -57,7 +57,7 @@ Enable and start Docker:
 ```bash
 sudo systemctl enable docker
 sudo systemctl start docker
-sudo usermod -aG docker brendan
+sudo usermod -aG docker $USER
 ```
 
 Log out and back in (or `newgrp docker`) so `docker` runs without sudo.
@@ -88,7 +88,7 @@ You should see `loki` enabled.
 
 **If you get:** `Error response from daemon: dial unix .../loki.sock: connect: no such file or directory`
 
-**Why it works on old-server but not server-hostname:** bcourse-app is **amd64** (x86_64); bcourse (Hetzner) is **arm64** (aarch64). The official `grafana/loki-docker-driver:latest` is amd64-native. On arm64 the plugin fails to create the socket. So the fix is architecture-specific (see below).
+**Why it works on amd64 but not arm64:** the old server is **amd64** (x86_64); the Hetzner server is **arm64** (aarch64). The official `grafana/loki-docker-driver:latest` is amd64-native. On arm64 the plugin fails to create the socket. So the fix is architecture-specific (see below).
 
 The Loki plugin also often fails when Docker is installed via **Snap** (restricted environment). Use Docker from **apt** instead:
 
@@ -128,7 +128,7 @@ docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all
 
 Compose is set to push logs to:
 
-- `https://loki-host:3100/loki/api/v1/push`
+- `https://<loki-host>:3100/loki/api/v1/push`
 
 If your Loki on Hetzner uses another URL, set it via env or override:
 
@@ -148,7 +148,7 @@ Current snippet (same for each service that uses Loki):
 logging:
   driver: "loki"
   options:
-    loki-url: "https://loki-host:3100/loki/api/v1/push"
+    loki-url: "https://<loki-host>:3100/loki/api/v1/push"
     loki-pipeline-stages: |
       - json:
           expressions:
@@ -169,7 +169,7 @@ logging:
         target_label: 'stream'
 ```
 
-Ensure the Loki server is reachable from `server-hostname` (firewall and TLS).
+Ensure the Loki server is reachable from the application host (firewall and TLS).
 
 ---
 
@@ -206,5 +206,5 @@ If the scheduler runs as systemd on the host:
 | Apt (Docker + Compose V2) | `apt install docker.io docker-compose-v2 git curl ca-certificates` (Ubuntu Noble: `docker-compose-v2`) — then use `docker compose` |
 | Apt (host app) | `apt install python3.12 python3.12-venv python3-pip mysql-client nginx` |
 | Loki plugin | AMD64: `.../loki-docker-driver:latest` — ARM64: `.../loki-docker-driver:3.6.0-arm64` (see [Grafana docs](https://grafana.com/docs/loki/latest/send-data/docker-driver/)) |
-| Loki URL | Adjust in compose or `.env` if Loki is not at `loki-host` |
-| User in docker group | `usermod -aG docker brendan` then re-login |
+| Loki URL | Adjust in compose or `.env` to match your Loki host |
+| User in docker group | `usermod -aG docker $USER` then re-login |
