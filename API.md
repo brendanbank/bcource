@@ -67,7 +67,7 @@ GET /admin-api/locations/
 #### Search students
 
 ```
-GET /admin-api/students/?q=giovanni
+GET /admin-api/students/?q=jane
 ```
 
 Search by name or email (max 50 results, case-insensitive).

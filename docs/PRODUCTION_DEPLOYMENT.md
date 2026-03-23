@@ -34,8 +34,8 @@ MYSQL_USER=bcourse
 MYSQL_PASSWORD=your_secure_password_here
 
 # Traefik Configuration for Production
-TRAEFIK_HOST1=bcourse.nl
-TRAEFIK_HOST2=www.bcourse.nl
+TRAEFIK_HOST1=example.com
+TRAEFIK_HOST2=www.example.com
 TRAEFIK_ENTRYPOINT=websecure
 TRAEFIK_CERTRESOLVER=myresolver
 ```
@@ -65,7 +65,7 @@ docker compose -f docker-compose.production.yml config
 ### SSL Certificates
 - **Automatic**: Let's Encrypt certificates generated automatically
 - **Production Server**: Uses production Let's Encrypt server
-- **Multiple Domains**: Supports both `bcourse.nl` and `www.bcourse.nl`
+- **Multiple Domains**: Supports both primary and www domains
 
 ### Environment Variables
 - **Flexible**: Easy to change hosts and ports
@@ -74,8 +74,8 @@ docker compose -f docker-compose.production.yml config
 
 ## Testing
 
-1. **HTTP Redirect**: `http://bcourse.nl` → `https://bcourse.nl`
-2. **HTTPS Access**: `https://bcourse.nl` and `https://www.bcourse.nl`
+1. **HTTP Redirect**: `http://<your-domain>` → `https://<your-domain>`
+2. **HTTPS Access**: `https://<your-domain>` and `https://www.<your-domain>`
 3. **Dashboard**: `http://your-server:8080` (Traefik dashboard)
 
 ## Security Notes
