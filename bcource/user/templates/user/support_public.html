@@ -73,6 +73,12 @@
                             {% endif %}
                         </div>
                         
+                        {# Honeypot field — hidden from humans, bots fill it in #}
+                        <div style="position: absolute; left: -9999px;" aria-hidden="true">
+                            {{ form.website.label(class="form-label") }}
+                            {{ form.website(class="form-control") }}
+                        </div>
+
                         <div class="d-flex justify-content-between">
                             <a href="{{ url_for('home_bp.home') }}" class="btn btn-secondary">
                                 {{ _('Cancel') }}
