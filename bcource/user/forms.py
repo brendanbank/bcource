@@ -196,17 +196,17 @@ class SupportForm(FlaskForm):
 class PublicSupportForm(FlaskForm):
     form_description = _l("Contact Support")
     formclass =  "col-md-10"
-    
+
     name = MyStringField(
         _l('Your Name'), [validators.DataRequired()],
         divclass = "col-md-12 mt-1",
         render_kw={"class": "position-relative form-control"})
-    
+
     # Use standard EmailField without custom validation for public form
     email = wtforms.EmailField(
         _l('Your Email'), [validators.DataRequired(), validators.Email()],
         render_kw={"class": "position-relative form-control"})
-    
+
     subject = MyStringField(
         _l('Subject'), [validators.DataRequired()],
         divclass = "col-md-12 mt-1",
@@ -216,6 +216,11 @@ class PublicSupportForm(FlaskForm):
         _l('Describe your issue or question'), [validators.DataRequired()],
         divclass = "col-md-12 mt-1",
         render_kw={"class": "position-relative form-control", "rows": "8"})
+
+    # Honeypot field — hidden from humans via CSS, bots fill it in
+    website = wtforms.StringField(
+        'Website',
+        render_kw={"tabindex": "-1", "autocomplete": "off"})
 
     url = MyHiddenField()
     

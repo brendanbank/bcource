@@ -504,10 +504,29 @@ def support():
 def support_public():
     """Support form for non-authenticated users"""
     form = PublicSupportForm()
-    
+
     url = get_url(form)
-    
+
     if form.validate_on_submit():
+        # Honeypot check — if filled in, silently ignore (it's a bot)
+        if form.website.data:
+            app.logger.warning(f"Support form honeypot triggered from {request.remote_addr}")
+            flash(_("Your message has been sent to support. You will receive a response at the email address provided."), 'success')
+            return redirect(url_for('home_bp.home'))
+
+        # Rate limiting — max 3 submissions per hour per IP
+        rate_key = f"support_rate_{request.remote_addr}"
+        rate_data = session.get(rate_key, {'count': 0, 'reset': datetime.now(timezone.utc).timestamp()})
+        now = datetime.now(timezone.utc).timestamp()
+        if now - rate_data['reset'] > 3600:
+            rate_data = {'count': 0, 'reset': now}
+        rate_data['count'] += 1
+        session[rate_key] = rate_data
+        if rate_data['count'] > 3:
+            app.logger.warning(f"Support form rate limit exceeded from {request.remote_addr}")
+            flash(_("Too many support requests. Please try again later."), 'warning')
+            return redirect(url_for('home_bp.home'))
+
         support_email = cv('SUPPORT_EMAIL')
         from_email = app.config.get('MAIL_DEFAULT_SENDER', support_email)
         sender_name = form.name.data or 'Guest'
@@ -534,22 +553,17 @@ def support_public():
         support_msg.attach_alternative(support_html, "text/html")
         support_msg.send()
 
-        # Send confirmation to the sender (best-effort — don't fail if address is invalid)
+        # Send confirmation — do NOT echo message content (prevents relay abuse)
         try:
             confirm_msg = EmailMultiAlternatives(
-                subject=f"Support Request Received: {form.subject.data}",
+                subject=f"Support Request Received",
                 body=f"Thank you for contacting support. We have received your message "
-                     f"and will respond to {sender_email} as soon as possible.\n\n"
-                     f"Your message:\nSubject: {form.subject.data}\n\n{form.body.data}",
+                     f"and will respond as soon as possible.",
                 from_email=from_email,
                 to=[sender_email]
             )
-            confirm_html = f"""
-                <p>Thank you for contacting support. We have received your message and will respond to {sender_email} as soon as possible.</p>
-                <hr>
-                <p><strong>Your message:</strong></p>
-                <p><strong>Subject:</strong> {form.subject.data}</p>
-                <p>{form.body.data}</p>
+            confirm_html = """
+                <p>Thank you for contacting support. We have received your message and will respond as soon as possible.</p>
             """
             confirm_msg.attach_alternative(confirm_html, "text/html")
             confirm_msg.send()
@@ -558,7 +572,7 @@ def support_public():
 
         flash(_("Your message has been sent to support. You will receive a response at the email address provided."), 'success')
         return redirect(url_for('home_bp.home'))
-    
+
     return render_template("user/support_public.html", form=form)
 
 
