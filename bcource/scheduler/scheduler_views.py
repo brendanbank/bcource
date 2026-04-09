@@ -248,7 +248,7 @@ def deroll(id):  # @ReservedAssignment
 
         if not cancel_policy.status and return_acton:
             system_msg.EmailStudentDerolledInTrainingOutOfPolicyTrainer(
-                envelop_to=current_user, training=training,
+                envelop_to=training.trainer_users, training=training,
                 policy_txt=Content.get_tag('Cancellation Policy'), enrollment=enrollment).send()
             system_msg.EmailStudentDerolledInTrainingOutOfPolicy(
                 envelop_to=current_user, training=training,
