@@ -1,3 +1,4 @@
+import re
 from collections import OrderedDict
 from functools import wraps
 
@@ -16,19 +17,16 @@ CATEGORIES = OrderedDict([
         tag.startswith('ENROLL_') or tag.startswith('REMOVE_')
     ))),
     ('trainingtype', (_l('Training Types'),   lambda tag: tag.startswith('TrainingType_'))),
-    ('location',     (_l('Locations'),        lambda tag: tag.startswith('Location_'))),
-    ('trainer',      (_l('Trainers'),         lambda tag: tag.startswith('Trainer_'))),
-    ('policy',       (_l('Policies'),         lambda tag: tag.startswith('Policy_'))),
-    ('pages',        (_l('Pages'),            lambda tag: True)),  # catch-all
+    ('pages',        (_l('Pages'),            lambda tag: not re.match(r'^[A-Za-z]+_\d+$', tag))),
 ])
 
 
 def _tag_category(tag):
-    """Return the category key for a given tag."""
+    """Return the category key for a given tag, or None if it should be hidden."""
     for key, (label, predicate) in CATEGORIES.items():
         if predicate(tag):
             return key
-    return 'pages'
+    return None  # Obj_N tags that matched no category are hidden
 
 
 def cms_required(f):
