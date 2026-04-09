@@ -884,7 +884,7 @@ msgstr "Maximaal aantal deelnemers"
 
 #: bcource/training/training_forms.py:84
 msgid "Open for bookings."
-msgstr "Open voor boekingen."
+msgstr "Open voor reserveringen."
 
 #: bcource/training/training_forms.py:95
 msgid "Apply Policies."
@@ -1479,3 +1479,7 @@ msgstr "voor snellere ondersteuning en toegang tot je berichtengeschiedenis."
 #: bcource/scheduler/templates/scheduler/scheduler.html
 msgid "yourself"
 msgstr "jezelf"
+
+#: bcource/templates/security/login_user.html
+msgid "No account yet? Please"
+msgstr "Nog geen account?"
