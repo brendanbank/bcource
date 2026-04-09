@@ -1,0 +1,40 @@
+{% extends 'cms/base_cms.html' %}
+
+{% block cms_content %}
+<h4>{{ _('Translation Feedback') }}</h4>
+<table class="table table-hover table-sm mt-3">
+  <thead>
+    <tr>
+      <th>{{ _('Date') }}</th>
+      <th>{{ _('Lang') }}</th>
+      <th>{{ _('User') }}</th>
+      <th>{{ _('Page') }}</th>
+      <th>{{ _('Feedback') }}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in entries %}
+    <tr>
+      <td class="text-nowrap small text-muted">{{ db_datetime_str(e.created_at) }}</td>
+      <td><span class="badge bg-secondary">{{ e.lang }}</span></td>
+      <td class="small">{{ e.user.fullname if e.user else '—' }}</td>
+      <td class="small">
+        <a href="{{ e.url }}" target="_blank" class="text-truncate d-inline-block" style="max-width:200px;" title="{{ e.url }}">
+          {{ e.page_title or e.url }}
+        </a>
+      </td>
+      <td>{{ e.feedback }}</td>
+      <td>
+        <form method="POST" action="{{ url_for('cms_bp.delete_translation_feedback', id=e.id) }}" onsubmit="return confirm('{{ _('Delete this entry?') }}')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="text-muted">{{ _('No feedback submitted yet.') }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

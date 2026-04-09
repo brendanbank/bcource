@@ -2,12 +2,12 @@ import re
 from collections import OrderedDict
 from functools import wraps
 
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, abort
 from flask_security import current_user
 from flask_babel import lazy_gettext as _l
 
 from bcource import menu_structure, db
-from bcource.models import Content, TrainingType, Location, Trainer, Policy
+from bcource.models import Content, TrainingType, Location, Trainer, Policy, TranslationFeedback
 from . import cms_bp
 
 
@@ -41,6 +41,7 @@ def cms_required(f):
 # Register in nav menu between Training Administration and Training Scheduler
 cms_menu = menu_structure.add_menu(_l('CMS Editor'), role='trainer')
 cms_menu.add_menu(_l('CMS Editor'), 'cms_bp.index', role='trainer')
+cms_menu.add_menu(_l('Translation Feedback'), 'cms_bp.translation_feedback', role='trainer')
 
 
 @cms_bp.route('/')
@@ -134,3 +135,24 @@ def edit(tag):
         en=en,
         nl=nl,
     )
+
+
+@cms_bp.route('/translation-feedback')
+@cms_required
+def translation_feedback():
+    entries = TranslationFeedback.query.order_by(TranslationFeedback.created_at.desc()).all()
+    return render_template(
+        'cms/translation_feedback.html',
+        categories=CATEGORIES,
+        current_category='feedback',
+        entries=entries,
+    )
+
+
+@cms_bp.route('/translation-feedback/<int:id>/delete', methods=['POST'])
+@cms_required
+def delete_translation_feedback(id):
+    entry = TranslationFeedback.query.get_or_404(id)
+    db.session.delete(entry)
+    db.session.commit()
+    return redirect(url_for('cms_bp.translation_feedback'))
