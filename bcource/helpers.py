@@ -13,6 +13,7 @@ import phonenumbers
 from urllib.parse import urlparse, urljoin, urlunparse, parse_qs, urlencode
 from flask_babel import _
 from flask_babel import lazy_gettext as _l
+from flask_babel import format_datetime as babel_format_datetime
 import nh3
 from jinja2.filters import do_mark_safe
 from datetime import timedelta, datetime
@@ -69,11 +70,21 @@ def db_datetime(db_datetime_notz):
 def ordinal(n):
     return str(n)+("th" if 4<=n%100<=20 else {1:"st",2:"nd",3:"rd"}.get(n%10, "th"))
 
-def db_datetime_str(db_datetime_notz,fmt="%a, %b %-d %Y, %H:%M %p %Z"):
+def db_datetime_str(db_datetime_notz, fmt=None):
     dt = db_datetime(db_datetime_notz)
     TZ_NAME = app.config.get('BCOURCE_TZ', 'Europe/Amsterdam')
-    TZ = pytz.timezone(TZ_NAME)    
-    return dt.astimezone(TZ).strftime(fmt).replace("{th}", ordinal(dt.day))
+    TZ = pytz.timezone(TZ_NAME)
+    dt_local = dt.astimezone(TZ)
+    if fmt:
+        # Custom strftime format passed explicitly — use as-is
+        return dt_local.strftime(fmt).replace("{th}", ordinal(dt.day))
+    # Use Babel for locale-aware date/time, append pytz TZ abbreviation (e.g. CEST/CET)
+    # 12h + AM/PM for English, 24h for other locales
+    from flask_babel import get_locale
+    locale = str(get_locale() or 'en')
+    time_fmt = 'h:mm a' if locale.startswith('en') else 'HH:mm'
+    tz_abbr = dt_local.strftime('%Z')
+    return babel_format_datetime(dt_local, format=f'EEE d MMM yyyy, {time_fmt}', rebase=False) + ' ' + tz_abbr
 
 def safe_redirect(url, default='home_bp.home'):
     """Redirect to url only if it's safe (same host), otherwise redirect to default."""
