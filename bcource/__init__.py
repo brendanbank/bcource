@@ -59,6 +59,12 @@ mail = Mail()
 migrate = Migrate()
 
 def get_locale():
+    from flask import session, has_request_context
+    if not has_request_context():
+        return config.Config.LANGUAGE_DEFAULT
+    lang = session.get('language')
+    if lang and lang in config.Config.LANGUAGES:
+        return lang
     return request.accept_languages.best_match(config.Config.LANGUAGES)
 
 babel = Babel(locale_selector=get_locale)
@@ -79,7 +85,7 @@ def create_app():
     
     db.init_app(app)
     mobility.init_app(app)
-    babel.init_app(app)
+    babel.init_app(app, locale_selector=get_locale)
     csrf.init_app(app)
     table_admin.init_app(app)
     
@@ -92,7 +98,9 @@ def create_app():
     
     from bcource.models import Content, User, Role
     
+    from flask_babel import get_locale as babel_get_locale
     app.jinja_env.globals.update(get_tag=Content.get_tag)
+    app.jinja_env.globals.update(get_locale=babel_get_locale)
     
     # app.jinja_env.globals.update(has_role=has_role)
     app.jinja_env.globals.update(menu_structure=menu_structure)
@@ -169,10 +177,11 @@ def create_app():
 
         # Import parts of our application
         import bcource.home as home
-        import bcource.admin 
+        import bcource.admin
         import bcource.training as training
         import bcource.user as user
         import bcource.students as students
+        import bcource.cms as cms
         import bcource.scheduler as scheduler
         
         from bcource.api import api_calls
@@ -185,8 +194,9 @@ def create_app():
         app.register_blueprint(home.home_bp)
         app.register_blueprint(user.user_bp)
         app.register_blueprint(api_calls.api_bp)
-        app.register_blueprint(students.students_bp)        
-        app.register_blueprint(training.training_bp)   
+        app.register_blueprint(students.students_bp)
+        app.register_blueprint(training.training_bp)
+        app.register_blueprint(cms.cms_bp)
         app.register_blueprint(scheduler.scheduler_bp)
 
         from bcource.admin_api import admin_api_bp
@@ -248,9 +258,13 @@ def create_app():
             checks['status'] = 'healthy' if status == 200 else 'unhealthy'
             return jsonify(checks), status
 
-        def get_locale():
-            return request.accept_languages.best_match(cv('LANGUAGES'))
-        
+        @app.route('/set_language/<lang_code>')
+        def set_language(lang_code):
+            from flask import session, redirect
+            if lang_code in app.config.get('LANGUAGES', []):
+                session['language'] = lang_code
+            return redirect(request.referrer or url_for('home_bp.home'))
+
         @app.after_request
         def set_security_headers(response):
             response.headers['X-Content-Type-Options'] = 'nosniff'

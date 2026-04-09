@@ -412,18 +412,22 @@ def search():
 def settings():
     form = UserSettingsForm(obj=current_user.usersettings)
 
-    # Pre-populate checkbox on GET
+    # Pre-populate fields on GET
     if not form.is_submitted():
         if current_user.usersettings:
             form.msg_transactional_emails.data = current_user.usersettings.msg_transactional_emails
+            form.language.data = current_user.usersettings.language or "en"
         else:
             form.msg_transactional_emails.data = True
+            form.language.data = "en"
 
     url = get_url(form)
 
     if form.validate_on_submit():
         msg_transactional = form.msg_transactional_emails.data
         del form.msg_transactional_emails
+        language = form.language.data
+        del form.language
 
         settings = current_user.usersettings
         if not settings:
@@ -432,8 +436,10 @@ def settings():
             db.session.add(settings)
         form.populate_obj(settings)
         settings.msg_transactional_emails = msg_transactional
+        settings.language = language
 
         db.session.commit()
+        session['language'] = language
         flash(_("Account Settings are update successfully."))
         return safe_redirect(url)
 

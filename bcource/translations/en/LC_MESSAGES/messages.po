@@ -1,0 +1,1477 @@
+# English translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-04-08 16:05+0200\n"
+"PO-Revision-Date: 2026-04-08 16:05+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: bcource/errors.py:11
+msgid "You must have two factor authentication enabled to use this feature!"
+msgstr ""
+
+#: bcource/errors.py:19
+msgid "Student is not active!"
+msgstr ""
+
+#: bcource/errors.py:27
+msgid "User profile incomplete!"
+msgstr ""
+
+#: bcource/helpers.py:313
+msgid "Only administrators can impersonate users."
+msgstr ""
+
+#: bcource/helpers.py:317 bcource/user/user_views.py:705
+msgid "Two-factor authentication is required to impersonate users."
+msgstr ""
+
+#: bcource/helpers.py:321
+msgid "You cannot impersonate yourself."
+msgstr ""
+
+#: bcource/helpers.py:325
+msgid "You cannot impersonate other administrators."
+msgstr ""
+
+#: bcource/helpers.py:329
+msgid "Target user does not exist or is not active."
+msgstr ""
+
+#: bcource/admin/admin_views.py:76 bcource/helpers.py:348
+#: bcource/user/user_views.py:714
+msgid "User not found."
+msgstr ""
+
+#: bcource/helpers.py:357
+msgid "You are already impersonating a user. Please stop impersonating first."
+msgstr ""
+
+#: bcource/helpers.py:384
+#, python-format
+msgid "Now viewing as %(name)s"
+msgstr ""
+
+#: bcource/helpers.py:394
+msgid "You are not currently impersonating anyone."
+msgstr ""
+
+#: bcource/helpers.py:407
+msgid "Original user not found. Session cleared."
+msgstr ""
+
+#: bcource/helpers.py:432
+msgid "Returned to your admin account."
+msgstr ""
+
+#: bcource/myformfields.py:50
+msgid "Phone number is already used by an other user!"
+msgstr ""
+
+#: bcource/myformfields.py:57
+msgid "This email is already used by an other user!"
+msgstr ""
+
+#: bcource/admin/admin_views.py:63
+msgid "Impersonate User"
+msgstr ""
+
+#: bcource/admin/admin_views.py:63
+msgid "Are you sure you want to impersonate the selected user?"
+msgstr ""
+
+#: bcource/admin/admin_views.py:69
+msgid "You can only impersonate one user at a time."
+msgstr ""
+
+#: bcource/admin/admin_views.py:89
+#, python-format
+msgid "Error initiating impersonation: %(error)s"
+msgstr ""
+
+#: bcource/scheduler/scheduler_forms.py:15
+msgid "Accept Bcourse Terms and Conditions and Cancellation Policy"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:53
+#: bcource/students/student_training_view.py:32
+#: bcource/training/training_views.py:213
+msgid "Period"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:54
+#: bcource/students/student_training_view.py:33
+#: bcource/training/training_views.py:214
+msgid "Past Trainings"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:58
+#: bcource/students/student_training_view.py:37
+#: bcource/training/training_views.py:218
+msgid "Training Types"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:66
+msgid "User"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:86
+#: bcource/students/student_training_view.py:58
+#: bcource/training/training_views.py:251
+msgid "Training"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:176
+msgid "My Training Schedule"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:206
+#: bcource/students/student_training_view.py:129
+msgid "Training Schedule"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:218
+#: bcource/training/training_detail_view.py:52
+msgid "Cannot find your enrollement!"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:265
+msgid "Cannot find invitation!"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:281
+msgid "Cannot find invitation! Have Did is expire?"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:291
+#, python-format
+msgid "You have declined the invite for training %(trainingname)s!"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:322
+#, python-format
+msgid ""
+"You cannot be placed on the waitlist because transactional emails are "
+"disabled. Enable them in your <a href=\"%(url)s\">account settings</a>."
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:364
+msgid "Training Scheduler"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:365
+msgid "Schedule Training"
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:366
+msgid "My schedule"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/deroll.html:9
+msgid "Remove yourself from "
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/deroll.html:18
+#: bcource/scheduler/templates/scheduler/enroll.html:21
+msgid "Start Date/Time"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/deroll.html:19
+#: bcource/scheduler/templates/scheduler/enroll.html:22
+msgid "End Date/Time"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/deroll.html:20
+#: bcource/scheduler/templates/scheduler/enroll.html:23
+msgid "Location"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/deroll.html:35
+msgid "Are you sure you want to derroll from this training?"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/deroll.html:47
+#: bcource/scheduler/templates/scheduler/deroll.html:82
+#: bcource/scheduler/templates/scheduler/enroll.html:44
+#: bcource/scheduler/templates/scheduler/enroll.html:80
+msgid "Terms and Conditions"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/deroll.html:48
+#: bcource/scheduler/templates/scheduler/deroll.html:65
+#: bcource/scheduler/templates/scheduler/enroll.html:45
+#: bcource/scheduler/templates/scheduler/enroll.html:63
+msgid "Cancellation Policy"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/deroll.html:52
+#: bcource/scheduler/templates/scheduler/enroll.html:49
+#: bcource/students/templates/students/student.html:24
+#: bcource/training/training_forms.py:108
+#: bcource/user/templates/user/message.html:27
+#: bcource/user/templates/user/update-account.html:20
+#: bcource/user/templates/user/update-settings.html:23
+msgid "Close"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/deroll.html:53
+msgid "Deroll  "
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/enroll.html:9
+msgid "Enroll into "
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/enroll.html:50
+msgid "Enroll"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:12
+#: bcource/students/templates/students/student-training.html:11
+#: bcource/training/templates/training/overview_list.html:25
+msgid "Training Search"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:21
+#: bcource/students/templates/students/student-training.html:19
+#: bcource/training/templates/training/overview_list.html:33
+#: bcource/training/training_views.py:205
+#: bcource/user/templates/user/impersonate_confirm.html:23
+msgid "Name"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:22
+msgid "Action"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:23
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:84
+#: bcource/students/templates/students/student-training.html:22
+#: bcource/training/templates/training/overview_list.html:35
+msgid "Date"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:24
+#: bcource/students/templates/students/student-training.html:23
+#: bcource/training/templates/training/overview_list.html:36
+msgid "Spots"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:27
+#: bcource/students/templates/students/student-training.html:26
+msgid "participants max/current/waitlist"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:28
+#: bcource/students/students_views.py:44
+#: bcource/students/templates/students/student-training.html:27
+#: bcource/user/templates/user/impersonate_confirm.html:43
+msgid "Status"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:42
+msgid ""
+"Click the info icon next to a training name for more information about "
+"the training type."
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:36
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:43
+#, python-format
+msgid "Remove %(who)s from this training."
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:39
+#: bcource/training/templates/training/training_detail.html:120
+#, python-format
+msgid "Are you sure you want to remove user %(email)s from this training?"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:40
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:46
+#, python-format
+msgid " Remove %(who)s from this training. "
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:64
+#, python-format
+msgid "Add %(who)s to the wait list of this training."
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:67
+#, python-format
+msgid " Add %(who)s to the wait list of this training. "
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:70
+#, python-format
+msgid "Add %(who)s to this training."
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:73
+#, python-format
+msgid " Add %(who)s to this training. "
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:95
+msgid "Max participants"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:96
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:108
+msgid "Enrolled"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:96
+msgid "Wait list"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:106
+msgid "Enroll Status: "
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:112
+msgid "Invited"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:115
+msgid " Accept Invite for this training."
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:116
+msgid "Accept"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:120
+msgid "Decline the invite for this training."
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:121
+msgid "Decline"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:126
+msgid "wait list"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:130
+msgid "Expired wait list"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:133
+msgid "Re-enable the wait list for this training."
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:134
+msgid " Re-enable"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:145
+msgid "Training has a wait list"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:147
+msgid "Max Capacity"
+msgstr ""
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:149
+msgid "Open for enrollment."
+msgstr ""
+
+#: bcource/students/common.py:78
+msgid "enroll: Cannot find invitation!"
+msgstr ""
+
+#: bcource/students/common.py:82
+msgid "enroll: Cannot find invitation!, status is not waitlist-invited"
+msgstr ""
+
+#: bcource/students/common.py:100
+#, python-format
+msgid "You have successfully enrolled into training %(trainingname)s!"
+msgstr ""
+
+#: bcource/students/common.py:110
+#, python-format
+msgid "%(fullname)s has already enrolled for this training: %(trainingname)s"
+msgstr ""
+
+#: bcource/students/common.py:121
+#, python-format
+msgid ""
+"You cannot enroll %(fullname)s in this training. %(trainingname)s has "
+"already started."
+msgstr ""
+
+#: bcource/students/common.py:139
+msgid "enroll: Student Not Found!"
+msgstr ""
+
+#: bcource/students/common.py:143
+msgid "enroll: Student is not active!"
+msgstr ""
+
+#: bcource/students/common.py:155
+#, python-format
+msgid ""
+"%(fullname)s cannot be placed on the waitlist because transactional "
+"emails are disabled for this user."
+msgstr ""
+
+#: bcource/students/common.py:160
+#, python-format
+msgid ""
+"%(fullname)s has been added to the wait list of training training: "
+"%(trainingname)s"
+msgstr ""
+
+#: bcource/students/common.py:165
+#, python-format
+msgid "%(fullname)s has successfully enrolled into the training: %(trainingname)s"
+msgstr ""
+
+#: bcource/students/common.py:193
+#, python-format
+msgid "%(fullname)s is not enrolled in training : %(trainingname)s"
+msgstr ""
+
+#: bcource/students/common.py:203
+#, python-format
+msgid ""
+"You cannot deroll %(fullname)s from this training. %(trainingname)s has "
+"already started: "
+msgstr ""
+
+#: bcource/students/common.py:209
+#, python-format
+msgid "%(username)s successfully removed from the training: %(trainingname)s"
+msgstr ""
+
+#: bcource/students/student_forms.py:24 bcource/students/student_forms.py:195
+#: bcource/training/training_forms.py:53 bcource/training/training_forms.py:104
+msgid "Update"
+msgstr ""
+
+#: bcource/students/student_forms.py:40 bcource/students/student_forms.py:78
+#: bcource/user/templates/user/impersonate_confirm.html:27
+msgid "Email"
+msgstr ""
+
+#: bcource/students/student_forms.py:45 bcource/students/student_forms.py:113
+msgid "Student status"
+msgstr ""
+
+#: bcource/students/student_forms.py:54 bcource/students/student_forms.py:122
+msgid "Student type"
+msgstr ""
+
+#: bcource/students/student_forms.py:74
+msgid "Disabling these email options will disable all email sending"
+msgstr ""
+
+#: bcource/students/student_forms.py:84 bcource/user/forms.py:102
+msgid "Firstname"
+msgstr ""
+
+#: bcource/students/student_forms.py:90 bcource/user/forms.py:108
+msgid "Lastname"
+msgstr ""
+
+#: bcource/students/student_forms.py:97 bcource/user/forms.py:120
+msgid "Mobile Phone"
+msgstr ""
+
+#: bcource/students/student_forms.py:102 bcource/user/forms.py:126
+msgid "Birth day"
+msgstr ""
+
+#: bcource/students/student_forms.py:107 bcource/user/forms.py:131
+msgid "Gender"
+msgstr ""
+
+#: bcource/students/student_forms.py:109 bcource/user/forms.py:133
+msgid "Choose"
+msgstr ""
+
+#: bcource/students/student_forms.py:109 bcource/user/forms.py:133
+msgid "Female"
+msgstr ""
+
+#: bcource/students/student_forms.py:109 bcource/user/forms.py:133
+msgid "Male"
+msgstr ""
+
+#: bcource/students/student_forms.py:109 bcource/user/forms.py:133
+msgid "Other"
+msgstr ""
+
+#: bcource/students/student_forms.py:131 bcource/user/forms.py:138
+msgid "Postal Code"
+msgstr ""
+
+#: bcource/students/student_forms.py:138 bcource/user/forms.py:145
+msgid "Number"
+msgstr ""
+
+#: bcource/students/student_forms.py:144 bcource/user/forms.py:151
+msgid "Ext."
+msgstr ""
+
+#: bcource/students/student_forms.py:149 bcource/user/forms.py:156
+msgid "Street"
+msgstr ""
+
+#: bcource/students/student_forms.py:155 bcource/user/forms.py:168
+msgid "City"
+msgstr ""
+
+#: bcource/students/student_forms.py:161 bcource/user/forms.py:174
+msgid "Country"
+msgstr ""
+
+#: bcource/students/student_forms.py:168
+msgid "Send transactional emails"
+msgstr ""
+
+#: bcource/students/student_forms.py:174
+msgid "Send last minute spot notifications"
+msgstr ""
+
+#: bcource/students/student_forms.py:180
+msgid "Password"
+msgstr ""
+
+#: bcource/students/student_policies.py:19
+#, python-format
+msgid ""
+"You cannot book <strong>%(trainingname)s</strong> as you can only book 2 "
+"trainings in a %(time_window_duration)s day period!"
+msgstr ""
+
+#: bcource/students/student_policies.py:20
+msgid "This training has a 24 cancellation policy."
+msgstr ""
+
+#: bcource/students/student_policies.py:41
+msgid "User does not have Student role!"
+msgstr ""
+
+#: bcource/students/student_policies.py:94
+msgid ""
+"Check if the student is satisfying all cancellation policies to cancel "
+"this training."
+msgstr ""
+
+#: bcource/students/student_policies.py:108
+msgid "Check if the student is satisfying all policies to book this training."
+msgstr ""
+
+#: bcource/students/students_views.py:48
+#: bcource/students/templates/students/student-training.html:21
+#: bcource/training/training_detail_view.py:22
+msgid "Type"
+msgstr ""
+
+#: bcource/students/students_views.py:65
+msgid "Student"
+msgstr ""
+
+#: bcource/students/students_views.py:138
+msgid "User Overview"
+msgstr ""
+
+#: bcource/students/students_views.py:152
+#: bcource/training/training_detail_view.py:166
+msgid "No students match the current filters."
+msgstr ""
+
+#: bcource/students/students_views.py:190
+msgid "You cannot delete yourself!"
+msgstr ""
+
+#: bcource/students/students_views.py:194
+#, python-format
+msgid ""
+"You cannot delete user <span class=\"fw-bold\" style=\"white-"
+"space:nowrap;\">%s</span>. First delete the trainer record.<br>"
+msgstr ""
+
+#: bcource/students/students_views.py:198
+#, python-format
+msgid ""
+"You cannot delete user <span class=\"fw-bold\" style=\"white-"
+"space:nowrap;\">%s</span>. The user is still enrolled in one or more "
+"trainings.<br>"
+msgstr ""
+
+#: bcource/students/students_views.py:209
+#: bcource/training/training_views.py:105
+#, python-format
+msgid "Successfully deleted training: %s"
+msgstr ""
+
+#: bcource/students/students_views.py:221
+#: bcource/students/students_views.py:350
+msgid "Student not found!"
+msgstr ""
+
+#: bcource/students/students_views.py:229
+msgid "Create User"
+msgstr ""
+
+#: bcource/students/students_views.py:232
+msgid "Edit User"
+msgstr ""
+
+#: bcource/students/students_views.py:250
+msgid ""
+"You cannot edit yourself here! Go to the Account Details menu to edit "
+"your own details."
+msgstr ""
+
+#: bcource/students/students_views.py:306
+#, python-format
+msgid "User %s has been updated"
+msgstr ""
+
+#: bcource/students/students_views.py:328
+msgid "Could get student from query!"
+msgstr ""
+
+#: bcource/students/students_views.py:334
+msgid "Could get user from query!"
+msgstr ""
+
+#: bcource/students/students_views.py:366
+#, python-format
+msgid "Student %s has been updated"
+msgstr ""
+
+#: bcource/students/templates/students/student.html:25
+#: bcource/user/templates/user/update-account.html:21
+#: bcource/user/templates/user/update-settings.html:24
+msgid "Save changes"
+msgstr ""
+
+#: bcource/students/templates/students/student.html:93
+msgid "Generate password"
+msgstr ""
+
+#: bcource/students/templates/students/student.html:112
+msgid ""
+"Click the key icon to generate a safe password. Copy and share it with "
+"the student."
+msgstr ""
+
+#: bcource/students/templates/students/students.html:16
+msgid "Create New User"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:22
+msgid "User Search"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:34
+#: bcource/training/templates/training/training_detail.html:89
+msgid "Email selection"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:62
+msgid "Show enrolled Trainings"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:64
+msgid "Show trainings"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:69
+msgid "Edit user details"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:70
+msgid "Edit user"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:76
+msgid "Delete User"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:79
+#, python-format
+msgid "Are you sure you want to delete user %(email)s!?"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:82
+msgid "Delete user"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:89
+msgid "e-mail"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:99
+msgid "Student can book a training"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:100
+msgid "Student Active"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:103
+msgid "Student can not book any training"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:104
+msgid "Student Inactive"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:111
+msgid "User is enabled and can login"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:112
+msgid "User Enabled"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:115
+msgid "User is disabled and cannot login"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:116
+msgid "User Disabled"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:122
+msgid "Student Type"
+msgstr ""
+
+#: bcource/students/templates/students/students.html:124
+msgid "Phone"
+msgstr ""
+
+#: bcource/templates/filters.html:84 bcource/templates/left_filters.html:40
+msgid "Clear filters"
+msgstr ""
+
+#: bcource/templates/filters.html:105
+#: bcource/user/templates/user/delete-account.html:41
+msgid "Back"
+msgstr ""
+
+#: bcource/templates/impersonation_banner.html:28
+msgid "Impersonation Mode Active"
+msgstr ""
+
+#: bcource/templates/impersonation_banner.html:31
+msgid "You are viewing as"
+msgstr ""
+
+#: bcource/templates/impersonation_banner.html:33
+msgid "Original admin"
+msgstr ""
+
+#: bcource/templates/impersonation_banner.html:42
+msgid "Exit Impersonation"
+msgstr ""
+
+#: bcource/templates/left_filters.html:6
+msgid "Filters"
+msgstr ""
+
+#: bcource/templates/left_filters.html:52
+msgid "back"
+msgstr ""
+
+#: bcource/templates/macros.html:8
+msgid "Previous"
+msgstr ""
+
+#: bcource/templates/macros.html:14
+msgid "Next"
+msgstr ""
+
+#: bcource/templates/nav.html:80
+msgid "Language"
+msgstr ""
+
+#: bcource/training/training_detail_view.py:19
+#: bcource/training/training_detail_view.py:20
+msgid "Wait List"
+msgstr ""
+
+#: bcource/training/training_detail_view.py:64
+#: bcource/training/training_detail_view.py:69
+#: bcource/training/training_detail_view.py:94
+#: bcource/training/training_detail_view.py:99
+#: bcource/training/training_detail_view.py:124
+#: bcource/training/training_detail_view.py:129
+#, python-format
+msgid "Training id: %s not found"
+msgstr ""
+
+#: bcource/training/training_detail_view.py:79
+#, python-format
+msgid "Student %(fullname)s is de-invited for %(trainingname)s."
+msgstr ""
+
+#: bcource/training/training_detail_view.py:83
+#, python-format
+msgid "Cannot find invite for %(fullname)s for training %(trainingname)s."
+msgstr ""
+
+#: bcource/training/training_detail_view.py:105
+#: bcource/training/training_detail_view.py:143
+msgid "Could not find enrollment"
+msgstr ""
+
+#: bcource/training/training_detail_view.py:108
+#, python-format
+msgid ""
+"Student %(fullname)s is on waiting list for %(trainingname)s. Force "
+"enrollment!"
+msgstr ""
+
+#: bcource/training/training_detail_view.py:135
+#, python-format
+msgid "Student %(fullname)s cannot be invited for %(trainingname)s."
+msgstr ""
+
+#: bcource/training/training_detail_view.py:147
+#, python-format
+msgid "Student %(fullname)s is invited for %(trainingname)s."
+msgstr ""
+
+#: bcource/training/training_detail_view.py:198
+#, python-format
+msgid "Training Overview for %(training_name)s"
+msgstr ""
+
+#: bcource/training/training_forms.py:34
+msgid "Start Time"
+msgstr ""
+
+#: bcource/training/training_forms.py:38
+msgid "End Time"
+msgstr ""
+
+#: bcource/training/training_forms.py:43 bcource/training/training_forms.py:88
+msgid "Training type"
+msgstr ""
+
+#: bcource/training/training_forms.py:58
+msgid "Training details"
+msgstr ""
+
+#: bcource/training/training_forms.py:71
+msgid "Training Name"
+msgstr ""
+
+#: bcource/training/training_forms.py:77
+msgid "Maximum Participants"
+msgstr ""
+
+#: bcource/training/training_forms.py:84
+msgid "Open for bookings."
+msgstr ""
+
+#: bcource/training/training_forms.py:95
+msgid "Apply Policies."
+msgstr ""
+
+#: bcource/training/templates/training/overview_list.html:40
+#: bcource/training/training_forms.py:100
+#: bcource/training/training_views.py:205
+#: bcource/training/training_views.py:230
+msgid "Trainers"
+msgstr ""
+
+#: bcource/training/training_views.py:100
+#, python-format
+msgid ""
+"You cannot delete training <span class=\"fw-bold\" style=\"white-"
+"space:nowrap;\">%s</span>.<br> It still has students enrolled to it."
+msgstr ""
+
+#: bcource/training/training_views.py:133
+msgid "Create Training details"
+msgstr ""
+
+#: bcource/training/training_views.py:135
+msgid "Edit Training details"
+msgstr ""
+
+#: bcource/training/training_views.py:153
+msgid "You cannot save a training without dates!"
+msgstr ""
+
+#: bcource/training/training_views.py:165
+msgid "Training details are successfully saved!"
+msgstr ""
+
+#: bcource/training/training_views.py:183
+msgid "Training Administration"
+msgstr ""
+
+#: bcource/training/training_views.py:205
+msgid "Training Type"
+msgstr ""
+
+#: bcource/training/training_views.py:205
+msgid "Date/Location"
+msgstr ""
+
+#: bcource/training/training_views.py:225
+msgid "Training Status"
+msgstr ""
+
+#: bcource/training/training_views.py:226
+#: bcource/user/templates/user/impersonate_confirm.html:46
+msgid "Active"
+msgstr ""
+
+#: bcource/training/training_views.py:227
+#: bcource/user/templates/user/impersonate_confirm.html:48
+msgid "Inactive"
+msgstr ""
+
+#: bcource/training/training_views.py:313
+#: bcource/training/training_views.py:345
+msgid "Training Overview"
+msgstr ""
+
+#: bcource/training/templates/training/overview_list.html:18
+msgid "Create New Training"
+msgstr ""
+
+#: bcource/training/templates/training/overview_list.html:39
+msgid "participants max/current/wait list"
+msgstr ""
+
+#: bcource/training/templates/training/overview_list.html:54
+msgid "This training is inactive and cannot be booked."
+msgstr ""
+
+#: bcource/training/templates/training/overview_list.html:67
+msgid "Show Attendee List"
+msgstr ""
+
+#: bcource/training/templates/training/overview_list.html:68
+msgid "Show attendees"
+msgstr ""
+
+#: bcource/training/templates/training/overview_list.html:76
+#: bcource/training/templates/training/overview_list.html:77
+#: bcource/training/templates/training/training_detail.html:33
+#: bcource/training/templates/training/training_detail.html:35
+msgid "Edit Training"
+msgstr ""
+
+#: bcource/training/templates/training/overview_list.html:81
+msgid "Delete this Training"
+msgstr ""
+
+#: bcource/training/templates/training/overview_list.html:83
+#: bcource/training/templates/training/trainings.html:59
+msgid "Are you sure you want to delete this record?"
+msgstr ""
+
+#: bcource/training/templates/training/overview_list.html:84
+msgid "Delete Training"
+msgstr ""
+
+#: bcource/training/templates/training/training.html:24
+msgid "Training Events"
+msgstr ""
+
+#: bcource/training/templates/training/training.html:46
+msgid "Event Editor"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:17
+msgid "Training Statistics:"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:18
+msgid "Max Participants:"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:19
+msgid "Current enrolled:"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:20
+msgid "Current Waitlist:"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:41
+#: bcource/training/templates/training/training_detail.html:43
+msgid "Email All participants"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:48
+msgid "Trainers:"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:59
+msgid "Training Days:"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:70
+msgid "Students enrolled:"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:77
+msgid "Add User"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:100
+msgid "Paid"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:124
+msgid "Deroll user from this training."
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:126
+msgid "Deroll user from this training"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:131
+msgid "Email: "
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:134
+msgid "Phone: "
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:137
+msgid "Enrollment Status: "
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:142
+#, python-format
+msgid "Are you sure you want to re-enable %(email)s for this training?"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:146
+msgid "Re-enable this for this training."
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:148
+msgid "Re-enable"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:155
+#, python-format
+msgid "Are you sure you want to  remove the invitation for  %(email)s?"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:159
+msgid "Remove invitation."
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:161
+msgid "Remove invitation"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:170
+#, python-format
+msgid "Are you sure you invite %(email)s from this training?"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:174
+msgid "Invite user for this training."
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:176
+#: bcource/training/templates/training/training_detail.html:190
+msgid "Invite user for this training"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:184
+#, python-format
+msgid "Are you sure you force enrollment of user %(email)s on this training?"
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:188
+msgid "Force this user on this training."
+msgstr ""
+
+#: bcource/training/templates/training/training_detail.html:196
+msgid "Paid: "
+msgstr ""
+
+#: bcource/user/forms.py:19
+msgid "New Message"
+msgstr ""
+
+#: bcource/user/forms.py:22
+msgid "To"
+msgstr ""
+
+#: bcource/user/forms.py:29 bcource/user/forms.py:189 bcource/user/forms.py:216
+msgid "Subject"
+msgstr ""
+
+#: bcource/user/forms.py:34
+msgid "Message"
+msgstr ""
+
+#: bcource/user/forms.py:52
+msgid "Update account settings"
+msgstr ""
+
+#: bcource/user/forms.py:64
+msgid "Send me transactional emails"
+msgstr ""
+
+#: bcource/user/forms.py:69
+msgid "Send me a message when last minute training spots open"
+msgstr ""
+
+#: bcource/user/forms.py:75
+msgid "My emergency contact:"
+msgstr ""
+
+#: bcource/user/forms.py:80
+msgid "Preferred language"
+msgstr ""
+
+#: bcource/user/forms.py:93
+msgid "Update account details"
+msgstr ""
+
+#: bcource/user/forms.py:162
+msgid "Street line 2"
+msgstr ""
+
+#: bcource/user/forms.py:185 bcource/user/forms.py:202
+#: bcource/user/templates/user/support.html:15
+#: bcource/user/templates/user/support_public.html:15
+msgid "Contact Support"
+msgstr ""
+
+#: bcource/user/forms.py:194 bcource/user/forms.py:221
+msgid "Describe your issue or question"
+msgstr ""
+
+#: bcource/user/forms.py:206
+msgid "Your Name"
+msgstr ""
+
+#: bcource/user/forms.py:212
+msgid "Your Email"
+msgstr ""
+
+#: bcource/user/user_status.py:41
+msgid "Student is registered"
+msgstr ""
+
+#: bcource/user/user_status.py:48
+msgid "Student as correct role"
+msgstr ""
+
+#: bcource/user/user_status.py:56
+msgid "Has Full Name"
+msgstr ""
+
+#: bcource/user/user_status.py:62
+msgid "Has Phone Number"
+msgstr ""
+
+#: bcource/user/user_status.py:67
+msgid "Address is missing"
+msgstr ""
+
+#: bcource/user/user_views.py:68
+msgid "Account details are update successfully."
+msgstr ""
+
+#: bcource/user/user_views.py:192
+msgid "Read status"
+msgstr ""
+
+#: bcource/user/user_views.py:193
+msgid "Read"
+msgstr ""
+
+#: bcource/user/user_views.py:194
+msgid "Unread"
+msgstr ""
+
+#: bcource/user/user_views.py:195
+msgid "Deleted"
+msgstr ""
+
+#: bcource/user/user_views.py:197
+msgid "Tags"
+msgstr ""
+
+#: bcource/user/user_views.py:292
+msgid "Messages"
+msgstr ""
+
+#: bcource/user/user_views.py:330
+msgid "Message does not exists!"
+msgstr ""
+
+#: bcource/user/user_views.py:362
+msgid "Could not find users!"
+msgstr ""
+
+#: bcource/user/user_views.py:373
+msgid "Message sent!"
+msgstr ""
+
+#: bcource/user/user_views.py:443
+msgid "Account Settings are update successfully."
+msgstr ""
+
+#: bcource/user/user_views.py:503
+msgid "Your message has been sent to support. You will receive a response soon."
+msgstr ""
+
+#: bcource/user/user_views.py:520 bcource/user/user_views.py:579
+msgid ""
+"Your message has been sent to support. You will receive a response at the"
+" email address provided."
+msgstr ""
+
+#: bcource/user/user_views.py:533
+msgid "Too many support requests. Please try again later."
+msgstr ""
+
+#: bcource/user/user_views.py:612
+msgid ""
+"You cannot delete your account while you are enrolled in training "
+"courses. Please unenroll from all trainings first."
+msgstr ""
+
+#: bcource/user/user_views.py:619
+msgid "Please type 'DELETE' to confirm account deletion."
+msgstr ""
+
+#: bcource/user/user_views.py:674
+msgid "Your account has been successfully deleted. We're sorry to see you go."
+msgstr ""
+
+#: bcource/user/user_views.py:680
+msgid "An error occurred while deleting your account. Please contact support."
+msgstr ""
+
+#: bcource/user/user_views.py:701
+msgid "You do not have permission to impersonate users."
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:10
+msgid "Delete Account"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:13
+msgid "Right to be Forgotten (GDPR)"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:17
+msgid "Cannot Delete Account"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:18
+#, python-format
+msgid ""
+"You are currently enrolled in %(count)s training course(s). You must "
+"unenroll from all trainings before you can delete your account."
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:21
+msgid "Active Enrollments:"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:34
+msgid "View My Trainings"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:46
+#: bcource/user/templates/user/impersonate_confirm.html:15
+msgid "Warning:"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:46
+msgid "This action is permanent and cannot be undone!"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:50
+msgid "By deleting your account, the following data will be permanently removed:"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:53
+msgid "Your personal information (name, email, phone number, address)"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:54
+msgid "Your account credentials"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:55
+msgid "Your messages and communication history"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:56
+msgid "Your training history"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:57
+msgid "All other data associated with your account"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:67
+msgid "To confirm, type \"DELETE\" in the box below:"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:75
+msgid "Type DELETE to confirm"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:80
+#: bcource/user/templates/user/impersonate_confirm.html:75
+#: bcource/user/templates/user/support.html:53
+#: bcource/user/templates/user/support_public.html:84
+msgid "Cancel"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:83
+msgid "Delete My Account Permanently"
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:113
+msgid ""
+"Are you absolutely sure you want to delete your account? This action "
+"cannot be undone."
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:10
+msgid "Confirm User Impersonation"
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:16
+msgid ""
+"You are about to view the application as another user. This action is "
+"logged for security purposes."
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:19
+msgid "Target User Details"
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:31
+msgid "User ID"
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:35
+msgid "Roles"
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:58
+msgid "What will happen:"
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:61
+msgid "You will see the application exactly as this user sees it"
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:62
+msgid "Your admin session will be preserved in the background"
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:63
+msgid "A red warning banner will appear at the top of every page"
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:64
+msgid "All actions will be logged with your admin credentials"
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:65
+msgid "You can exit impersonation at any time by clicking \"Exit Impersonation\""
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:79
+msgid "Confirm & Start Impersonation"
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:88
+msgid ""
+"This action requires administrator privileges and two-factor "
+"authentication."
+msgstr ""
+
+#: bcource/user/templates/user/message.html:28
+msgid "Send"
+msgstr ""
+
+#: bcource/user/templates/user/message.html:114
+#: bcource/user/templates/user/support.html:64
+#: bcource/user/templates/user/support_public.html:95
+msgid "Sending..."
+msgstr ""
+
+#: bcource/user/templates/user/messages.html:105
+msgid "Inbox"
+msgstr ""
+
+#: bcource/user/templates/user/messages.html:110
+msgid "Sent"
+msgstr ""
+
+#: bcource/user/templates/user/support.html:19
+#: bcource/user/templates/user/support_public.html:19
+msgid ""
+"Having an issue or need help? Send us a message and our support team will"
+" get back to you as soon as possible."
+msgstr ""
+
+#: bcource/user/templates/user/support.html:41
+#: bcource/user/templates/user/support_public.html:66
+msgid "Please describe your issue or question in detail..."
+msgstr ""
+
+#: bcource/user/templates/user/support.html:56
+#: bcource/user/templates/user/support_public.html:87
+msgid "Send to Support"
+msgstr ""
+
+#: bcource/user/templates/user/support.html:71
+msgid "Your current email address"
+msgstr ""
+
+#: bcource/user/templates/user/support.html:72
+msgid "We will send our response to this email address."
+msgstr ""
+
+#: bcource/user/templates/user/support_public.html:41
+msgid "We'll use this email to send you our response"
+msgstr ""
+
+#: bcource/user/templates/user/support_public.html:102
+msgid "Already have an account?"
+msgstr ""
+
+#: bcource/user/templates/user/support_public.html:103
+msgid "Sign in"
+msgstr ""
+
+#: bcource/user/templates/user/support_public.html:104
+msgid "for faster support and access to your message history."
+msgstr ""
+
