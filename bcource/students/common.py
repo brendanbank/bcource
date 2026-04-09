@@ -203,7 +203,7 @@ def deroll_common(training, user, admin=False):
         flash(_("You cannot deroll %(fullname)s from this training. %(trainingname)s has already started: ",
                 fullname=user.fullname, trainingname=training.name), 'error')
         return False
-    
+
     system_msg.EmailStudentDerolled(envelop_to=training.trainer_users, enrollment=training_enroll).send()
     system_msg.EmailStudentDerolledInTraining(envelop_to=user, enrollment=training_enroll).send()
     flash(_("%(username)s successfully removed from the training: %(trainingname)s", username=user.fullname, 

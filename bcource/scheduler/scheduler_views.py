@@ -232,21 +232,20 @@ def deroll(id):  # @ReservedAssignment
     
     cancel_policy = CancelationPolicy(training=training, user=current_user)
     cancel_policy.validate()
-    
-    if form.validate_on_submit() :
-        
-                                           
-        return_acton =  deroll_common(training, current_user)
+
+    if form.validate_on_submit():
+        return_acton = deroll_common(training, current_user)
 
         if not cancel_policy.status and return_acton:
-            enrollment = TrainingEnroll().query.join(Student).filter(TrainingEnroll.student_id == Student.id, Student.user_id == current_user.id).first()
-
-            system_msg.EmailStudentDerolledInTrainingOutOfPolicyTrainer(envelop_to=current_user, training=training, 
-                                                                         policy_txt=Content.get_tag('Cancellation Policy'), enrollment=enrollment ).send()
+            enrollment = TrainingEnroll().query.join(Student).filter(
+                TrainingEnroll.student_id == Student.id,
+                Student.user_id == current_user.id).first()
+            system_msg.EmailStudentDerolledInTrainingOutOfPolicyTrainer(
+                envelop_to=current_user, training=training,
+                policy_txt=Content.get_tag('Cancellation Policy'), enrollment=enrollment).send()
             system_msg.EmailStudentDerolledInTrainingOutOfPolicy(
-                envelop_to=current_user, training=training, 
-                policy_txt=Content.get_tag('Cancellation Policy'
-                                            ),enrollment=enrollment ).send()
+                envelop_to=current_user, training=training,
+                policy_txt=Content.get_tag('Cancellation Policy'), enrollment=enrollment).send()
 
         if return_acton:
             return safe_redirect(url)
