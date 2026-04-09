@@ -1,0 +1,1485 @@
+# Dutch translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-04-08 16:05+0200\n"
+"PO-Revision-Date: 2026-04-08 16:05+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: nl\n"
+"Language-Team: nl <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: bcource/errors.py:11
+msgid "You must have two factor authentication enabled to use this feature!"
+msgstr "Je moet tweefactorauthenticatie hebben ingeschakeld om deze functie te gebruiken!"
+
+#: bcource/errors.py:19
+msgid "Student is not active!"
+msgstr "Student is niet actief!"
+
+#: bcource/errors.py:27
+msgid "User profile incomplete!"
+msgstr "Gebruikersprofiel onvolledig!"
+
+#: bcource/helpers.py:313
+msgid "Only administrators can impersonate users."
+msgstr "Alleen beheerders kunnen gebruikers imiteren."
+
+#: bcource/helpers.py:317 bcource/user/user_views.py:705
+msgid "Two-factor authentication is required to impersonate users."
+msgstr "Tweefactorauthenticatie is vereist om gebruikers te imiteren."
+
+#: bcource/helpers.py:321
+msgid "You cannot impersonate yourself."
+msgstr "Je kunt jezelf niet imiteren."
+
+#: bcource/helpers.py:325
+msgid "You cannot impersonate other administrators."
+msgstr "Je kunt andere beheerders niet imiteren."
+
+#: bcource/helpers.py:329
+msgid "Target user does not exist or is not active."
+msgstr "Doelgebruiker bestaat niet of is niet actief."
+
+#: bcource/admin/admin_views.py:76 bcource/helpers.py:348
+#: bcource/user/user_views.py:714
+msgid "User not found."
+msgstr "Gebruiker niet gevonden."
+
+#: bcource/helpers.py:357
+msgid "You are already impersonating a user. Please stop impersonating first."
+msgstr "Je imiteert al een gebruiker. Stop eerst met imiteren."
+
+#: bcource/helpers.py:384
+#, python-format
+msgid "Now viewing as %(name)s"
+msgstr "Je bekijkt nu als %(name)s"
+
+#: bcource/helpers.py:394
+msgid "You are not currently impersonating anyone."
+msgstr "Je imiteert momenteel niemand."
+
+#: bcource/helpers.py:407
+msgid "Original user not found. Session cleared."
+msgstr "Oorspronkelijke gebruiker niet gevonden. Sessie gewist."
+
+#: bcource/helpers.py:432
+msgid "Returned to your admin account."
+msgstr "Teruggekeerd naar je beheerdersaccount."
+
+#: bcource/myformfields.py:50
+msgid "Phone number is already used by an other user!"
+msgstr "Dit telefoonnummer is al in gebruik door een andere gebruiker!"
+
+#: bcource/myformfields.py:57
+msgid "This email is already used by an other user!"
+msgstr "Dit e-mailadres is al in gebruik door een andere gebruiker!"
+
+#: bcource/admin/admin_views.py:63
+msgid "Impersonate User"
+msgstr "Gebruiker imiteren"
+
+#: bcource/admin/admin_views.py:63
+msgid "Are you sure you want to impersonate the selected user?"
+msgstr "Weet je zeker dat je de geselecteerde gebruiker wilt imiteren?"
+
+#: bcource/admin/admin_views.py:69
+msgid "You can only impersonate one user at a time."
+msgstr "Je kunt slechts één gebruiker tegelijk imiteren."
+
+#: bcource/admin/admin_views.py:89
+#, python-format
+msgid "Error initiating impersonation: %(error)s"
+msgstr "Fout bij starten van imitatie: %(error)s"
+
+#: bcource/scheduler/scheduler_forms.py:15
+msgid "Accept Bcourse Terms and Conditions and Cancellation Policy"
+msgstr "Accepteer de Bcourse algemene voorwaarden en het annuleringsbeleid"
+
+#: bcource/scheduler/scheduler_views.py:53
+#: bcource/students/student_training_view.py:32
+#: bcource/training/training_views.py:213
+msgid "Period"
+msgstr "Periode"
+
+#: bcource/scheduler/scheduler_views.py:54
+#: bcource/students/student_training_view.py:33
+#: bcource/training/training_views.py:214
+msgid "Past Trainings"
+msgstr "Eerdere trainingen"
+
+#: bcource/scheduler/scheduler_views.py:58
+#: bcource/students/student_training_view.py:37
+#: bcource/training/training_views.py:218
+msgid "Training Types"
+msgstr "Trainingstypes"
+
+#: bcource/scheduler/scheduler_views.py:66
+msgid "User"
+msgstr "Gebruiker"
+
+#: bcource/scheduler/scheduler_views.py:86
+#: bcource/students/student_training_view.py:58
+#: bcource/training/training_views.py:251
+msgid "Training"
+msgstr "Training"
+
+#: bcource/scheduler/scheduler_views.py:176
+msgid "My Training Schedule"
+msgstr "Mijn trainingsrooster"
+
+#: bcource/scheduler/scheduler_views.py:206
+#: bcource/students/student_training_view.py:129
+msgid "Training Schedule"
+msgstr "Trainingsrooster"
+
+#: bcource/scheduler/scheduler_views.py:218
+#: bcource/training/training_detail_view.py:52
+msgid "Cannot find your enrollement!"
+msgstr "Je inschrijving kon niet worden gevonden!"
+
+#: bcource/scheduler/scheduler_views.py:265
+msgid "Cannot find invitation!"
+msgstr "Uitnodiging niet gevonden!"
+
+#: bcource/scheduler/scheduler_views.py:281
+msgid "Cannot find invitation! Have Did is expire?"
+msgstr "Uitnodiging niet gevonden! Is deze verlopen?"
+
+#: bcource/scheduler/scheduler_views.py:291
+#, python-format
+msgid "You have declined the invite for training %(trainingname)s!"
+msgstr "Je hebt de uitnodiging voor training %(trainingname)s afgewezen!"
+
+#: bcource/scheduler/scheduler_views.py:322
+#, python-format
+msgid ""
+"You cannot be placed on the waitlist because transactional emails are "
+"disabled. Enable them in your <a href=\"%(url)s\">account settings</a>."
+msgstr ""
+
+#: bcource/scheduler/scheduler_views.py:364
+msgid "Training Scheduler"
+msgstr "Trainingsplanner"
+
+#: bcource/scheduler/scheduler_views.py:365
+msgid "Schedule Training"
+msgstr "Training inplannen"
+
+#: bcource/scheduler/scheduler_views.py:366
+msgid "My schedule"
+msgstr "Mijn rooster"
+
+#: bcource/scheduler/templates/scheduler/deroll.html:9
+msgid "Remove yourself from "
+msgstr "Jezelf uitschrijven uit "
+
+#: bcource/scheduler/templates/scheduler/deroll.html:18
+#: bcource/scheduler/templates/scheduler/enroll.html:21
+msgid "Start Date/Time"
+msgstr "Startdatum/-tijd"
+
+#: bcource/scheduler/templates/scheduler/deroll.html:19
+#: bcource/scheduler/templates/scheduler/enroll.html:22
+msgid "End Date/Time"
+msgstr "Einddatum/-tijd"
+
+#: bcource/scheduler/templates/scheduler/deroll.html:20
+#: bcource/scheduler/templates/scheduler/enroll.html:23
+msgid "Location"
+msgstr "Locatie"
+
+#: bcource/scheduler/templates/scheduler/deroll.html:35
+msgid "Are you sure you want to derroll from this training?"
+msgstr "Weet je zeker dat je zich wilt uitschrijven voor deze training?"
+
+#: bcource/scheduler/templates/scheduler/deroll.html:47
+#: bcource/scheduler/templates/scheduler/deroll.html:82
+#: bcource/scheduler/templates/scheduler/enroll.html:44
+#: bcource/scheduler/templates/scheduler/enroll.html:80
+msgid "Terms and Conditions"
+msgstr "Algemene voorwaarden"
+
+#: bcource/scheduler/templates/scheduler/deroll.html:48
+#: bcource/scheduler/templates/scheduler/deroll.html:65
+#: bcource/scheduler/templates/scheduler/enroll.html:45
+#: bcource/scheduler/templates/scheduler/enroll.html:63
+msgid "Cancellation Policy"
+msgstr "Annuleringsbeleid"
+
+#: bcource/scheduler/templates/scheduler/deroll.html:52
+#: bcource/scheduler/templates/scheduler/enroll.html:49
+#: bcource/students/templates/students/student.html:24
+#: bcource/training/training_forms.py:108
+#: bcource/user/templates/user/message.html:27
+#: bcource/user/templates/user/update-account.html:20
+#: bcource/user/templates/user/update-settings.html:23
+msgid "Close"
+msgstr "Sluiten"
+
+#: bcource/scheduler/templates/scheduler/deroll.html:53
+msgid "Deroll  "
+msgstr "Uitschrijven  "
+
+#: bcource/scheduler/templates/scheduler/enroll.html:9
+msgid "Enroll into "
+msgstr "Inschrijven voor "
+
+#: bcource/scheduler/templates/scheduler/enroll.html:50
+msgid "Enroll"
+msgstr "Inschrijven"
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:12
+#: bcource/students/templates/students/student-training.html:11
+#: bcource/training/templates/training/overview_list.html:25
+msgid "Training Search"
+msgstr "Training zoeken"
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:21
+#: bcource/students/templates/students/student-training.html:19
+#: bcource/training/templates/training/overview_list.html:33
+#: bcource/training/training_views.py:205
+#: bcource/user/templates/user/impersonate_confirm.html:23
+msgid "Name"
+msgstr "Naam"
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:22
+msgid "Action"
+msgstr "Actie"
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:23
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:84
+#: bcource/students/templates/students/student-training.html:22
+#: bcource/training/templates/training/overview_list.html:35
+msgid "Date"
+msgstr "Datum"
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:24
+#: bcource/students/templates/students/student-training.html:23
+#: bcource/training/templates/training/overview_list.html:36
+msgid "Spots"
+msgstr "Aantal"
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:27
+#: bcource/students/templates/students/student-training.html:26
+msgid "participants max/current/waitlist"
+msgstr "deelnemers max/huidig/wachtlijst"
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:28
+#: bcource/students/students_views.py:44
+#: bcource/students/templates/students/student-training.html:27
+#: bcource/user/templates/user/impersonate_confirm.html:43
+msgid "Status"
+msgstr "Status"
+
+#: bcource/scheduler/templates/scheduler/scheduler.html:42
+msgid ""
+"Click the info icon next to a training name for more information about "
+"the training type."
+msgstr "Klik op het info-icoon naast een trainingsnaam voor meer informatie over de training."
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:36
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:43
+#, python-format
+msgid "Remove %(who)s from this training."
+msgstr "Verwijder %(who)s uit deze training."
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:39
+#: bcource/training/templates/training/training_detail.html:120
+#, python-format
+msgid "Are you sure you want to remove user %(email)s from this training?"
+msgstr "Weet je zeker dat je gebruiker %(email)s uit deze training wilt verwijderen?"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:40
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:46
+#, python-format
+msgid " Remove %(who)s from this training. "
+msgstr " Verwijder %(who)s uit deze training. "
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:64
+#, python-format
+msgid "Add %(who)s to the wait list of this training."
+msgstr "Voeg %(who)s toe aan de wachtlijst van deze training."
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:67
+#, python-format
+msgid " Add %(who)s to the wait list of this training. "
+msgstr " Voeg %(who)s toe aan de wachtlijst van deze training. "
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:70
+#, python-format
+msgid "Add %(who)s to this training."
+msgstr "Voeg %(who)s toe aan deze training."
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:73
+#, python-format
+msgid " Add %(who)s to this training. "
+msgstr " Voeg %(who)s toe aan deze training. "
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:95
+msgid "Max participants"
+msgstr "Maximaal aantal deelnemers"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:96
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:108
+msgid "Enrolled"
+msgstr "Ingeschreven"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:96
+msgid "Wait list"
+msgstr "Wachtlijst"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:106
+msgid "Enroll Status: "
+msgstr "Inschrijfstatus: "
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:112
+msgid "Invited"
+msgstr "Uitgenodigd"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:115
+msgid " Accept Invite for this training."
+msgstr " Accepteer uitnodiging voor deze training."
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:116
+msgid "Accept"
+msgstr "Accepteren"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:120
+msgid "Decline the invite for this training."
+msgstr "Uitnodiging voor deze training afwijzen."
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:121
+msgid "Decline"
+msgstr "Afwijzen"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:126
+msgid "wait list"
+msgstr "wachtlijst"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:130
+msgid "Expired wait list"
+msgstr "Verlopen wachtlijst"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:133
+msgid "Re-enable the wait list for this training."
+msgstr "Wachtlijst voor deze training opnieuw inschakelen."
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:134
+msgid " Re-enable"
+msgstr " Opnieuw inschakelen"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:145
+msgid "Training has a wait list"
+msgstr "Training heeft een wachtlijst"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:147
+msgid "Max Capacity"
+msgstr "Maximale capaciteit"
+
+#: bcource/scheduler/templates/scheduler/scheduler_loop.html:149
+msgid "Open for enrollment."
+msgstr "Open voor inschrijving."
+
+#: bcource/students/common.py:78
+msgid "enroll: Cannot find invitation!"
+msgstr "Inschrijven: Uitnodiging niet gevonden!"
+
+#: bcource/students/common.py:82
+msgid "enroll: Cannot find invitation!, status is not waitlist-invited"
+msgstr "Inschrijven: Uitnodiging niet gevonden, status is niet wachtlijst-uitgenodigd"
+
+#: bcource/students/common.py:100
+#, python-format
+msgid "You have successfully enrolled into training %(trainingname)s!"
+msgstr "Je bent succesvol ingeschreven voor training %(trainingname)s!"
+
+#: bcource/students/common.py:110
+#, python-format
+msgid "%(fullname)s has already enrolled for this training: %(trainingname)s"
+msgstr "%(fullname)s is al ingeschreven voor deze training: %(trainingname)s"
+
+#: bcource/students/common.py:121
+#, python-format
+msgid ""
+"You cannot enroll %(fullname)s in this training. %(trainingname)s has "
+"already started."
+msgstr ""
+
+#: bcource/students/common.py:139
+msgid "enroll: Student Not Found!"
+msgstr "Inschrijven: Student niet gevonden!"
+
+#: bcource/students/common.py:143
+msgid "enroll: Student is not active!"
+msgstr "Inschrijven: Student is niet actief!"
+
+#: bcource/students/common.py:155
+#, python-format
+msgid ""
+"%(fullname)s cannot be placed on the waitlist because transactional "
+"emails are disabled for this user."
+msgstr ""
+
+#: bcource/students/common.py:160
+#, python-format
+msgid ""
+"%(fullname)s has been added to the wait list of training training: "
+"%(trainingname)s"
+msgstr ""
+
+#: bcource/students/common.py:165
+#, python-format
+msgid "%(fullname)s has successfully enrolled into the training: %(trainingname)s"
+msgstr "%(fullname)s is succesvol ingeschreven voor de training: %(trainingname)s"
+
+#: bcource/students/common.py:193
+#, python-format
+msgid "%(fullname)s is not enrolled in training : %(trainingname)s"
+msgstr "%(fullname)s is niet ingeschreven voor training: %(trainingname)s"
+
+#: bcource/students/common.py:203
+#, python-format
+msgid ""
+"You cannot deroll %(fullname)s from this training. %(trainingname)s has "
+"already started: "
+msgstr ""
+
+#: bcource/students/common.py:209
+#, python-format
+msgid "%(username)s successfully removed from the training: %(trainingname)s"
+msgstr "%(username)s is succesvol verwijderd uit de training: %(trainingname)s"
+
+#: bcource/students/student_forms.py:24 bcource/students/student_forms.py:195
+#: bcource/training/training_forms.py:53 bcource/training/training_forms.py:104
+msgid "Update"
+msgstr "Bijwerken"
+
+#: bcource/students/student_forms.py:40 bcource/students/student_forms.py:78
+#: bcource/user/templates/user/impersonate_confirm.html:27
+msgid "Email"
+msgstr "E-mail"
+
+#: bcource/students/student_forms.py:45 bcource/students/student_forms.py:113
+msgid "Student status"
+msgstr "Studentstatus"
+
+#: bcource/students/student_forms.py:54 bcource/students/student_forms.py:122
+msgid "Student type"
+msgstr "Studenttype"
+
+#: bcource/students/student_forms.py:74
+msgid "Disabling these email options will disable all email sending"
+msgstr "Het uitschakelen van deze e-mailopties schakelt alle e-mailverzending uit"
+
+#: bcource/students/student_forms.py:84 bcource/user/forms.py:102
+msgid "Firstname"
+msgstr "Voornaam"
+
+#: bcource/students/student_forms.py:90 bcource/user/forms.py:108
+msgid "Lastname"
+msgstr "Achternaam"
+
+#: bcource/students/student_forms.py:97 bcource/user/forms.py:120
+msgid "Mobile Phone"
+msgstr "Mobiel telefoonnummer"
+
+#: bcource/students/student_forms.py:102 bcource/user/forms.py:126
+msgid "Birth day"
+msgstr "Geboortedatum"
+
+#: bcource/students/student_forms.py:107 bcource/user/forms.py:131
+msgid "Gender"
+msgstr "Geslacht"
+
+#: bcource/students/student_forms.py:109 bcource/user/forms.py:133
+msgid "Choose"
+msgstr "Kies"
+
+#: bcource/students/student_forms.py:109 bcource/user/forms.py:133
+msgid "Female"
+msgstr "Vrouw"
+
+#: bcource/students/student_forms.py:109 bcource/user/forms.py:133
+msgid "Male"
+msgstr "Man"
+
+#: bcource/students/student_forms.py:109 bcource/user/forms.py:133
+msgid "Other"
+msgstr "Anders"
+
+#: bcource/students/student_forms.py:131 bcource/user/forms.py:138
+msgid "Postal Code"
+msgstr "Postcode"
+
+#: bcource/students/student_forms.py:138 bcource/user/forms.py:145
+msgid "Number"
+msgstr "Huisnummer"
+
+#: bcource/students/student_forms.py:144 bcource/user/forms.py:151
+msgid "Ext."
+msgstr "Toev."
+
+#: bcource/students/student_forms.py:149 bcource/user/forms.py:156
+msgid "Street"
+msgstr "Straat"
+
+#: bcource/students/student_forms.py:155 bcource/user/forms.py:168
+msgid "City"
+msgstr "Stad"
+
+#: bcource/students/student_forms.py:161 bcource/user/forms.py:174
+msgid "Country"
+msgstr "Land"
+
+#: bcource/students/student_forms.py:168
+msgid "Send transactional emails"
+msgstr "Transactionele e-mails verzenden"
+
+#: bcource/students/student_forms.py:174
+msgid "Send last minute spot notifications"
+msgstr "Meldingen voor laatste plaatsen verzenden"
+
+#: bcource/students/student_forms.py:180
+msgid "Password"
+msgstr "Wachtwoord"
+
+#: bcource/students/student_policies.py:19
+#, python-format
+msgid ""
+"You cannot book <strong>%(trainingname)s</strong> as you can only book 2 "
+"trainings in a %(time_window_duration)s day period!"
+msgstr ""
+
+#: bcource/students/student_policies.py:20
+msgid "This training has a 24 cancellation policy."
+msgstr "Deze training heeft een annuleringsbeleid van 24 uur."
+
+#: bcource/students/student_policies.py:41
+msgid "User does not have Student role!"
+msgstr "Gebruiker heeft geen studentrol!"
+
+#: bcource/students/student_policies.py:94
+msgid ""
+"Check if the student is satisfying all cancellation policies to cancel "
+"this training."
+msgstr ""
+
+#: bcource/students/student_policies.py:108
+msgid "Check if the student is satisfying all policies to book this training."
+msgstr "Controleer of de student aan alle beleidsregels voldoet om deze training te boeken."
+
+#: bcource/students/students_views.py:48
+#: bcource/students/templates/students/student-training.html:21
+#: bcource/training/training_detail_view.py:22
+msgid "Type"
+msgstr "Type"
+
+#: bcource/students/students_views.py:65
+msgid "Student"
+msgstr "Student"
+
+#: bcource/students/students_views.py:138
+msgid "User Overview"
+msgstr "Gebruikersoverzicht"
+
+#: bcource/students/students_views.py:152
+#: bcource/training/training_detail_view.py:166
+msgid "No students match the current filters."
+msgstr "Geen studenten gevonden voor de huidige filters."
+
+#: bcource/students/students_views.py:190
+msgid "You cannot delete yourself!"
+msgstr "Je kunt jezelf niet verwijderen!"
+
+#: bcource/students/students_views.py:194
+#, python-format
+msgid ""
+"You cannot delete user <span class=\"fw-bold\" style=\"white-"
+"space:nowrap;\">%s</span>. First delete the trainer record.<br>"
+msgstr ""
+
+#: bcource/students/students_views.py:198
+#, python-format
+msgid ""
+"You cannot delete user <span class=\"fw-bold\" style=\"white-"
+"space:nowrap;\">%s</span>. The user is still enrolled in one or more "
+"trainings.<br>"
+msgstr ""
+
+#: bcource/students/students_views.py:209
+#: bcource/training/training_views.py:105
+#, python-format
+msgid "Successfully deleted training: %s"
+msgstr "Training succesvol verwijderd: %s"
+
+#: bcource/students/students_views.py:221
+#: bcource/students/students_views.py:350
+msgid "Student not found!"
+msgstr "Student niet gevonden!"
+
+#: bcource/students/students_views.py:229
+msgid "Create User"
+msgstr "Gebruiker aanmaken"
+
+#: bcource/students/students_views.py:232
+msgid "Edit User"
+msgstr "Gebruiker bewerken"
+
+#: bcource/students/students_views.py:250
+msgid ""
+"You cannot edit yourself here! Go to the Account Details menu to edit "
+"your own details."
+msgstr ""
+
+#: bcource/students/students_views.py:306
+#, python-format
+msgid "User %s has been updated"
+msgstr "Gebruiker %s is bijgewerkt"
+
+#: bcource/students/students_views.py:328
+msgid "Could get student from query!"
+msgstr "Kon student niet ophalen uit query!"
+
+#: bcource/students/students_views.py:334
+msgid "Could get user from query!"
+msgstr "Kon gebruiker niet ophalen uit query!"
+
+#: bcource/students/students_views.py:366
+#, python-format
+msgid "Student %s has been updated"
+msgstr "Student %s is bijgewerkt"
+
+#: bcource/students/templates/students/student.html:25
+#: bcource/user/templates/user/update-account.html:21
+#: bcource/user/templates/user/update-settings.html:24
+msgid "Save changes"
+msgstr "Wijzigingen opslaan"
+
+#: bcource/students/templates/students/student.html:93
+msgid "Generate password"
+msgstr "Wachtwoord genereren"
+
+#: bcource/students/templates/students/student.html:112
+msgid ""
+"Click the key icon to generate a safe password. Copy and share it with "
+"the student."
+msgstr ""
+
+#: bcource/students/templates/students/students.html:16
+msgid "Create New User"
+msgstr "Nieuwe gebruiker aanmaken"
+
+#: bcource/students/templates/students/students.html:22
+msgid "User Search"
+msgstr "Gebruiker zoeken"
+
+#: bcource/students/templates/students/students.html:34
+#: bcource/training/templates/training/training_detail.html:89
+msgid "Email selection"
+msgstr "E-mailselectie"
+
+#: bcource/students/templates/students/students.html:62
+msgid "Show enrolled Trainings"
+msgstr "Ingeschreven trainingen weergeven"
+
+#: bcource/students/templates/students/students.html:64
+msgid "Show trainings"
+msgstr "Trainingen weergeven"
+
+#: bcource/students/templates/students/students.html:69
+msgid "Edit user details"
+msgstr "Gebruikersgegevens bewerken"
+
+#: bcource/students/templates/students/students.html:70
+msgid "Edit user"
+msgstr "Gebruiker bewerken"
+
+#: bcource/students/templates/students/students.html:76
+msgid "Delete User"
+msgstr "Gebruiker verwijderen"
+
+#: bcource/students/templates/students/students.html:79
+#, python-format
+msgid "Are you sure you want to delete user %(email)s!?"
+msgstr "Weet je zeker dat je gebruiker %(email)s wilt verwijderen!?"
+
+#: bcource/students/templates/students/students.html:82
+msgid "Delete user"
+msgstr "Gebruiker verwijderen"
+
+#: bcource/students/templates/students/students.html:89
+msgid "e-mail"
+msgstr "e-mail"
+
+#: bcource/students/templates/students/students.html:99
+msgid "Student can book a training"
+msgstr "Student kan een training boeken"
+
+#: bcource/students/templates/students/students.html:100
+msgid "Student Active"
+msgstr "Student actief"
+
+#: bcource/students/templates/students/students.html:103
+msgid "Student can not book any training"
+msgstr "Student kan geen training boeken"
+
+#: bcource/students/templates/students/students.html:104
+msgid "Student Inactive"
+msgstr "Student inactief"
+
+#: bcource/students/templates/students/students.html:111
+msgid "User is enabled and can login"
+msgstr "Gebruiker is ingeschakeld en kan inloggen"
+
+#: bcource/students/templates/students/students.html:112
+msgid "User Enabled"
+msgstr "Gebruiker ingeschakeld"
+
+#: bcource/students/templates/students/students.html:115
+msgid "User is disabled and cannot login"
+msgstr "Gebruiker is uitgeschakeld en kan niet inloggen"
+
+#: bcource/students/templates/students/students.html:116
+msgid "User Disabled"
+msgstr "Gebruiker uitgeschakeld"
+
+#: bcource/students/templates/students/students.html:122
+msgid "Student Type"
+msgstr "Studenttype"
+
+#: bcource/students/templates/students/students.html:124
+msgid "Phone"
+msgstr "Telefoon"
+
+#: bcource/templates/filters.html:84 bcource/templates/left_filters.html:40
+msgid "Clear filters"
+msgstr "Filters wissen"
+
+#: bcource/templates/filters.html:105
+#: bcource/user/templates/user/delete-account.html:41
+msgid "Back"
+msgstr "Terug"
+
+#: bcource/templates/impersonation_banner.html:28
+msgid "Impersonation Mode Active"
+msgstr "Imitatiemodus actief"
+
+#: bcource/templates/impersonation_banner.html:31
+msgid "You are viewing as"
+msgstr "Je bekijkt als"
+
+#: bcource/templates/impersonation_banner.html:33
+msgid "Original admin"
+msgstr "Oorspronkelijke beheerder"
+
+#: bcource/templates/impersonation_banner.html:42
+msgid "Exit Impersonation"
+msgstr "Imitatie beëindigen"
+
+#: bcource/templates/left_filters.html:6
+msgid "Filters"
+msgstr "Filters"
+
+#: bcource/templates/left_filters.html:52
+msgid "back"
+msgstr "terug"
+
+#: bcource/templates/macros.html:8
+msgid "Previous"
+msgstr "Vorige"
+
+#: bcource/templates/macros.html:14
+msgid "Next"
+msgstr "Volgende"
+
+#: bcource/templates/nav.html:80
+msgid "Language"
+msgstr "Taal"
+
+#: bcource/training/training_detail_view.py:19
+#: bcource/training/training_detail_view.py:20
+msgid "Wait List"
+msgstr "Wachtlijst"
+
+#: bcource/training/training_detail_view.py:64
+#: bcource/training/training_detail_view.py:69
+#: bcource/training/training_detail_view.py:94
+#: bcource/training/training_detail_view.py:99
+#: bcource/training/training_detail_view.py:124
+#: bcource/training/training_detail_view.py:129
+#, python-format
+msgid "Training id: %s not found"
+msgstr "Training id: %s niet gevonden"
+
+#: bcource/training/training_detail_view.py:79
+#, python-format
+msgid "Student %(fullname)s is de-invited for %(trainingname)s."
+msgstr "De uitnodiging van student %(fullname)s voor %(trainingname)s is ingetrokken."
+
+#: bcource/training/training_detail_view.py:83
+#, python-format
+msgid "Cannot find invite for %(fullname)s for training %(trainingname)s."
+msgstr "Uitnodiging niet gevonden voor %(fullname)s voor training %(trainingname)s."
+
+#: bcource/training/training_detail_view.py:105
+#: bcource/training/training_detail_view.py:143
+msgid "Could not find enrollment"
+msgstr "Inschrijving niet gevonden"
+
+#: bcource/training/training_detail_view.py:108
+#, python-format
+msgid ""
+"Student %(fullname)s is on waiting list for %(trainingname)s. Force "
+"enrollment!"
+msgstr ""
+
+#: bcource/training/training_detail_view.py:135
+#, python-format
+msgid "Student %(fullname)s cannot be invited for %(trainingname)s."
+msgstr "Student %(fullname)s kan niet worden uitgenodigd voor %(trainingname)s."
+
+#: bcource/training/training_detail_view.py:147
+#, python-format
+msgid "Student %(fullname)s is invited for %(trainingname)s."
+msgstr "Student %(fullname)s is uitgenodigd voor %(trainingname)s."
+
+#: bcource/training/training_detail_view.py:198
+#, python-format
+msgid "Training Overview for %(training_name)s"
+msgstr "Trainingsoverzicht voor %(training_name)s"
+
+#: bcource/training/training_forms.py:34
+msgid "Start Time"
+msgstr "Begintijd"
+
+#: bcource/training/training_forms.py:38
+msgid "End Time"
+msgstr "Eindtijd"
+
+#: bcource/training/training_forms.py:43 bcource/training/training_forms.py:88
+msgid "Training type"
+msgstr "Trainingstype"
+
+#: bcource/training/training_forms.py:58
+msgid "Training details"
+msgstr "Trainingsdetails"
+
+#: bcource/training/training_forms.py:71
+msgid "Training Name"
+msgstr "Trainingsnaam"
+
+#: bcource/training/training_forms.py:77
+msgid "Maximum Participants"
+msgstr "Maximaal aantal deelnemers"
+
+#: bcource/training/training_forms.py:84
+msgid "Open for bookings."
+msgstr "Open voor reserveringen."
+
+#: bcource/training/training_forms.py:95
+msgid "Apply Policies."
+msgstr "Beleidsregels toepassen."
+
+#: bcource/training/templates/training/overview_list.html:40
+#: bcource/training/training_forms.py:100
+#: bcource/training/training_views.py:205
+#: bcource/training/training_views.py:230
+msgid "Trainers"
+msgstr "Trainers"
+
+#: bcource/training/training_views.py:100
+#, python-format
+msgid ""
+"You cannot delete training <span class=\"fw-bold\" style=\"white-"
+"space:nowrap;\">%s</span>.<br> It still has students enrolled to it."
+msgstr ""
+
+#: bcource/training/training_views.py:133
+msgid "Create Training details"
+msgstr "Trainingsdetails aanmaken"
+
+#: bcource/training/training_views.py:135
+msgid "Edit Training details"
+msgstr "Trainingsdetails bewerken"
+
+#: bcource/training/training_views.py:153
+msgid "You cannot save a training without dates!"
+msgstr "Je kunt een training niet opslaan zonder datums!"
+
+#: bcource/training/training_views.py:165
+msgid "Training details are successfully saved!"
+msgstr "Trainingsdetails zijn succesvol opgeslagen!"
+
+#: bcource/training/training_views.py:183
+msgid "Training Administration"
+msgstr "Trainingsbeheer"
+
+#: bcource/training/training_views.py:205
+msgid "Training Type"
+msgstr "Trainingstype"
+
+#: bcource/training/training_views.py:205
+msgid "Date/Location"
+msgstr "Datum/Locatie"
+
+#: bcource/training/training_views.py:225
+msgid "Training Status"
+msgstr "Trainingsstatus"
+
+#: bcource/training/training_views.py:226
+#: bcource/user/templates/user/impersonate_confirm.html:46
+msgid "Active"
+msgstr "Actief"
+
+#: bcource/training/training_views.py:227
+#: bcource/user/templates/user/impersonate_confirm.html:48
+msgid "Inactive"
+msgstr "Inactief"
+
+#: bcource/training/training_views.py:313
+#: bcource/training/training_views.py:345
+msgid "Training Overview"
+msgstr "Trainingsoverzicht"
+
+#: bcource/training/templates/training/overview_list.html:18
+msgid "Create New Training"
+msgstr "Nieuwe training aanmaken"
+
+#: bcource/training/templates/training/overview_list.html:39
+msgid "participants max/current/wait list"
+msgstr "deelnemers max/huidig/wachtlijst"
+
+#: bcource/training/templates/training/overview_list.html:54
+msgid "This training is inactive and cannot be booked."
+msgstr "Deze training is inactief en kan niet worden geboekt."
+
+#: bcource/training/templates/training/overview_list.html:67
+msgid "Show Attendee List"
+msgstr "Deelnemerslijst weergeven"
+
+#: bcource/training/templates/training/overview_list.html:68
+msgid "Show attendees"
+msgstr "Deelnemers weergeven"
+
+#: bcource/training/templates/training/overview_list.html:76
+#: bcource/training/templates/training/overview_list.html:77
+#: bcource/training/templates/training/training_detail.html:33
+#: bcource/training/templates/training/training_detail.html:35
+msgid "Edit Training"
+msgstr "Training bewerken"
+
+#: bcource/training/templates/training/overview_list.html:81
+msgid "Delete this Training"
+msgstr "Deze training verwijderen"
+
+#: bcource/training/templates/training/overview_list.html:83
+#: bcource/training/templates/training/trainings.html:59
+msgid "Are you sure you want to delete this record?"
+msgstr "Weet je zeker dat je dit record wilt verwijderen?"
+
+#: bcource/training/templates/training/overview_list.html:84
+msgid "Delete Training"
+msgstr "Training verwijderen"
+
+#: bcource/training/templates/training/training.html:24
+msgid "Training Events"
+msgstr "Trainingsevents"
+
+#: bcource/training/templates/training/training.html:46
+msgid "Event Editor"
+msgstr "Evenementredacteur"
+
+#: bcource/training/templates/training/training_detail.html:17
+msgid "Training Statistics:"
+msgstr "Trainingsstatistieken:"
+
+#: bcource/training/templates/training/training_detail.html:18
+msgid "Max Participants:"
+msgstr "Maximaal aantal deelnemers:"
+
+#: bcource/training/templates/training/training_detail.html:19
+msgid "Current enrolled:"
+msgstr "Huidig ingeschreven:"
+
+#: bcource/training/templates/training/training_detail.html:20
+msgid "Current Waitlist:"
+msgstr "Huidige wachtlijst:"
+
+#: bcource/training/templates/training/training_detail.html:41
+#: bcource/training/templates/training/training_detail.html:43
+msgid "Email All participants"
+msgstr "E-mail aan alle deelnemers"
+
+#: bcource/training/templates/training/training_detail.html:48
+msgid "Trainers:"
+msgstr "Trainers:"
+
+#: bcource/training/templates/training/training_detail.html:59
+msgid "Training Days:"
+msgstr "Trainingsdagen:"
+
+#: bcource/training/templates/training/training_detail.html:70
+msgid "Students enrolled:"
+msgstr "Ingeschreven studenten:"
+
+#: bcource/training/templates/training/training_detail.html:77
+msgid "Add User"
+msgstr "Gebruiker toevoegen"
+
+#: bcource/training/templates/training/training_detail.html:100
+msgid "Paid"
+msgstr "Betaald"
+
+#: bcource/training/templates/training/training_detail.html:124
+msgid "Deroll user from this training."
+msgstr "Gebruiker uitschrijven uit deze training."
+
+#: bcource/training/templates/training/training_detail.html:126
+msgid "Deroll user from this training"
+msgstr "Gebruiker uitschrijven uit deze training"
+
+#: bcource/training/templates/training/training_detail.html:131
+msgid "Email: "
+msgstr "E-mail: "
+
+#: bcource/training/templates/training/training_detail.html:134
+msgid "Phone: "
+msgstr "Telefoon: "
+
+#: bcource/training/templates/training/training_detail.html:137
+msgid "Enrollment Status: "
+msgstr "Inschrijfstatus: "
+
+#: bcource/training/templates/training/training_detail.html:142
+#, python-format
+msgid "Are you sure you want to re-enable %(email)s for this training?"
+msgstr "Weet je zeker dat je %(email)s opnieuw wilt inschakelen voor deze training?"
+
+#: bcource/training/templates/training/training_detail.html:146
+msgid "Re-enable this for this training."
+msgstr "Dit opnieuw inschakelen voor deze training."
+
+#: bcource/training/templates/training/training_detail.html:148
+msgid "Re-enable"
+msgstr "Opnieuw inschakelen"
+
+#: bcource/training/templates/training/training_detail.html:155
+#, python-format
+msgid "Are you sure you want to  remove the invitation for  %(email)s?"
+msgstr "Weet je zeker dat je de uitnodiging voor %(email)s wilt intrekken?"
+
+#: bcource/training/templates/training/training_detail.html:159
+msgid "Remove invitation."
+msgstr "Uitnodiging intrekken."
+
+#: bcource/training/templates/training/training_detail.html:161
+msgid "Remove invitation"
+msgstr "Uitnodiging intrekken"
+
+#: bcource/training/templates/training/training_detail.html:170
+#, python-format
+msgid "Are you sure you invite %(email)s from this training?"
+msgstr "Weet je zeker dat je %(email)s voor deze training wilt uitnodigen?"
+
+#: bcource/training/templates/training/training_detail.html:174
+msgid "Invite user for this training."
+msgstr "Gebruiker uitnodigen voor deze training."
+
+#: bcource/training/templates/training/training_detail.html:176
+#: bcource/training/templates/training/training_detail.html:190
+msgid "Invite user for this training"
+msgstr "Gebruiker uitnodigen voor deze training"
+
+#: bcource/training/templates/training/training_detail.html:184
+#, python-format
+msgid "Are you sure you force enrollment of user %(email)s on this training?"
+msgstr "Weet je zeker dat je gebruiker %(email)s voor deze training wilt inschrijven?"
+
+#: bcource/training/templates/training/training_detail.html:188
+msgid "Force this user on this training."
+msgstr "Gebruiker forceren op deze training."
+
+#: bcource/training/templates/training/training_detail.html:196
+msgid "Paid: "
+msgstr "Betaald: "
+
+#: bcource/user/forms.py:19
+msgid "New Message"
+msgstr "Nieuw bericht"
+
+#: bcource/user/forms.py:22
+msgid "To"
+msgstr "Aan"
+
+#: bcource/user/forms.py:29 bcource/user/forms.py:189 bcource/user/forms.py:216
+msgid "Subject"
+msgstr "Onderwerp"
+
+#: bcource/user/forms.py:34
+msgid "Message"
+msgstr "Bericht"
+
+#: bcource/user/forms.py:52
+msgid "Update account settings"
+msgstr "Accountinstellingen bijwerken"
+
+#: bcource/user/forms.py:64
+msgid "Send me transactional emails"
+msgstr "Stuur mij transactionele e-mails"
+
+#: bcource/user/forms.py:69
+msgid "Send me a message when last minute training spots open"
+msgstr "Stuur mij een bericht als er op het laatste moment trainingsplaatsen vrijkomen"
+
+#: bcource/user/forms.py:75
+msgid "My emergency contact:"
+msgstr "Mijn noodcontact:"
+
+#: bcource/user/forms.py:80
+msgid "Preferred language"
+msgstr "Voorkeurstaal"
+
+#: bcource/user/forms.py:93
+msgid "Update account details"
+msgstr "Accountgegevens bijwerken"
+
+#: bcource/user/forms.py:162
+msgid "Street line 2"
+msgstr "Adresregel 2"
+
+#: bcource/user/forms.py:185 bcource/user/forms.py:202
+#: bcource/user/templates/user/support.html:15
+#: bcource/user/templates/user/support_public.html:15
+msgid "Contact Support"
+msgstr "Contact opnemen met ondersteuning"
+
+#: bcource/user/forms.py:194 bcource/user/forms.py:221
+msgid "Describe your issue or question"
+msgstr "Beschrijf je probleem of vraag"
+
+#: bcource/user/forms.py:206
+msgid "Your Name"
+msgstr "Je naam"
+
+#: bcource/user/forms.py:212
+msgid "Your Email"
+msgstr "Je e-mailadres"
+
+#: bcource/user/user_status.py:41
+msgid "Student is registered"
+msgstr "Student is geregistreerd"
+
+#: bcource/user/user_status.py:48
+msgid "Student as correct role"
+msgstr "Student heeft de juiste rol"
+
+#: bcource/user/user_status.py:56
+msgid "Has Full Name"
+msgstr "Heeft volledige naam"
+
+#: bcource/user/user_status.py:62
+msgid "Has Phone Number"
+msgstr "Heeft telefoonnummer"
+
+#: bcource/user/user_status.py:67
+msgid "Address is missing"
+msgstr "Adres ontbreekt"
+
+#: bcource/user/user_views.py:68
+msgid "Account details are update successfully."
+msgstr "Accountgegevens zijn succesvol bijgewerkt."
+
+#: bcource/user/user_views.py:192
+msgid "Read status"
+msgstr "Leesstatus"
+
+#: bcource/user/user_views.py:193
+msgid "Read"
+msgstr "Gelezen"
+
+#: bcource/user/user_views.py:194
+msgid "Unread"
+msgstr "Ongelezen"
+
+#: bcource/user/user_views.py:195
+msgid "Deleted"
+msgstr "Verwijderd"
+
+#: bcource/user/user_views.py:197
+msgid "Tags"
+msgstr "Labels"
+
+#: bcource/user/user_views.py:292
+msgid "Messages"
+msgstr "Berichten"
+
+#: bcource/user/user_views.py:330
+msgid "Message does not exists!"
+msgstr "Bericht bestaat niet!"
+
+#: bcource/user/user_views.py:362
+msgid "Could not find users!"
+msgstr "Gebruikers niet gevonden!"
+
+#: bcource/user/user_views.py:373
+msgid "Message sent!"
+msgstr "Bericht verzonden!"
+
+#: bcource/user/user_views.py:443
+msgid "Account Settings are update successfully."
+msgstr "Accountinstellingen zijn succesvol bijgewerkt."
+
+#: bcource/user/user_views.py:503
+msgid "Your message has been sent to support. You will receive a response soon."
+msgstr "Je bericht is verzonden naar de ondersteuning. Je ontvangt binnenkort een reactie."
+
+#: bcource/user/user_views.py:520 bcource/user/user_views.py:579
+msgid ""
+"Your message has been sent to support. You will receive a response at the"
+" email address provided."
+msgstr ""
+
+#: bcource/user/user_views.py:533
+msgid "Too many support requests. Please try again later."
+msgstr "Te veel ondersteuningsverzoeken. Probeer het later opnieuw."
+
+#: bcource/user/user_views.py:612
+msgid ""
+"You cannot delete your account while you are enrolled in training "
+"courses. Please unenroll from all trainings first."
+msgstr ""
+
+#: bcource/user/user_views.py:619
+msgid "Please type 'DELETE' to confirm account deletion."
+msgstr "Typ 'DELETE' om het verwijderen van je account te bevestigen."
+
+#: bcource/user/user_views.py:674
+msgid "Your account has been successfully deleted. We're sorry to see you go."
+msgstr "Je account is succesvol verwijderd. Het spijt ons dat je vertrekt."
+
+#: bcource/user/user_views.py:680
+msgid "An error occurred while deleting your account. Please contact support."
+msgstr "Er is een fout opgetreden bij het verwijderen van je account. Neem contact op met de ondersteuning."
+
+#: bcource/user/user_views.py:701
+msgid "You do not have permission to impersonate users."
+msgstr "Je hebt geen toestemming om gebruikers te imiteren."
+
+#: bcource/user/templates/user/delete-account.html:10
+msgid "Delete Account"
+msgstr "Account verwijderen"
+
+#: bcource/user/templates/user/delete-account.html:13
+msgid "Right to be Forgotten (GDPR)"
+msgstr "Recht op vergetelheid (AVG)"
+
+#: bcource/user/templates/user/delete-account.html:17
+msgid "Cannot Delete Account"
+msgstr "Account kan niet worden verwijderd"
+
+#: bcource/user/templates/user/delete-account.html:18
+#, python-format
+msgid ""
+"You are currently enrolled in %(count)s training course(s). You must "
+"unenroll from all trainings before you can delete your account."
+msgstr ""
+
+#: bcource/user/templates/user/delete-account.html:21
+msgid "Active Enrollments:"
+msgstr "Actieve inschrijvingen:"
+
+#: bcource/user/templates/user/delete-account.html:34
+msgid "View My Trainings"
+msgstr "Mijn trainingen bekijken"
+
+#: bcource/user/templates/user/delete-account.html:46
+#: bcource/user/templates/user/impersonate_confirm.html:15
+msgid "Warning:"
+msgstr "Waarschuwing:"
+
+#: bcource/user/templates/user/delete-account.html:46
+msgid "This action is permanent and cannot be undone!"
+msgstr "Deze actie is permanent en kan niet ongedaan worden gemaakt!"
+
+#: bcource/user/templates/user/delete-account.html:50
+msgid "By deleting your account, the following data will be permanently removed:"
+msgstr "Door je account te verwijderen, worden de volgende gegevens permanent verwijderd:"
+
+#: bcource/user/templates/user/delete-account.html:53
+msgid "Your personal information (name, email, phone number, address)"
+msgstr "Je persoonlijke gegevens (naam, e-mail, telefoonnummer, adres)"
+
+#: bcource/user/templates/user/delete-account.html:54
+msgid "Your account credentials"
+msgstr "Je accountreferenties"
+
+#: bcource/user/templates/user/delete-account.html:55
+msgid "Your messages and communication history"
+msgstr "Je berichten en communicatiegeschiedenis"
+
+#: bcource/user/templates/user/delete-account.html:56
+msgid "Your training history"
+msgstr "Je trainingsgeschiedenis"
+
+#: bcource/user/templates/user/delete-account.html:57
+msgid "All other data associated with your account"
+msgstr "Alle overige gegevens die aan je account zijn gekoppeld"
+
+#: bcource/user/templates/user/delete-account.html:67
+msgid "To confirm, type \"DELETE\" in the box below:"
+msgstr "Typ "VERWIJDEREN" in het onderstaande veld om te bevestigen:"
+
+#: bcource/user/templates/user/delete-account.html:75
+msgid "Type DELETE to confirm"
+msgstr "Typ VERWIJDEREN om te bevestigen"
+
+#: bcource/user/templates/user/delete-account.html:80
+#: bcource/user/templates/user/impersonate_confirm.html:75
+#: bcource/user/templates/user/support.html:53
+#: bcource/user/templates/user/support_public.html:84
+msgid "Cancel"
+msgstr "Annuleren"
+
+#: bcource/user/templates/user/delete-account.html:83
+msgid "Delete My Account Permanently"
+msgstr "Mijn account permanent verwijderen"
+
+#: bcource/user/templates/user/delete-account.html:113
+msgid ""
+"Are you absolutely sure you want to delete your account? This action "
+"cannot be undone."
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:10
+msgid "Confirm User Impersonation"
+msgstr "Gebruikersimitatie bevestigen"
+
+#: bcource/user/templates/user/impersonate_confirm.html:16
+msgid ""
+"You are about to view the application as another user. This action is "
+"logged for security purposes."
+msgstr ""
+
+#: bcource/user/templates/user/impersonate_confirm.html:19
+msgid "Target User Details"
+msgstr "Gegevens doelgebruiker"
+
+#: bcource/user/templates/user/impersonate_confirm.html:31
+msgid "User ID"
+msgstr "Gebruikers-ID"
+
+#: bcource/user/templates/user/impersonate_confirm.html:35
+msgid "Roles"
+msgstr "Rollen"
+
+#: bcource/user/templates/user/impersonate_confirm.html:58
+msgid "What will happen:"
+msgstr "Wat er zal gebeuren:"
+
+#: bcource/user/templates/user/impersonate_confirm.html:61
+msgid "You will see the application exactly as this user sees it"
+msgstr "Je ziet de applicatie precies zoals deze gebruiker deze ziet"
+
+#: bcource/user/templates/user/impersonate_confirm.html:62
+msgid "Your admin session will be preserved in the background"
+msgstr "Je beheerdersessie blijft op de achtergrond bewaard"
+
+#: bcource/user/templates/user/impersonate_confirm.html:63
+msgid "A red warning banner will appear at the top of every page"
+msgstr "Er verschijnt een rode waarschuwingsbalk bovenaan elke pagina"
+
+#: bcource/user/templates/user/impersonate_confirm.html:64
+msgid "All actions will be logged with your admin credentials"
+msgstr "Alle acties worden geregistreerd met je beheerdersreferenties"
+
+#: bcource/user/templates/user/impersonate_confirm.html:65
+msgid "You can exit impersonation at any time by clicking \"Exit Impersonation\""
+msgstr "Je kunt de imitatie op elk moment beëindigen door op "Imitatie beëindigen" te klikken"
+
+#: bcource/user/templates/user/impersonate_confirm.html:79
+msgid "Confirm & Start Impersonation"
+msgstr "Bevestigen en imitatie starten"
+
+#: bcource/user/templates/user/impersonate_confirm.html:88
+msgid ""
+"This action requires administrator privileges and two-factor "
+"authentication."
+msgstr ""
+
+#: bcource/user/templates/user/message.html:28
+msgid "Send"
+msgstr "Verzenden"
+
+#: bcource/user/templates/user/message.html:114
+#: bcource/user/templates/user/support.html:64
+#: bcource/user/templates/user/support_public.html:95
+msgid "Sending..."
+msgstr "Bezig met verzenden..."
+
+#: bcource/user/templates/user/messages.html:105
+msgid "Inbox"
+msgstr "Inbox"
+
+#: bcource/user/templates/user/messages.html:110
+msgid "Sent"
+msgstr "Verzonden"
+
+#: bcource/user/templates/user/support.html:19
+#: bcource/user/templates/user/support_public.html:19
+msgid ""
+"Having an issue or need help? Send us a message and our support team will"
+" get back to you as soon as possible."
+msgstr ""
+
+#: bcource/user/templates/user/support.html:41
+#: bcource/user/templates/user/support_public.html:66
+msgid "Please describe your issue or question in detail..."
+msgstr "Beschrijf je probleem of vraag uitgebreid..."
+
+#: bcource/user/templates/user/support.html:56
+#: bcource/user/templates/user/support_public.html:87
+msgid "Send to Support"
+msgstr "Verzenden naar ondersteuning"
+
+#: bcource/user/templates/user/support.html:71
+msgid "Your current email address"
+msgstr "Je huidige e-mailadres"
+
+#: bcource/user/templates/user/support.html:72
+msgid "We will send our response to this email address."
+msgstr "Wij sturen onze reactie naar dit e-mailadres."
+
+#: bcource/user/templates/user/support_public.html:41
+msgid "We'll use this email to send you our response"
+msgstr "Wij gebruiken dit e-mailadres om je te antwoorden"
+
+#: bcource/user/templates/user/support_public.html:102
+msgid "Already have an account?"
+msgstr "Heeft je al een account?"
+
+#: bcource/user/templates/user/support_public.html:103
+msgid "Sign in"
+msgstr "Aanmelden"
+
+#: bcource/user/templates/user/support_public.html:104
+msgid "for faster support and access to your message history."
+msgstr "voor snellere ondersteuning en toegang tot je berichtengeschiedenis."
+
+
+#: bcource/scheduler/templates/scheduler/scheduler.html
+msgid "yourself"
+msgstr "jezelf"
+
+#: bcource/templates/security/login_user.html
+msgid "No account yet? Please"
+msgstr "Nog geen account?"

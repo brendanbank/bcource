@@ -10,6 +10,7 @@ from bcource import menu_structure, db
 from bcource.helpers import admin_has_role, get_url, safe_redirect
 from bcource.models import User, Student, Practice, Training, TrainingType, TrainingEvent, TrainingEnroll, Content
 from sqlalchemy import or_, and_
+from sqlalchemy.orm import joinedload
 import bcource.messages as system_msg
 from bcource.students.common import deroll_common, enroll_common, enroll_from_waitlist, invite_from_waitlist
 from datetime import datetime
@@ -232,21 +233,26 @@ def deroll(id):  # @ReservedAssignment
     
     cancel_policy = CancelationPolicy(training=training, user=current_user)
     cancel_policy.validate()
-    
-    if form.validate_on_submit() :
-        
-                                           
-        return_acton =  deroll_common(training, current_user)
+
+    if form.validate_on_submit():
+        # Capture enrollment before deroll_common() deletes it.
+        # Eager-load student/user so the object stays usable after the session commits.
+        enrollment = TrainingEnroll().query.options(
+            joinedload(TrainingEnroll.student).joinedload(Student.user)
+        ).join(Student).filter(
+            TrainingEnroll.student_id == Student.id,
+            Student.user_id == current_user.id,
+            TrainingEnroll.training_id == training.id).first()
+
+        return_acton = deroll_common(training, current_user)
 
         if not cancel_policy.status and return_acton:
-            enrollment = TrainingEnroll().query.join(Student).filter(TrainingEnroll.student_id == Student.id, Student.user_id == current_user.id).first()
-
-            system_msg.EmailStudentDerolledInTrainingOutOfPolicyTrainer(envelop_to=current_user, training=training, 
-                                                                         policy_txt=Content.get_tag('Cancellation Policy'), enrollment=enrollment ).send()
+            system_msg.EmailStudentDerolledInTrainingOutOfPolicyTrainer(
+                envelop_to=current_user, training=training,
+                policy_txt=Content.get_tag('Cancellation Policy'), enrollment=enrollment).send()
             system_msg.EmailStudentDerolledInTrainingOutOfPolicy(
-                envelop_to=current_user, training=training, 
-                policy_txt=Content.get_tag('Cancellation Policy'
-                                            ),enrollment=enrollment ).send()
+                envelop_to=current_user, training=training,
+                policy_txt=Content.get_tag('Cancellation Policy'), enrollment=enrollment).send()
 
         if return_acton:
             return safe_redirect(url)
