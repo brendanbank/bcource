@@ -260,7 +260,7 @@ def create_app():
 
         @app.route('/set_language/<lang_code>')
         def set_language(lang_code):
-            from flask import session
+            from flask import session, redirect
             from urllib.parse import urlparse
             if lang_code in app.config.get('LANGUAGES', []):
                 session['language'] = lang_code
