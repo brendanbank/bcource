@@ -11,6 +11,10 @@ COPY ./bcource /app/bcource
 COPY ./config.py /app/config.py
 COPY ./run.py /app/run.py
 COPY ./run_scheduler.py /app/run_scheduler.py
+COPY ./migrations /app/migrations
+
+# Compile translations at build time (.mo files are gitignored)
+RUN pybabel compile -d /app/bcource/translations
 
 RUN chown -R bcourse:bcourse /app
 
