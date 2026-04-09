@@ -1475,3 +1475,7 @@ msgstr "Aanmelden"
 msgid "for faster support and access to your message history."
 msgstr "voor snellere ondersteuning en toegang tot je berichtengeschiedenis."
 
+
+#: bcource/scheduler/templates/scheduler/scheduler.html
+msgid "yourself"
+msgstr "jezelf"

@@ -69,6 +69,100 @@
 
 <script src="/static/local.js"></script>
 
+<!-- Translation feedback floating button -->
+<button id="translation-feedback-btn"
+        title="{{ _('Report a translation issue') }}"
+        data-bs-toggle="modal" data-bs-target="#translationFeedbackModal"
+        style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:1050;
+               border-radius:50px;padding:.45rem .9rem;font-size:.8rem;
+               opacity:.6;transition:opacity .2s;"
+        onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity='.6'"
+        class="btn btn-light btn-sm border">
+  <i class="bi bi-translate"></i> {{ _('Rate translation') }}
+</button>
+
+<!-- Translation feedback modal -->
+<div class="modal fade" id="translationFeedbackModal" tabindex="-1"
+     aria-labelledby="translationFeedbackLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="translationFeedbackLabel">
+          <i class="bi bi-translate"></i> {{ _('Report a translation issue') }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small mb-2">{{ _('What did you see that looked incorrect or unclear?') }}</p>
+        <div class="mb-2">
+          <span class="badge bg-secondary" id="tf-lang-badge"></span>
+          <span class="text-muted small ms-1" id="tf-page-label"></span>
+        </div>
+        <textarea id="tf-feedback" class="form-control" rows="4"
+                  placeholder="{{ _('Describe the translation issue…') }}"></textarea>
+        <div id="tf-result" class="mt-2 small" style="display:none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ _('Close') }}</button>
+        <button type="button" class="btn btn-primary btn-sm" id="tf-submit">{{ _('Send feedback') }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var modal = document.getElementById('translationFeedbackModal');
+  modal.addEventListener('show.bs.modal', function() {
+    document.getElementById('tf-feedback').value = '';
+    document.getElementById('tf-result').style.display = 'none';
+    document.getElementById('tf-lang-badge').textContent = document.documentElement.lang || '{{ get_locale() }}';
+    document.getElementById('tf-page-label').textContent = document.title;
+  });
+
+  document.getElementById('tf-submit').addEventListener('click', function() {
+    var feedback = document.getElementById('tf-feedback').value.trim();
+    if (!feedback) { return; }
+    var btn = this;
+    btn.disabled = true;
+
+    fetch('{{ url_for("home_bp.translation_feedback") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({
+        feedback: feedback,
+        url: window.location.href,
+        lang: document.documentElement.lang || '{{ get_locale() }}',
+        page_title: document.title
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var el = document.getElementById('tf-result');
+      if (data.ok) {
+        el.className = 'mt-2 small text-success';
+        el.textContent = '{{ _("Thank you! Your feedback has been recorded.") }}';
+        el.style.display = '';
+        setTimeout(function() {
+          bootstrap.Modal.getInstance(modal).hide();
+        }, 1800);
+      } else {
+        el.className = 'mt-2 small text-danger';
+        el.textContent = '{{ _("Something went wrong. Please try again.") }}';
+        el.style.display = '';
+        btn.disabled = false;
+      }
+    })
+    .catch(function() {
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+
   </body>
 {% endautoescape -%}
 </html>

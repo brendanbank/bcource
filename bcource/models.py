@@ -961,6 +961,18 @@ class Content(db.Model):
 
     
 
+class TranslationFeedback(db.Model):
+    __tablename__ = 'translation_feedback'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    url: Mapped[str] = mapped_column(String(512))
+    lang: Mapped[str] = mapped_column(String(10))
+    page_title: Mapped[str] = mapped_column(String(256), nullable=True)
+    feedback: Mapped[str] = mapped_column(Text)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=True)
+    user: Mapped['User'] = relationship('User', backref='translation_feedbacks')
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+
+
 class Postalcodes(db.Model):
     __bind_key__ = 'postalcodes' # This is the key from SQLALCHEMY_BINDS
 
