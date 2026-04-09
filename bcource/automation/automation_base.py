@@ -296,6 +296,14 @@ class BaseAutomationTask:
             Job: The created scheduler job.
         """
         when = cls._when(automation, event_dt)
+        now = datetime.datetime.utcnow()
+
+        # Don't re-schedule jobs whose trigger time has already passed.
+        # This prevents renew_automations (called every minute) from endlessly
+        # re-adding missed jobs, which would spam recipients or loop infinitely.
+        if when < now:
+            logger.debug(f'Skipping past job {automation.name} for {item} (trigger: {when}, missed by {now - when})')
+            return None
 
         # Build a human-readable name for the item
         if hasattr(item, 'name'):
@@ -306,8 +314,8 @@ class BaseAutomationTask:
             item_name = str(cls._get_id(item))
 
         str_id = f"{automation.name}/{item_name}/{app_scheduler.flask_app.config.get('ENVIRONMENT')}"
-        
-        
+
+
         job = app_scheduler.add_job(
             id=str_id,
             func=_execute_automation_task_job,

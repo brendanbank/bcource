@@ -269,7 +269,7 @@ class EmailAttendeeListReminder(SendEmail):
         super().__init__(envelop_to=envelop_to, envelop_from=envelop_from, taglist=taglist, 
                         CONTENT_TAG=CONTENT_TAG, body=body, subject=subject, **kwargs)
     
-    def email_render_body(self):
+    def email_render_body(self, body=None):
         # Generate HTML table with student list and phone numbers
         training = self.kwargs.get('training')
         enrollments = self.kwargs.get('enrollments', [])
