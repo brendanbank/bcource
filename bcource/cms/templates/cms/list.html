@@ -1,0 +1,41 @@
+{% extends 'cms/base_cms.html' %}
+
+{% block cms_content %}
+<h4>{{ current_label }}</h4>
+<table class="table table-hover table-sm mt-3">
+  <thead>
+    <tr>
+      <th>Tag</th>
+      <th class="text-center">🇬🇧 EN</th>
+      <th class="text-center">🇳🇱 NL</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for tag in tags %}
+    <tr>
+      <td>{{ tag_names[tag] if tag in tag_names else tag }}</td>
+      <td class="text-center">
+        {% if tag_data[tag]['en'] %}
+          <span class="text-success">&#10003;</span>
+        {% else %}
+          <span class="text-muted">&ndash;</span>
+        {% endif %}
+      </td>
+      <td class="text-center">
+        {% if tag_data[tag]['nl'] %}
+          <span class="text-success">&#10003;</span>
+        {% else %}
+          <span class="text-muted">&ndash;</span>
+        {% endif %}
+      </td>
+      <td>
+        <a href="{{ url_for('cms_bp.edit', tag=tag) }}" class="btn btn-sm btn-outline-secondary">{{ _('Edit') }}</a>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="text-muted">{{ _('No records found.') }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

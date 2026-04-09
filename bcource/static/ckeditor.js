@@ -340,4 +340,22 @@ const LICENSE_KEY = window.CKEDITOR_LICENSE_KEY || '';
 	}
 };
 
-editor = ClassicEditor.create(document.querySelector('.ckeditor'), editorConfig);
+// Initialize CKEditor on all .ckeditor textareas
+const ckEditors = [];
+document.querySelectorAll('.ckeditor').forEach(function(el) {
+    ClassicEditor.create(el, editorConfig).then(function(editorInstance) {
+        ckEditors.push({ element: el, editor: editorInstance });
+        // Sync editor content back to textarea on form submit
+        const form = el.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                el.value = editorInstance.getData();
+            }, { once: false });
+        }
+    });
+});
+// Keep backward-compatible single `editor` reference for the first instance
+Object.defineProperty(window, 'editor', {
+    get: function() { return ckEditors[0] ? ckEditors[0].editor : null; },
+    configurable: true
+});

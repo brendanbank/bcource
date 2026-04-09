@@ -13,13 +13,15 @@ class Menu(object):
         self._parent = parent
         
     def add_menu(self, name, url=None, role=None, css=""):
+        # Use str(name) as the stable dict key so that lazy-gettext strings
+        # (whose hash changes with the active locale) don't corrupt the dict.
+        key = str(name)
+        if not self.sub_menus.get(key):
+            self.sub_menus[key] = Menu(name=name, url=url, role=role, parent=self, css=css)
 
-        if not self.sub_menus.get(name):
-            self.sub_menus[name] = Menu(name=name, url=url, role=role, parent=self, css=css)
-                    
-            self.fill_parent_urls(url, self.sub_menus[name])
+            self.fill_parent_urls(url, self.sub_menus[key])
 
-        return(self.sub_menus[name])
+        return self.sub_menus[key]
     
     def fill_parent_urls(self,url,menu):
         if url == None:

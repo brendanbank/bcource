@@ -1,0 +1,56 @@
+{% extends 'cms/base_cms.html' %}
+
+{% block cms_content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="{{ url_for('cms_bp.list_category', category=current_category) }}">
+        {{ categories[current_category][0] }}
+      </a>
+    </li>
+    <li class="breadcrumb-item active">{{ tag }}</li>
+  </ol>
+</nav>
+
+<form method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="row g-3">
+    <!-- English -->
+    <div class="col-lg-6">
+      <h5>🇬🇧 English</h5>
+      <div class="mb-2">
+        <label class="form-label small text-muted">{{ _('Subject') }}</label>
+        <input type="text" name="en_subject" class="form-control form-control-sm"
+               value="{{ en.subject if en and en.subject else '' }}">
+      </div>
+      <div class="mb-2">
+        <label class="form-label small text-muted">{{ _('Content') }}</label>
+        <textarea name="en_text" class="ckeditor form-control"
+                  rows="20">{{ en.text if en and en.text else '' }}</textarea>
+      </div>
+    </div>
+
+    <!-- Dutch -->
+    <div class="col-lg-6">
+      <h5>🇳🇱 Nederlands</h5>
+      <div class="mb-2">
+        <label class="form-label small text-muted">{{ _('Subject') }}</label>
+        <input type="text" name="nl_subject" class="form-control form-control-sm"
+               value="{{ nl.subject if nl and nl.subject else '' }}">
+      </div>
+      <div class="mb-2">
+        <label class="form-label small text-muted">{{ _('Content') }}</label>
+        <textarea name="nl_text" class="ckeditor form-control"
+                  rows="20">{{ nl.text if nl and nl.text else '' }}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <button type="submit" class="btn btn-primary">{{ _('Save') }}</button>
+    <a href="{{ url_for('cms_bp.list_category', category=current_category) }}"
+       class="btn btn-outline-secondary ms-2">{{ _('Cancel') }}</a>
+  </div>
+</form>
+{% endblock %}

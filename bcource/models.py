@@ -893,41 +893,65 @@ class Content(db.Model):
     subject: Mapped[str] = mapped_column(String(256), nullable=True)
 
     @classmethod
-    def get_tag(cls,tag,obj=False,lang="en", **kwargs):
-        content = db.session.query(cls).filter(cls.tag==tag, lang==lang).first()
+    def _resolve_lang(cls, lang):
+        """Return the effective language code, defaulting to the current request locale."""
+        if lang is not None:
+            return lang
+        try:
+            from flask_babel import get_locale
+            locale = get_locale()
+            return str(locale) if locale else "en"
+        except Exception:
+            return "en"
+
+    @classmethod
+    def get_tag(cls, tag, obj=False, lang=None, **kwargs):
+        lang = cls._resolve_lang(lang)
+        content = db.session.query(cls).filter(cls.tag == tag, cls.lang == lang).first()
+
+        # fall back to English if no record exists for the requested language
+        if not content and lang != "en":
+            content = db.session.query(cls).filter(cls.tag == tag, cls.lang == "en").first()
+
         if not content:
-            content=cls(tag=tag,text="")
+            content = cls(tag=tag, lang=lang, text="")
             db.session.add(content)
             db.session.commit()
+
         if obj:
-            return (content)
-        
+            return content
+
         if content.text:
-            return(render_template_string(content.text, **kwargs))
+            return render_template_string(content.text, **kwargs)
         return ""
 
     @classmethod
-    def get_subject(cls,tag,obj=False,lang="en", **kwargs):
-        
-        content = db.session.query(cls).filter(cls.tag==tag, lang==lang).first()
+    def get_subject(cls, tag, obj=False, lang=None, **kwargs):
+        lang = cls._resolve_lang(lang)
+        content = db.session.query(cls).filter(cls.tag == tag, cls.lang == lang).first()
+
+        # fall back to English if no record exists for the requested language
+        if not content and lang != "en":
+            content = db.session.query(cls).filter(cls.tag == tag, cls.lang == "en").first()
+
         if not content:
-            content=cls(tag=tag,text="")
+            content = cls(tag=tag, lang=lang, text="")
             db.session.add(content)
             db.session.commit()
-            
-        elif content.subject == None:
+
+        elif content.subject is None:
             subject_tag = f'{tag}Subject'
-            subject_obj = db.session.query(cls).filter(cls.tag==subject_tag, lang==lang).first()
+            subject_obj = db.session.query(cls).filter(cls.tag == subject_tag, cls.lang == lang).first()
             if subject_obj:
                 content.subject = subject_obj.text
                 db.session.delete(subject_obj)
                 db.session.commit()
-        
+
         if obj:
-            return (content)
-        
+            return content
+
         if content.subject:
-            return(render_template_string(content.subject, **kwargs))
+            return render_template_string(content.subject, **kwargs)
         return ""
 
 
@@ -969,6 +993,7 @@ class UserSettings(db.Model):
     
     
     emergency_contact: Mapped[str] = mapped_column(Text(), nullable=True)
+    language: Mapped[str] = mapped_column(String(8), default="en", nullable=False, server_default="en")
 
     update_datetime: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(),

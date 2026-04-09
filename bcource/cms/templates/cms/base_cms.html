@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block css_content %}
+{% include 'ckeditor-css.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-lg-2 mb-3">
+    <div class="list-group">
+      {% for key, (label, _) in categories.items() %}
+      <a href="{{ url_for('cms_bp.list_category', category=key) }}"
+         class="list-group-item list-group-item-action {% if key == current_category %}active{% endif %}">
+        {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  <!-- Main -->
+  <div class="col-lg-10">
+    {% block cms_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+{% include 'ckeditor-js.html' %}
+{% endblock %}
