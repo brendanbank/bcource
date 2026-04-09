@@ -76,7 +76,12 @@ class UserSettingsForm(FlaskForm):
         divclass = "col-md-12",
         render_kw={"class": "position-relative form-control"})
 
-    
+    language = MySelectField(
+        _l('Preferred language'),
+        choices=[('en', '🇬🇧 English'), ('nl', '🇳🇱 Nederlands')],
+        divclass = "col-md-12 mt-1",
+        render_kw={"class": "position-relative form-control form-select"})
+
     url  = MyHiddenField('url')
     
     # submit = MySubmitField(_l('Submit'), 

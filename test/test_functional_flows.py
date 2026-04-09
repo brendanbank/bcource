@@ -541,5 +541,160 @@ class TestCapacityCalculation(FunctionalTestBase):
         self.assertEqual(training._spots_waitlist_count, 1)  # only user[4] on plain waitlist
 
 
+# ---------------------------------------------------------------------------
+# Flow 11: 24h-cancelation policy
+# ---------------------------------------------------------------------------
+class TestCancelationPolicy(FunctionalTestBase):
+    """Tests for the 24h-cancelation policy.
+
+    Uses a TrainingType that has '24h-cancelation' attached.
+    Creates trainings with start times inside / outside the 24h window.
+    """
+
+    def _training_type_with_24h_cancel(self):
+        """Return a TrainingType that has the 24h-cancelation policy attached."""
+        from bcource.models import Policy, TrainingType as TT
+        policy = Policy.query.filter_by(name='24h-cancelation').first()
+        if not policy:
+            self.skipTest('24h-cancelation Policy record not found in DB')
+        tt = TT.query.filter(TT.policies.contains(policy)).first()
+        if not tt:
+            self.skipTest('No TrainingType has 24h-cancelation attached')
+        return tt
+
+    def _create_training_starting_in(self, hours, training_type):
+        """Create a Training whose first event starts `hours` from now."""
+        from bcource.models import Location, Practice, Trainer, TrainingEvent
+        from bcource import security
+        from flask_security import hash_password
+
+        practice = Practice.default_row()
+        location = Location.query.first()
+
+        suffix = self._next_suffix()
+        trainer_email = f'functest_trainer_{suffix}@test.local'
+        self._test_user_emails.append(trainer_email)
+        trainer_user = security.datastore.create_user(
+            email=trainer_email,
+            password=hash_password('TestPass123!'),
+            first_name=f'Trainer{suffix}',
+            last_name='FuncTest',
+            active=True,
+        )
+        db.session.flush()
+        trainer = Trainer(user=trainer_user, practice=practice)
+        db.session.add(trainer)
+        db.session.flush()
+        self._test_trainer_ids.append(trainer.id)
+
+        training = Training()
+        training.name = f'_FUNCTEST_Training{suffix}'
+        training.max_participants = 10
+        training.active = True
+        training.apply_policies = True
+        training.practice = practice
+        training.trainingtype = training_type
+        training.trainers.append(trainer)
+        db.session.add(training)
+        db.session.flush()
+        self._test_training_ids.append(training.id)
+
+        start = datetime.now(tz=pytz.UTC) + timedelta(hours=hours)
+        event = TrainingEvent(
+            training_id=training.id,
+            location=location,
+            start_time=start,
+            end_time=start + timedelta(hours=2),
+        )
+        db.session.add(event)
+        db.session.commit()
+        return training
+
+    def test_policy_active_within_24h(self):
+        """CancelationPolicy.validate() returns False (violation) within 24h."""
+        from bcource.students.student_policies import CancelationPolicy
+
+        tt = self._training_type_with_24h_cancel()
+        training = self._create_training_starting_in(hours=12, training_type=tt)
+        user, _ = self.create_test_user_and_student()
+        enroll_common(training, user)
+
+        policy = CancelationPolicy(training=training, user=user)
+        result = policy.validate()
+
+        self.assertFalse(result, 'Policy should detect violation within 24h')
+        self.assertFalse(policy.status, 'Policy status should be False (violated)')
+
+    def test_policy_passes_outside_24h(self):
+        """CancelationPolicy.validate() returns True when > 24h before start."""
+        from bcource.students.student_policies import CancelationPolicy
+
+        tt = self._training_type_with_24h_cancel()
+        training = self._create_training_starting_in(hours=48, training_type=tt)
+        user, _ = self.create_test_user_and_student()
+        enroll_common(training, user)
+
+        policy = CancelationPolicy(training=training, user=user)
+        result = policy.validate()
+
+        self.assertTrue(result, 'Policy should pass when > 24h before start')
+        self.assertTrue(policy.status)
+
+    def test_deroll_succeeds_within_24h_with_policy_violation(self):
+        """deroll_common() succeeds within 24h; CancelationPolicy flags violation for out-of-policy emails."""
+        tt = self._training_type_with_24h_cancel()
+        training = self._create_training_starting_in(hours=12, training_type=tt)
+        user, _ = self.create_test_user_and_student()
+        enroll_common(training, user)
+
+        # Policy detects the violation (the view uses this to decide whether to send out-of-policy emails)
+        from bcource.students.student_policies import CancelationPolicy
+        cancel_policy = CancelationPolicy(training=training, user=user)
+        cancel_policy.validate()
+        self.assertFalse(cancel_policy.status, 'Policy should flag violation within 24h')
+
+        # deroll_common does NOT block — deroll always succeeds; only the emails differ
+        training = self.fresh_training(training)
+        result = deroll_common(training, user)
+
+        enrollment = self.get_enrollment(training, user)
+        self.assertIsNone(enrollment, 'Enrollment should be deleted — deroll is always allowed')
+        self.assertTrue(result, 'deroll_common() should return True even within 24h')
+
+    def test_deroll_allowed_outside_24h(self):
+        """deroll_common() succeeds and removes enrollment when > 24h before start."""
+        tt = self._training_type_with_24h_cancel()
+        training = self._create_training_starting_in(hours=48, training_type=tt)
+        user, _ = self.create_test_user_and_student()
+        enroll_common(training, user)
+
+        training = self.fresh_training(training)
+        result = deroll_common(training, user)
+
+        enrollment = self.get_enrollment(training, user)
+        self.assertIsNone(enrollment, 'Enrollment should be deleted when > 24h')
+        self.assertTrue(result, 'deroll_common() should return True when > 24h')
+
+    def test_deroll_allowed_without_cancelation_policy(self):
+        """deroll_common() always succeeds for TrainingTypes without 24h-cancelation."""
+        # Use a TrainingType that does NOT have 24h-cancelation
+        from bcource.models import Policy, TrainingType as TT
+        policy = Policy.query.filter_by(name='24h-cancelation').first()
+        tt = TT.query.filter(~TT.policies.contains(policy)).first()
+        if not tt:
+            self.skipTest('All TrainingTypes have 24h-cancelation; cannot test without it')
+
+        training = self._create_training_starting_in(hours=12, training_type=tt)
+        user, _ = self.create_test_user_and_student()
+        enroll_common(training, user)
+
+        training = self.fresh_training(training)
+        result = deroll_common(training, user)
+
+        enrollment = self.get_enrollment(training, user)
+        self.assertIsNone(enrollment, 'Enrollment should be deleted (no cancelation policy)')
+        self.assertTrue(result)
+
+
 if __name__ == '__main__':
     unittest.main()

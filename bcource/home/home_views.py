@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, send_from_directory, g, flash, url_for, redirect, render_template_string
+from flask import Blueprint, render_template, send_from_directory, g, flash, url_for, redirect, render_template_string, request, jsonify
 from flask import current_app as app
 from flask_security import current_user
 import os
@@ -7,7 +7,7 @@ import flask_security.decorators as fsd
 from bcource.user.user_status import UserProfileChecks, UserProfileSystemChecks
 from bcource import db, menu_structure, security
 from datetime import datetime, timezone
-from bcource.models import UserSettings
+from bcource.models import UserSettings, TranslationFeedback
 
 import bcource.messages as bmsg 
 # Blueprint Configuration
@@ -78,6 +78,25 @@ def ckeditor():
 @fsd.permissions_required('user-write')
 def home2():
     return render_template("home/index.html")
+
+@home_bp.route('/translation-feedback', methods=['POST'])
+def translation_feedback():
+    data = request.get_json(silent=True) or {}
+    feedback_text = (data.get('feedback') or '').strip()
+    if not feedback_text:
+        return jsonify({'ok': False, 'error': 'empty'}), 400
+
+    fb = TranslationFeedback(
+        url=data.get('url', '')[:512],
+        lang=data.get('lang', 'en')[:10],
+        page_title=data.get('page_title', '')[:256],
+        feedback=feedback_text,
+        user_id=current_user.id if not current_user.is_anonymous else None,
+    )
+    db.session.add(fb)
+    db.session.commit()
+    return jsonify({'ok': True})
+
 
 @home_bp.route('/favicon.ico')
 def favicon():

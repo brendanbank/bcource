@@ -148,8 +148,17 @@ class SendEmail(SystemMessage):
             else:
                 email_str = f'{user.fullname} <{user.email}>'
 
+            # Resolve per-user body and subject based on language preference
+            if self.CONTENT_TAG and self.CONTENT_TAG != 'mail-a-form':
+                user_lang = getattr(getattr(user, 'usersettings', None), 'language', None) or 'en'
+                per_user_body = Content.get_tag(self.CONTENT_TAG, lang=user_lang, **self.kwargs)
+                per_user_subject = Content.get_subject(self.CONTENT_TAG, lang=user_lang, **self.kwargs)
+            else:
+                per_user_body = self.body
+                per_user_subject = self.subject
+
             # Get HTML body
-            html_body = self.email_render_body()
+            html_body = self.email_render_body(per_user_body)
 
             # Generate plain text version from HTML
             text_body = self.email_render_text_body(html_body)
@@ -162,7 +171,7 @@ class SendEmail(SystemMessage):
                 reply_to = [reply_to_addr]
 
             # Create multipart message with plain text body
-            msg = EmailMultiAlternatives(subject=self.render_subject(),
+            msg = EmailMultiAlternatives(subject=cleanhtml(per_user_subject),
                                          body=text_body,
                                          from_email=email_from,
                                          to=[email_str],
@@ -186,12 +195,13 @@ class SendEmail(SystemMessage):
     def process_attachment(self, msg):
         return(msg)
 
-    def email_render_body(self):
+    def email_render_body(self, body=None):
         """Render email body with professional footer."""
         from flask import url_for
 
         # Get the base body content
-        body = self.body
+        if body is None:
+            body = self.body
 
         # Generate footer
         try:
@@ -491,6 +501,12 @@ class EmailStudentEnrolledInTrainingInviteAccepted(EmailStudentEnrolledInTrainin
     
 class EmailStudentDerolledInTrainingOutOfPolicy(EmailStudentDerolledInTraining):
     message_tag = "policy"
+
+    def process_attachment(self, msg):
+        # No iCal needed — the regular deroll email already sent CANCELLED iCal.
+        # Overriding to prevent crash: parent requires a non-None enrollment,
+        # but the enrollment is deleted before this email is sent.
+        return msg
     
 class EmailStudentDerolledInTrainingOutOfPolicyTrainer(SendEmail):
     message_tag = "policy"
