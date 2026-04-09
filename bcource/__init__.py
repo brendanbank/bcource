@@ -260,10 +260,18 @@ def create_app():
 
         @app.route('/set_language/<lang_code>')
         def set_language(lang_code):
-            from flask import session, redirect
+            from flask import session
+            from urllib.parse import urlparse
             if lang_code in app.config.get('LANGUAGES', []):
                 session['language'] = lang_code
-            return redirect(request.referrer or url_for('home_bp.home'))
+            # Only redirect back to same-origin referrers to prevent open redirect
+            referrer = request.referrer
+            if referrer:
+                ref_host = urlparse(referrer).netloc
+                own_host = urlparse(request.host_url).netloc
+                if ref_host != own_host:
+                    referrer = None
+            return redirect(referrer or url_for('home_bp.home'))
 
         @app.after_request
         def set_security_headers(response):
