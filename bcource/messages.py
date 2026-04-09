@@ -501,6 +501,12 @@ class EmailStudentEnrolledInTrainingInviteAccepted(EmailStudentEnrolledInTrainin
     
 class EmailStudentDerolledInTrainingOutOfPolicy(EmailStudentDerolledInTraining):
     message_tag = "policy"
+
+    def process_attachment(self, msg):
+        # No iCal needed — the regular deroll email already sent CANCELLED iCal.
+        # Overriding to prevent crash: parent requires a non-None enrollment,
+        # but the enrollment is deleted before this email is sent.
+        return msg
     
 class EmailStudentDerolledInTrainingOutOfPolicyTrainer(SendEmail):
     message_tag = "policy"
