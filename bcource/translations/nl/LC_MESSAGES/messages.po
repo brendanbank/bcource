@@ -169,7 +169,7 @@ msgstr ""
 
 #: bcource/scheduler/scheduler_views.py:364
 msgid "Training Scheduler"
-msgstr "Trainingsplanner"
+msgstr "Trainingsrooster"
 
 #: bcource/scheduler/scheduler_views.py:365
 msgid "Schedule Training"
