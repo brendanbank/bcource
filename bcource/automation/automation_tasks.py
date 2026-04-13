@@ -257,6 +257,53 @@ class DeleteTrainingTask(BaseAutomationTask):
 
 
 @register_automation(
+    description="Send waitlist reminder to students 2 weeks before training."
+)
+class WaitlistReminderTask(Reminder):
+    def __init__(self, id, automation_name, *args, **kwargs):  # @ReservedAssignment
+        super().__init__(id, automation_name, *args, **kwargs)
+        self.enrollments = TrainingEnroll().query.join(Training).filter(
+            TrainingEnroll.status == "waitlist",
+            Training.id == id
+        ).all()
+
+        if not self.enrollments:
+            logger.debug(f"No waitlisted students for training with id {id}")
+            return
+
+        self.template_kw['training'] = Training().query.get(id)
+
+    @staticmethod
+    def query():
+        return Training().query.join(Training.trainingevents).join(
+            TrainingEnroll, TrainingEnroll.training_id == Training.id
+        ).filter(
+            TrainingEvent.start_time > datetime.utcnow(),
+            Training.active == True,
+            TrainingEnroll.status == "waitlist"
+        ).distinct().all()
+
+    def execute(self):
+        if not self.enrollments:
+            logger.debug(f"No waitlisted students for training {self.id}, skipping")
+            return False
+
+        for enrollment in self.enrollments:
+            self.template_kw['user'] = enrollment.student.user
+            self.template_kw['enrollment'] = enrollment
+            msg = SendEmail(
+                envelop_to=[enrollment.student.user],
+                CONTENT_TAG=self.automation_name,
+                taglist=['reminder', 'waitlist'],
+                **self.template_kw
+            )
+            msg.send()
+
+        logger.info(f"Sent waitlist reminders to {len(self.enrollments)} student(s) for training {self.template_kw.get('training', '')}")
+        return True
+
+
+@register_automation(
     description="Send attendee list reminder to trainers."
 )
 class SendAttendeeListTask(Reminder):
