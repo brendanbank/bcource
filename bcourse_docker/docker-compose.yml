@@ -13,7 +13,7 @@ networks:
     enable_ipv6: true
 services:
   traefik:
-    image: "traefik:v3.4"
+    image: "traefik:v3.6"
     container_name: "traefik"
     command:
       #- "--log.level=DEBUG"
