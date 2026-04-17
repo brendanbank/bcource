@@ -288,7 +288,8 @@ def create_app():
                 return response
             user = current_user.email if current_user and current_user.is_authenticated else '-'
             audit_logger.info(
-                '%s %s %s %s',
+                '%s %s %s %s %s',
+                request.remote_addr,
                 user,
                 request.method,
                 request.full_path.rstrip('?'),
