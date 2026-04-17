@@ -276,7 +276,7 @@ def create_app():
         import sys as _sys
         audit_logger = app.logger.getChild('audit')
         if not audit_logger.handlers:
-            _handler = logging.StreamHandler(_sys.stdout)
+            _handler = logging.StreamHandler(_sys.stderr)
             _handler.setFormatter(logging.Formatter('%(asctime)s audit %(message)s'))
             audit_logger.addHandler(_handler)
             audit_logger.setLevel(logging.INFO)
