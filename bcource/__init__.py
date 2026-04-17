@@ -273,7 +273,14 @@ def create_app():
                     referrer = None
             return redirect(referrer or url_for('home_bp.home'))
 
+        import sys as _sys
         audit_logger = app.logger.getChild('audit')
+        if not audit_logger.handlers:
+            _handler = logging.StreamHandler(_sys.stdout)
+            _handler.setFormatter(logging.Formatter('%(asctime)s audit %(message)s'))
+            audit_logger.addHandler(_handler)
+            audit_logger.setLevel(logging.INFO)
+            audit_logger.propagate = False
 
         @app.after_request
         def audit_log(response):
