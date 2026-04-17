@@ -274,13 +274,14 @@ def create_app():
             return redirect(referrer or url_for('home_bp.home'))
 
         import sys as _sys
-        audit_logger = app.logger.getChild('audit')
+        audit_logger = logging.getLogger('bcource.audit')
         if not audit_logger.handlers:
             _handler = logging.StreamHandler(_sys.stderr)
             _handler.setFormatter(logging.Formatter('%(asctime)s audit %(message)s'))
             audit_logger.addHandler(_handler)
             audit_logger.setLevel(logging.INFO)
             audit_logger.propagate = False
+        print('AUDIT LOGGER READY handlers:', audit_logger.handlers, flush=True)
 
         @app.after_request
         def audit_log(response):
