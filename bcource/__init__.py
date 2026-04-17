@@ -281,7 +281,6 @@ def create_app():
             audit_logger.addHandler(_handler)
             audit_logger.setLevel(logging.INFO)
             audit_logger.propagate = False
-        print('AUDIT LOGGER READY handlers:', audit_logger.handlers, flush=True)
 
         @app.after_request
         def audit_log(response):
