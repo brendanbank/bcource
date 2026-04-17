@@ -17,8 +17,7 @@ services:
     container_name: "traefik"
     command:
       #- "--log.level=DEBUG"
-      - "--accesslog=true"
-      - "--accesslog.format=json"
+      - "--accesslog=false"
       - "--api=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
