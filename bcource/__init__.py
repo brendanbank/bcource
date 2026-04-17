@@ -273,6 +273,22 @@ def create_app():
                     referrer = None
             return redirect(referrer or url_for('home_bp.home'))
 
+        audit_logger = app.logger.getChild('audit')
+
+        @app.after_request
+        def audit_log(response):
+            if request.path.startswith('/static') or request.path == '/health':
+                return response
+            user = current_user.email if current_user and current_user.is_authenticated else '-'
+            audit_logger.info(
+                '%s %s %s %s',
+                user,
+                request.method,
+                request.full_path.rstrip('?'),
+                response.status_code,
+            )
+            return response
+
         @app.after_request
         def set_security_headers(response):
             response.headers['X-Content-Type-Options'] = 'nosniff'

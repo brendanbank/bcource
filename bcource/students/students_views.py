@@ -15,6 +15,7 @@ import uuid, pytz
 
 from sqlalchemy.orm import joinedload
 from bcource.students.common import deroll_common, enroll_common
+from bcource.students.student_policies import CancelationPolicy
 from bcource.training.training_forms import TrainingDerollForm, TrainingEnrollForm
 from bcource.filters import Filters
 from flask_babel import lazy_gettext as _l
@@ -312,11 +313,33 @@ def edit_user(id=None):
 
 @students_bp.route('/student-trainings/deroll/<int:user_id>/<int:training_id>',methods=['GET', 'POST'])
 def deroll(user_id,training_id):
-    
+
     training = Training().query.get(training_id)
     user = User().query.get(user_id)
     url = get_url()
-    deroll_common(training, user, admin=True)
+
+    cancel_policy = CancelationPolicy(training=training, user=user)
+    cancel_policy.validate()
+
+    # Capture enrollment before deroll_common() deletes it
+    enrollment = db.session.query(TrainingEnroll).options(
+        joinedload(TrainingEnroll.student).joinedload(Student.user)
+    ).join(Student).filter(
+        Student.user_id == user_id,
+        TrainingEnroll.training_id == training_id
+    ).first()
+
+    return_action = deroll_common(training, user, admin=True)
+
+    if not cancel_policy.status and return_action and enrollment:
+        from bcource.models import Content
+        bmsg.EmailStudentDerolledInTrainingOutOfPolicyTrainer(
+            envelop_to=training.trainer_users, training=training,
+            policy_txt=Content.get_tag('Cancellation Policy'), enrollment=enrollment).send()
+        bmsg.EmailStudentDerolledInTrainingOutOfPolicy(
+            envelop_to=user, training=training,
+            policy_txt=Content.get_tag('Cancellation Policy'), enrollment=enrollment).send()
+
     return safe_redirect(url)
 
     
