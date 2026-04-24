@@ -186,6 +186,8 @@ def training_detail(id):
     
     deroll_form = TrainingDerollForm()
     training = Training().query.get(id)
+    if not training:
+        abort(404)
     training._cal_enrollments()
     filters = make_filters().process_filters()
     
