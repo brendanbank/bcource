@@ -261,17 +261,14 @@ def create_app():
         @app.route('/set_language/<lang_code>')
         def set_language(lang_code):
             from flask import session, redirect
-            from urllib.parse import urlparse
+            from urllib.parse import urlparse, urlunparse
             if lang_code in app.config.get('LANGUAGES', []):
                 session['language'] = lang_code
-            # Only redirect back to same-origin referrers to prevent open redirect
-            referrer = request.referrer
-            if referrer:
-                ref_host = urlparse(referrer).netloc
-                own_host = urlparse(request.host_url).netloc
-                if ref_host != own_host:
-                    referrer = None
-            return redirect(referrer or url_for('home_bp.home'))
+            # Strip scheme + netloc from the referrer so the redirect target is
+            # always a same-origin path — prevents open redirect.
+            parsed = urlparse(request.referrer or '')
+            safe_path = urlunparse(('', '', parsed.path, parsed.params, parsed.query, parsed.fragment))
+            return redirect(safe_path or url_for('home_bp.home'))
 
         import sys as _sys
         audit_logger = logging.getLogger('bcource.audit')
