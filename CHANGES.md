@@ -1,6 +1,28 @@
 # Changes Log
 
-## [Unreleased] - 2026-03-16
+## [v1.3.0] - 2026-04-26
+
+Tagged 2026-04-26 from `main` (commit `94e745d`). 411 commits since v1.2.0 across 16 PRs. Full release notes: https://github.com/Brendan-Bank/bcource/releases/tag/v1.3.0
+
+### Added - Trivy Security Scanning (PR #56)
+- **Trivy CI workflow** (`.github/workflows/trivy.yml`): filesystem (vuln + secret) and config (Dockerfile/IaC) scans on PRs, tags, weekly cron, manual dispatch
+- Results uploaded as SARIF to the GitHub Security tab under separate categories (`trivy-fs`, `trivy-config`)
+- Non-blocking by default (`exit-code: '0'`); flip to gate PRs on findings if desired
+
+### Changed - Container HEALTHCHECK (PR #59)
+- **Dockerfile `HEALTHCHECK`**: probes the existing `/health` endpoint (DB + postalcodes + mail) via Python stdlib `urllib` (no curl/wget needed in `python:3.13-slim`)
+- 30s interval, 10s timeout, 30s start period, 3 retries
+- Container reports healthy/unhealthy via `docker compose ps` / `docker inspect`
+
+### Security - Open Redirect Sanitizer (PR #58)
+- **`set_language` redirect refactored** to a structural same-origin sanitizer: parse the referrer and reconstruct only path/query/fragment, dropping scheme + netloc entirely
+- Resolves CodeQL `py/url-redirection` (the previous host-comparison check wasn't recognized by CodeQL flow analysis)
+
+### Security - Cryptography Bump (PR #57)
+- **`cryptography` ≥46.0.7** — clears three CVEs flagged by Trivy:
+  - CVE-2026-26007 (HIGH, fixed in 46.0.5)
+  - CVE-2026-39892 (MEDIUM, fixed in 46.0.7)
+  - CVE-2026-34073 (LOW, fixed in 46.0.6)
 
 ### Changed - Scheduler moved into Docker
 - **Scheduler runs as Docker container**: `bcourse-scheduler` service added to `docker-compose.yml`, replacing the systemd service. Uses the same image as the web app with `command: ["python", "run_scheduler.py"]`
@@ -72,7 +94,7 @@
 
 ---
 
-## [Unreleased] - 2026-02-10
+## [Previous] - 2026-02-10
 
 ### Added - Email Selection Feature
 - **Email filtered students from Students overview**: New "Email selection" sidebar button on `/students/` that opens the message compose form pre-populated with all students matching the current filter selection
@@ -101,7 +123,7 @@
 
 ---
 
-## [Unreleased] - 2025-12-21
+## [Previous] - 2025-12-21
 
 ### Enhanced - Email Deliverability & Anti-Spam Improvements
 
