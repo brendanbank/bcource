@@ -94,7 +94,7 @@ Tagged 2026-04-26 from `main` (commit `94e745d`). 411 commits since v1.2.0 acros
 
 ---
 
-## [Unreleased] - 2026-02-10
+## [Previous] - 2026-02-10
 
 ### Added - Email Selection Feature
 - **Email filtered students from Students overview**: New "Email selection" sidebar button on `/students/` that opens the message compose form pre-populated with all students matching the current filter selection
@@ -123,7 +123,7 @@ Tagged 2026-04-26 from `main` (commit `94e745d`). 411 commits since v1.2.0 acros
 
 ---
 
-## [Unreleased] - 2025-12-21
+## [Previous] - 2025-12-21
 
 ### Enhanced - Email Deliverability & Anti-Spam Improvements
 
